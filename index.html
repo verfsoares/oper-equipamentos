@@ -256,7 +256,7 @@ textarea.form-input { resize: vertical; min-height: 70px; }
       <div class="kpi-grid">
         <div class="kpi-card green"><div class="kpi-label">Taxa de Ocupação</div><div class="kpi-value" style="color:var(--green)" id="kpi-util">—%</div><div class="kpi-sub">Equipamentos atuando</div></div>
         <div class="kpi-card red"><div class="kpi-label">Ociosidade</div><div class="kpi-value" style="color:var(--red)" id="kpi-ocio">—%</div><div class="kpi-sub">Inativo + Par. Cliente + Corretiva</div></div>
-        <div class="kpi-card blue"><div class="kpi-label">Disponibilidade</div><div class="kpi-value" style="color:var(--accent2)" id="kpi-disp">—%</div><div class="kpi-sub">Fora de corretiva</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">Disponibilidade</div><div class="kpi-value" style="color:var(--accent2)" id="kpi-disp">—%</div><div class="kpi-sub">Status D — Disponível</div></div>
         <div class="kpi-card amber"><div class="kpi-label">Em Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="kpi-prev">—</div><div class="kpi-sub">Equipamentos</div></div>
         <div class="kpi-card teal"><div class="kpi-label">Total Equipamentos</div><div class="kpi-value" style="color:var(--teal)" id="kpi-total">—</div><div class="kpi-sub">Cadastrados</div></div>
         <div class="kpi-card purple"><div class="kpi-label">Custo Mês Atual</div><div class="kpi-value" style="color:var(--purple);font-size:20px" id="kpi-custo">—</div><div class="kpi-sub">Total lançado</div></div>
@@ -676,10 +676,11 @@ async function carregarDashboard() {
   const prevent  = equips.filter(e => e.status_atual === 'P').length;
   const inativo  = equips.filter(e => e.status_atual === 'IN').length;
   const parCliente = equips.filter(e => e.status_atual === 'PC').length;
+  const disponivel = equips.filter(e => e.status_atual === 'D').length;
   const ociosos  = corret + inativo + parCliente;
   const ocupacao = total > 0 ? Math.round((atuando / total) * 100) : 0;
   const ociosidade = total > 0 ? Math.round((ociosos / total) * 100) : 0;
-  const disp     = total > 0 ? Math.round(((total - corret) / total) * 100) : 0;
+  const disp     = total > 0 ? Math.round((disponivel / total) * 100) : 0;
 
   document.getElementById('kpi-util').textContent  = ocupacao + '%';
   document.getElementById('kpi-ocio').textContent  = ociosidade + '%';
