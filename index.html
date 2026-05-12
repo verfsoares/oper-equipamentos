@@ -409,31 +409,15 @@ textarea.form-input { resize: vertical; min-height: 70px; }
       </div>
       <div class="form-group"><div class="form-label">Tipo *</div>
         <select class="form-select" id="eq-tipo">
-          <optgroup label="Empilhadeira">
-            <option>Empilhadeira Contrabalançada</option>
-            <option>Empilhadeira Patolada</option>
-            <option>Empilhadeira Cabinada</option>
-            <option>Empilhadeira Reach Truck</option>
-            <option>Empilhadeira Retrátil</option>
-          </optgroup>
-          <optgroup label="Caminhão">
-            <option>Caminhão Guindauto (Munck)</option>
-            <option>Caminhão Pipa</option>
-            <option>Caminhão Baú</option>
-            <option>Caminhão Plataforma</option>
-          </optgroup>
-          <optgroup label="Máquinas Pesadas">
-            <option>Escavadeira</option>
-            <option>Retroescavadeira</option>
-            <option>Guindaste</option>
-            <option>Trator</option>
-            <option>Motoniveladora</option>
-            <option>Compactador</option>
-            <option>Plataforma Elevatória</option>
-          </optgroup>
-          <optgroup label="Outros">
-            <option>Outro</option>
-          </optgroup>
+          <option value="">Selecione...</option>
+          <option>PATOLADA</option>
+          <option>CONTRABALANÇADA</option>
+          <option>CABINADA</option>
+          <option>GUINDAUTO (MUNCK)</option>
+          <option>VARREDEIRA</option>
+          <option>REACH TRUCK</option>
+          <option>RETRÁTIL</option>
+          <option>OUTRO</option>
         </select>
       </div>
       <div class="form-group"><div class="form-label">Combustível</div>
@@ -1058,3 +1042,4 @@ function showToast(msg, isError = false) {
 </script>
 </body>
 </html>
+
