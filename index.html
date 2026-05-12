@@ -222,13 +222,13 @@ textarea.form-input { resize: vertical; min-height: 70px; }
   </div>
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">📊</span><span>Dashboard</span></div>
-  <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">🏗️</span><span>Equipamentos</span></div>
+  <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">🏗️</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operação</div>
-  <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">🔄</span><span>Movimentação</span></div>
-  <div class="nav-item" onclick="nav('custos',this)"><span class="nav-icon">💰</span><span>Custos</span></div>
+  <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">🔄</span><span>Disponibilidade Diária Operacional</span></div>
+  <div class="nav-item" onclick="nav('custos',this)"><span class="nav-icon">💰</span><span>Custo por Equipamento</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">📋</span><span>Histórico</span></div>
   <div class="nav-section">Cadastros</div>
-  <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">🏢</span><span>Clientes</span></div>
+  <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">🏢</span><span>Cadastro de Clientes</span></div>
   <div class="nav-item" onclick="nav('contratos',this)"><span class="nav-icon">📄</span><span>Contratos</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item" onclick="nav('usuarios',this)"><span class="nav-icon">👥</span><span>Usuários</span></div>
@@ -641,14 +641,14 @@ async function initApp() {
 // NAVEGAÇÃO
 // ============================================================
 const pageMap = {
-  dashboard:    { title: 'Dashboard Operacional',     btn: '', loader: carregarDashboard },
-  equipamentos: { title: 'Equipamentos',              btn: '' , loader: carregarEquipamentos },
-  movimentacao: { title: 'Movimentação Operacional',  btn: '', loader: carregarMovimentacoes },
-  custos:       { title: 'Controle de Custos',        btn: '', loader: carregarCustos },
-  historico:    { title: 'Histórico por Equipamento', btn: '', loader: carregarHistoricoSelects },
-  clientes:     { title: 'Clientes',                  btn: '', loader: carregarClientes },
-  contratos:    { title: 'Contratos',                 btn: '', loader: carregarContratos },
-  usuarios:     { title: 'Usuários',                  btn: '', loader: carregarUsuarios }
+  dashboard:    { title: 'Dashboard Operacional',               btn: '', loader: carregarDashboard },
+  equipamentos: { title: 'Cadastro de Equipamento',             btn: '', loader: carregarEquipamentos },
+  movimentacao: { title: 'Disponibilidade Diária Operacional',  btn: '', loader: carregarMovimentacoes },
+  custos:       { title: 'Custo por Equipamento',               btn: '', loader: carregarCustos },
+  historico:    { title: 'Histórico por Equipamento',           btn: '', loader: carregarHistoricoSelects },
+  clientes:     { title: 'Cadastro de Clientes',                btn: '', loader: carregarClientes },
+  contratos:    { title: 'Contratos',                           btn: '', loader: carregarContratos },
+  usuarios:     { title: 'Usuários',                            btn: '', loader: carregarUsuarios }
 };
 
 function nav(page, el) {
