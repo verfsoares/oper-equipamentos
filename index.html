@@ -918,10 +918,11 @@ async function carregarCustos() {
     });
   }
   document.getElementById('custo-table-body').innerHTML = data && data.length ?
-    `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Frete</th><th>Combustível</th><th>Pneus</th><th>Peças</th><th>Serviços</th><th>Total</th><th>Lançado por</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descrição</th><th>Frete</th><th>Combustível</th><th>Pneus</th><th>Peças</th><th>Serviços</th><th>Total</th><th>Lançado por</th></tr></thead><tbody>${
       data.map(c => `<tr>
         <td>${c.data||'—'}</td>
         <td>${c.equipamentos?.frota||'—'} · ${c.equipamentos?.equipamento||'—'}</td>
+        <td style="color:var(--muted);font-size:12px;">${c.descricao||'—'}</td>
         <td>${c.frete ? 'R$ '+c.frete.toLocaleString('pt-BR') : '—'}</td>
         <td>${c.combustivel ? 'R$ '+c.combustivel.toLocaleString('pt-BR') : '—'}</td>
         <td>${c.pneus ? 'R$ '+c.pneus.toLocaleString('pt-BR') : '—'}</td>
