@@ -918,7 +918,7 @@ async function carregarCustos() {
     });
   }
   document.getElementById('custo-table-body').innerHTML = data && data.length ?
-    `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descrição</th><th>Frete</th><th>Combustível</th><th>Pneus</th><th>Peças</th><th>Serviços</th><th>Total</th><th>Lançado por</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descrição</th><th>Frete</th><th>Combustível</th><th>Pneus</th><th>Peças</th><th>Serviços</th><th>Total</th><th>Lançado por</th><th></th></tr></thead><tbody>${
       data.map(c => `<tr>
         <td>${c.data||'—'}</td>
         <td>${c.equipamentos?.frota||'—'} · ${c.equipamentos?.equipamento||'—'}</td>
@@ -930,6 +930,10 @@ async function carregarCustos() {
         <td>${c.servicos ? 'R$ '+c.servicos.toLocaleString('pt-BR') : '—'}</td>
         <td><strong style="color:var(--green)">R$ ${(c.custo_total||0).toLocaleString('pt-BR')}</strong></td>
         <td style="color:var(--muted)">${c.usuario||'—'}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn" style="padding:4px 8px;font-size:13px;" onclick="editarCusto('${c.id}')" title="Editar">✏️</button>
+          <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3);margin-left:4px;" onclick="deletarCusto('${c.id}')" title="Excluir">🗑️</button>
+        </td>
       </tr>`).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhum custo lançado</div>';
@@ -1172,7 +1176,49 @@ async function editarEquipamento(id) {
   };
 }
 
-async function deletarCliente(id, nome) {
+async function deletarCusto(id) {
+  if (!confirm('Deseja excluir este lançamento de custo? Esta ação não pode ser desfeita.')) return;
+  const { error } = await db.from('custos').delete().eq('id', id);
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Custo excluído!');
+  await carregarCustos();
+}
+
+async function editarCusto(id) {
+  const { data: custos } = await db.from('custos').select('*').eq('id', id).limit(1);
+  if (!custos || !custos.length) return;
+  const c = custos[0];
+  document.getElementById('ct-data').value    = c.data || '';
+  document.getElementById('ct-equip').value   = c.equipamento_id || '';
+  document.getElementById('ct-frete').value   = c.frete || 0;
+  document.getElementById('ct-comb').value    = c.combustivel || 0;
+  document.getElementById('ct-pneus').value   = c.pneus || 0;
+  document.getElementById('ct-pecas').value   = c.pecas || 0;
+  document.getElementById('ct-serv').value    = c.servicos || 0;
+  document.getElementById('ct-desc').value    = c.descricao || '';
+  calcTotal();
+  openModal('modal-custo');
+  document.querySelector('#modal-custo .modal-title').textContent = 'Editar Custo';
+  document.querySelector('#modal-custo .btn-primary').onclick = async () => {
+    const { error } = await db.from('custos').update({
+      data:        document.getElementById('ct-data').value,
+      equipamento_id: document.getElementById('ct-equip').value,
+      frete:       parseFloat(document.getElementById('ct-frete').value) || 0,
+      combustivel: parseFloat(document.getElementById('ct-comb').value) || 0,
+      pneus:       parseFloat(document.getElementById('ct-pneus').value) || 0,
+      pecas:       parseFloat(document.getElementById('ct-pecas').value) || 0,
+      servicos:    parseFloat(document.getElementById('ct-serv').value) || 0,
+      descricao:   document.getElementById('ct-desc').value,
+      usuario:     currentUser?.nome || '—'
+    }).eq('id', id);
+    if (error) return showToast('Erro: ' + error.message, true);
+    closeModal('modal-custo');
+    showToast('Custo atualizado!');
+    document.querySelector('#modal-custo .modal-title').textContent = 'Lançar Custo';
+    document.querySelector('#modal-custo .btn-primary').onclick = salvarCusto;
+    await carregarCustos();
+  };
+}
   if (!confirm(`Deseja excluir o cliente ${nome}?`)) return;
   const { error } = await db.from('clientes').delete().eq('id', id);
   if (error) return showToast('Erro ao excluir: ' + error.message, true);
