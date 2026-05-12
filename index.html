@@ -712,14 +712,15 @@ function renderEquipamentos(list) {
   document.getElementById('equip-count').textContent = list.length + ' registros';
   const badgeClass = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
   document.getElementById('equip-table-body').innerHTML = list.length ?
-    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Cliente</th><th>Região/UF</th><th>Horímetro</th><th>Status</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Combustível</th><th>Ano</th><th>Status</th></tr></thead><tbody>${
       list.map(e => `<tr>
         <td class="frota">${e.frota}</td>
-        <td>${e.equipamento}</td>
+        <td><strong>${e.equipamento}</strong></td>
         <td>${e.tipo||'—'}</td>
-        <td>${e.clientes?.razao_social||'—'}</td>
-        <td>${e.regiao||'—'} / ${e.uf||'—'}</td>
-        <td>${(e.horimetro_atual||0).toLocaleString('pt-BR')} h</td>
+        <td>${e.observacoes ? e.observacoes.split('·')[0].trim() : '—'}</td>
+        <td>${e.origem||'—'}</td>
+        <td>${e.combustivel||'—'}</td>
+        <td>${e.observacoes ? (e.observacoes.split('·')[1]||'').trim() : '—'}</td>
         <td><span class="badge ${badgeClass(e.status_atual)}">${e.status_atual}</span></td>
       </tr>`).join('')
     }</tbody></table>` :
@@ -1043,6 +1044,3 @@ function showToast(msg, isError = false) {
 </script>
 </body>
 </html>
-
-
-
