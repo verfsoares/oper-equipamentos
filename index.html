@@ -224,7 +224,7 @@ textarea.form-input { resize: vertical; min-height: 70px; }
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">📊</span><span>Dashboard</span></div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">🏗️</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operação</div>
-  <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">🔄</span><span>Disponibilidade Diária Operacional</span></div>
+  <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">🔄</span><span>Apontamento Diário Operacional</span></div>
   <div class="nav-item" onclick="nav('custos',this)"><span class="nav-icon">💰</span><span>Custo por Equipamento</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">📋</span><span>Histórico</span></div>
   <div class="nav-section">Cadastros</div>
@@ -653,7 +653,7 @@ async function initApp() {
 const pageMap = {
   dashboard:    { title: 'Dashboard Operacional',               btn: '', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento',             btn: '', loader: carregarEquipamentos },
-  movimentacao: { title: 'Disponibilidade Diária Operacional',  btn: '', loader: carregarMovimentacoes },
+  movimentacao: { title: 'Apontamento Diário Operacional',      btn: '', loader: carregarMovimentacoes },
   custos:       { title: 'Custo por Equipamento',               btn: '', loader: carregarCustos },
   historico:    { title: 'Histórico por Equipamento',           btn: '', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes',                btn: '', loader: carregarClientes },
