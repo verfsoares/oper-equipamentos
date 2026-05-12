@@ -728,7 +728,7 @@ function renderEquipamentos(list) {
   document.getElementById('equip-count').textContent = list.length + ' registros';
   const badgeClass = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
   document.getElementById('equip-table-body').innerHTML = list.length ?
-    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Fornecedor</th><th>Combustível</th><th>Ano</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Fornecedor</th><th>Combustível</th><th>Ano</th><th></th></tr></thead><tbody>${
       list.map(e => {
         const obs = e.observacoes || '';
         const parts = obs.split('·').map(p => p.trim());
@@ -744,6 +744,10 @@ function renderEquipamentos(list) {
         <td>${e.origem === 'Terceiro' ? `<span style="color:var(--amber);font-weight:500;">${fornecedor}</span>` : '—'}</td>
         <td>${e.combustivel||'—'}</td>
         <td>${ano}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn" style="padding:4px 8px;font-size:13px;" onclick="editarEquipamento('${e.id}')" title="Editar">✏️</button>
+          <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3);margin-left:4px;" onclick="deletarEquipamento('${e.id}','${e.frota}')" title="Excluir">🗑️</button>
+        </td>
       </tr>`;}).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhum equipamento cadastrado</div>';
@@ -964,8 +968,12 @@ async function carregarClientes() {
   const el = document.getElementById('cliente-table-body');
   if (!el) return;
   el.innerHTML = allClientes.length ?
-    `<table><thead><tr><th>Razão Social</th><th>CNPJ</th><th>Setor</th><th>UF</th></tr></thead><tbody>${
-      allClientes.map(c => `<tr><td><strong>${c.razao_social}</strong></td><td>${c.cnpj||'—'}</td><td>${c.setor||'—'}</td><td>${c.uf||'—'}</td></tr>`).join('')
+    `<table><thead><tr><th>Razão Social</th><th>CNPJ</th><th>Setor</th><th>UF</th><th></th></tr></thead><tbody>${
+      allClientes.map(c => `<tr><td><strong>${c.razao_social}</strong></td><td>${c.cnpj||'—'}</td><td>${c.setor||'—'}</td><td>${c.uf||'—'}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn" style="padding:4px 8px;font-size:13px;" onclick="editarCliente('${c.id}')" title="Editar">✏️</button>
+        <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3);margin-left:4px;" onclick="deletarCliente('${c.id}','${c.razao_social}')" title="Excluir">🗑️</button>
+      </td></tr>`).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhum cliente cadastrado</div>';
   popularSelectClientes();
@@ -1001,7 +1009,7 @@ async function carregarContratos() {
   if (!el) return;
   const badgeStatus = { 'Ativo':'badge-A', 'Encerrado':'badge-IN', 'Renovação':'badge-P' };
   el.innerHTML = allContratos.length ?
-    `<table><thead><tr><th>Número</th><th>Cliente</th><th>Objeto</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Número</th><th>Cliente</th><th>Objeto</th><th>Início</th><th>Fim</th><th>Status</th><th></th></tr></thead><tbody>${
       allContratos.map(c => `<tr>
         <td class="frota">${c.numero}</td>
         <td>${c.clientes?.razao_social||'—'}</td>
@@ -1009,6 +1017,10 @@ async function carregarContratos() {
         <td>${c.data_inicio||'—'}</td>
         <td>${c.data_fim||'—'}</td>
         <td><span class="badge ${badgeStatus[c.status]||'badge-D'}">${c.status}</span></td>
+        <td style="white-space:nowrap;">
+          <button class="btn" style="padding:4px 8px;font-size:13px;" onclick="editarContrato('${c.id}')" title="Editar">✏️</button>
+          <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3);margin-left:4px;" onclick="deletarContrato('${c.id}','${c.numero}')" title="Excluir">🗑️</button>
+        </td>
       </tr>`).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhum contrato cadastrado</div>';
@@ -1054,7 +1066,118 @@ function popularSelectEquipamentos() {
   ['mv-equip','ct-equip'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+// ============================================================
+// DELETAR E EDITAR
+// ============================================================
+async function deletarEquipamento(id, frota) {
+  if (!confirm(`Deseja excluir o equipamento ${frota}? Esta ação não pode ser desfeita.`)) return;
+  const { error } = await db.from('equipamentos').delete().eq('id', id);
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Equipamento excluído!');
+  await carregarEquipamentos();
+}
+
+async function editarEquipamento(id) {
+  const equip = allEquipamentos.find(e => e.id === id);
+  if (!equip) return;
+  const obs = (equip.observacoes || '').split('·').map(p => p.trim());
+  document.getElementById('eq-frota').value = equip.frota || '';
+  document.getElementById('eq-desc').value = equip.equipamento || '';
+  document.getElementById('eq-tipo').value = equip.tipo || '';
+  document.getElementById('eq-comb').value = equip.combustivel || '';
+  document.getElementById('eq-cap').value = obs[0] || '';
+  document.getElementById('eq-ano').value = obs[1] || '';
+  document.getElementById('eq-origem').value = equip.origem || 'Próprio';
+  document.getElementById('eq-fornecedor').value = obs[2] || '';
+  openModal('modal-equip');
+  document.querySelector('#modal-equip .modal-title').textContent = 'Editar Equipamento';
+  document.querySelector('#modal-equip .btn-primary').onclick = async () => {
+    const { error } = await db.from('equipamentos').update({
+      frota: document.getElementById('eq-frota').value.trim(),
+      equipamento: document.getElementById('eq-desc').value,
+      tipo: document.getElementById('eq-tipo').value,
+      combustivel: document.getElementById('eq-comb').value,
+      origem: document.getElementById('eq-origem').value,
+      observacoes: [document.getElementById('eq-cap').value, document.getElementById('eq-ano').value, document.getElementById('eq-fornecedor').value].filter(Boolean).join(' · ')
+    }).eq('id', id);
+    if (error) return showToast('Erro: ' + error.message, true);
+    closeModal('modal-equip');
+    showToast('Equipamento atualizado!');
+    document.querySelector('#modal-equip .modal-title').textContent = 'Novo Equipamento';
+    document.querySelector('#modal-equip .btn-primary').onclick = salvarEquipamento;
+    await carregarEquipamentos();
+  };
+}
+
+async function deletarCliente(id, nome) {
+  if (!confirm(`Deseja excluir o cliente ${nome}?`)) return;
+  const { error } = await db.from('clientes').delete().eq('id', id);
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Cliente excluído!');
+  await carregarClientes();
+}
+
+async function editarCliente(id) {
+  const c = allClientes.find(c => c.id === id);
+  if (!c) return;
+  document.getElementById('cl-nome').value = c.razao_social || '';
+  document.getElementById('cl-cnpj').value = c.cnpj || '';
+  document.getElementById('cl-setor').value = c.setor || '';
+  document.getElementById('cl-uf').value = c.uf || '';
+  openModal('modal-cliente');
+  document.querySelector('#modal-cliente .modal-title').textContent = 'Editar Cliente';
+  document.querySelector('#modal-cliente .btn-primary').onclick = async () => {
+    const { error } = await db.from('clientes').update({
+      razao_social: document.getElementById('cl-nome').value.trim(),
+      cnpj: document.getElementById('cl-cnpj').value,
+      setor: document.getElementById('cl-setor').value,
+      uf: document.getElementById('cl-uf').value
+    }).eq('id', id);
+    if (error) return showToast('Erro: ' + error.message, true);
+    closeModal('modal-cliente');
+    showToast('Cliente atualizado!');
+    document.querySelector('#modal-cliente .modal-title').textContent = 'Novo Cliente';
+    document.querySelector('#modal-cliente .btn-primary').onclick = salvarCliente;
+    await carregarClientes();
+  };
+}
+
+async function deletarContrato(id, numero) {
+  if (!confirm(`Deseja excluir o contrato ${numero}?`)) return;
+  const { error } = await db.from('contratos').delete().eq('id', id);
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Contrato excluído!');
+  await carregarContratos();
+}
+
+async function editarContrato(id) {
+  const c = allContratos.find(c => c.id === id);
+  if (!c) return;
+  document.getElementById('cn-num').value = c.numero || '';
+  document.getElementById('cn-cliente').value = c.cliente_id || '';
+  document.getElementById('cn-objeto').value = c.objeto || '';
+  document.getElementById('cn-ini').value = c.data_inicio || '';
+  document.getElementById('cn-fim').value = c.data_fim || '';
+  document.getElementById('cn-status').value = c.status || 'Ativo';
+  openModal('modal-contrato');
+  document.querySelector('#modal-contrato .modal-title').textContent = 'Editar Contrato';
+  document.querySelector('#modal-contrato .btn-primary').onclick = async () => {
+    const { error } = await db.from('contratos').update({
+      numero: document.getElementById('cn-num').value.trim(),
+      cliente_id: document.getElementById('cn-cliente').value,
+      objeto: document.getElementById('cn-objeto').value,
+      data_inicio: document.getElementById('cn-ini').value || null,
+      data_fim: document.getElementById('cn-fim').value || null,
+      status: document.getElementById('cn-status').value
+    }).eq('id', id);
+    if (error) return showToast('Erro: ' + error.message, true);
+    closeModal('modal-contrato');
+    showToast('Contrato atualizado!');
+    document.querySelector('#modal-contrato .modal-title').textContent = 'Novo Contrato';
+    document.querySelector('#modal-contrato .btn-primary').onclick = salvarContrato;
+    await carregarContratos();
+  };
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
@@ -1070,4 +1193,3 @@ function showToast(msg, isError = false) {
 </script>
 </body>
 </html>
-
