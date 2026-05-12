@@ -306,11 +306,13 @@ textarea.form-input { resize: vertical; min-height: 70px; }
     <div class="view" id="v-movimentacao">
       <div class="table-wrap">
         <div class="table-header">
-          <div class="table-title">Movimentações</div>
+          <div class="table-title">Movimentações <span class="table-count" id="mov-count"></span></div>
           <button class="btn btn-primary" onclick="openModal('modal-mov')">+ Registrar Movimentação</button>
         </div>
-        <div class="filters" style="padding:12px 16px;border-bottom:1px solid var(--border);">
-          <input class="form-input" type="date" id="filter-mov-data" onchange="carregarMovimentacoes()" />
+        <div class="filters" style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+          <input class="form-input" type="date" id="filter-mov-data" onchange="carregarMovimentacoes()" style="flex:0 0 auto;width:180px;" />
+          <div id="mov-resumo" style="font-size:13px;color:var(--muted);"></div>
+        </div>
         </div>
         <div id="mov-table-body"><div class="loading">Carregando...</div></div>
       </div>
@@ -815,6 +817,23 @@ async function carregarMovimentacoes() {
   if (data) q = q.eq('data', data);
   const { data: movs } = await q.limit(50);
   const badgeClass = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
+
+  const total = movs ? movs.length : 0;
+  const countEl = document.getElementById('mov-count');
+  if (countEl) countEl.textContent = total + ' registros';
+  const resumoEl = document.getElementById('mov-resumo');
+  if (resumoEl) {
+    const totalEquip = allEquipamentos.length;
+    if (total === 0) {
+      resumoEl.innerHTML = '<span style="color:var(--red);">⚠️ Nenhum lançamento hoje ainda</span>';
+    } else {
+      const cor = total >= totalEquip ? 'var(--green)' : 'var(--amber)';
+      const icone = total >= totalEquip ? '✅' : '⚠️';
+      const msg = total >= totalEquip ? 'Todos lançados!' : 'Verifique os pendentes!';
+      resumoEl.innerHTML = `<span style="color:${cor};font-weight:600;">${icone} ${total} de ${totalEquip} equipamentos lançados</span> — ${msg}`;
+    }
+  }
+
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
     `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Status</th><th>Cliente</th><th>Hor. Ini</th><th>Hor. Fim</th><th>Operador</th></tr></thead><tbody>${
       movs.map(m => `<tr>
