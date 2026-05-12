@@ -394,30 +394,53 @@ textarea.form-input { resize: vertical; min-height: 70px; }
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Novo Equipamento</div><button class="modal-close" onclick="closeModal('modal-equip')">✕</button></div>
     <div class="form-grid">
-      <div class="form-group"><div class="form-label">Frota *</div><input class="form-input" id="eq-frota" placeholder="F-001" /></div>
+      <div class="form-group"><div class="form-label">Nº da Frota *</div><input class="form-input" id="eq-frota" placeholder="EP-K-121" /></div>
+      <div class="form-group"><div class="form-label">Equipamento *</div><input class="form-input" id="eq-desc" placeholder="Ex: Empilhadeira Patolada" /></div>
       <div class="form-group"><div class="form-label">Tipo *</div>
-        <select class="form-select" id="eq-tipo"><option>Escavadeira</option><option>Guindaste</option><option>Trator</option><option>Retroescavadeira</option><option>Motoniveladora</option><option>Compactador</option><option>Plataforma Elevatória</option><option>Caminhão</option><option>Outro</option></select>
-      </div>
-      <div class="form-group full"><div class="form-label">Descrição *</div><input class="form-input" id="eq-desc" placeholder="Ex: Escavadeira Hidráulica 20t" /></div>
-      <div class="form-group"><div class="form-label">Origem</div>
-        <select class="form-select" id="eq-origem"><option>Próprio</option><option>Terceiro</option><option>Arrendado</option></select>
+        <select class="form-select" id="eq-tipo">
+          <optgroup label="Empilhadeira">
+            <option>Empilhadeira Contrabalançada</option>
+            <option>Empilhadeira Patolada</option>
+            <option>Empilhadeira Cabinada</option>
+            <option>Empilhadeira Reach Truck</option>
+            <option>Empilhadeira Retrátil</option>
+          </optgroup>
+          <optgroup label="Caminhão">
+            <option>Caminhão Guindauto (Munck)</option>
+            <option>Caminhão Pipa</option>
+            <option>Caminhão Baú</option>
+            <option>Caminhão Plataforma</option>
+          </optgroup>
+          <optgroup label="Máquinas Pesadas">
+            <option>Escavadeira</option>
+            <option>Retroescavadeira</option>
+            <option>Guindaste</option>
+            <option>Trator</option>
+            <option>Motoniveladora</option>
+            <option>Compactador</option>
+            <option>Plataforma Elevatória</option>
+          </optgroup>
+          <optgroup label="Outros">
+            <option>Outro</option>
+          </optgroup>
+        </select>
       </div>
       <div class="form-group"><div class="form-label">Combustível</div>
-        <select class="form-select" id="eq-comb"><option>Diesel</option><option>Elétrico</option><option>GNV</option><option>Gasolina</option></select>
+        <select class="form-select" id="eq-comb"><option>Diesel</option><option>Elétrica</option><option>GLP</option><option>GNV</option><option>Gasolina</option></select>
       </div>
-      <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="eq-cliente"><option value="">— Nenhum —</option></select></div>
-      <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="eq-contrato"><option value="">— Nenhum —</option></select></div>
-      <div class="form-group"><div class="form-label">Região</div>
-        <select class="form-select" id="eq-regiao"><option>Norte</option><option>Nordeste</option><option>Centro-Oeste</option><option>Sudeste</option><option>Sul</option></select>
+      <div class="form-group"><div class="form-label">Capacidade</div><input class="form-input" id="eq-cap" placeholder="Ex: 2.5T, 48T" /></div>
+      <div class="form-group"><div class="form-label">Origem</div>
+        <select class="form-select" id="eq-origem"><option>Próprio</option><option>Locado</option><option>Terceiro</option><option>Arrendado</option></select>
       </div>
-      <div class="form-group"><div class="form-label">UF</div>
-        <select class="form-select" id="eq-uf"><option>AC</option><option>AL</option><option>AM</option><option>AP</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MG</option><option>MS</option><option>MT</option><option>PA</option><option>PB</option><option>PE</option><option>PI</option><option>PR</option><option>RJ</option><option>RN</option><option>RO</option><option>RR</option><option>RS</option><option>SC</option><option>SE</option><option>SP</option><option>TO</option></select>
-      </div>
-      <div class="form-group"><div class="form-label">Horímetro Inicial</div><input class="form-input" type="number" id="eq-hini" placeholder="0" /></div>
       <div class="form-group"><div class="form-label">Status Inicial</div>
         <select class="form-select" id="eq-status"><option value="D">D — Disponível</option><option value="A">A — Atuando</option><option value="P">P — Preventiva</option><option value="C">C — Corretiva</option><option value="IN">IN — Inativo</option></select>
       </div>
-      <div class="form-group full"><div class="form-label">Observações</div><textarea class="form-input" id="eq-obs" placeholder="Observações gerais..."></textarea></div>
+      <input type="hidden" id="eq-cliente" value="" />
+      <input type="hidden" id="eq-contrato" value="" />
+      <input type="hidden" id="eq-regiao" value="" />
+      <input type="hidden" id="eq-uf" value="" />
+      <input type="hidden" id="eq-hini" value="0" />
+      <input type="hidden" id="eq-obs" value="" />
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-equip')">Cancelar</button>
