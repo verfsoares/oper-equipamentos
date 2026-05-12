@@ -818,7 +818,7 @@ async function salvarEquipamento() {
 // ============================================================
 async function carregarMovimentacoes() {
   const data = document.getElementById('filter-mov-data').value;
-  let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento), clientes(razao_social)').order('criado_em', { ascending: false });
+  let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('criado_em', { ascending: false });
   if (data) q = q.eq('data', data);
   const { data: movs } = await q.limit(50);
   const badgeClass = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
@@ -840,16 +840,22 @@ async function carregarMovimentacoes() {
   }
 
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
-    `<table><thead><tr><th>Data</th><th>Equipamento</th><th>Status</th><th>Cliente</th><th>Hor. Ini</th><th>Hor. Fim</th><th>Operador</th></tr></thead><tbody>${
-      movs.map(m => `<tr>
-        <td>${m.data||'—'}</td>
-        <td>${m.equipamentos?.frota||'—'} · ${m.equipamentos?.equipamento||'—'}</td>
-        <td><span class="badge ${badgeClass(m.status)}">${m.status}</span></td>
-        <td>${m.clientes?.razao_social||'—'}</td>
-        <td>${m.horimetro_inicial||'—'}</td>
-        <td>${m.horimetro_final||'—'}</td>
-        <td>${m.usuario||'—'}</td>
-      </tr>`).join('')
+    `<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustível</th><th>Capacidade</th><th>Status</th><th>Cliente</th><th>Operador</th></tr></thead><tbody>${
+      movs.map(m => {
+        const obs = (m.equipamentos?.observacoes || '').split('·').map(p => p.trim());
+        const capacidade = obs[0] || '—';
+        return `<tr>
+          <td>${m.data||'—'}</td>
+          <td class="frota">${m.equipamentos?.frota||'—'}</td>
+          <td><strong>${m.equipamentos?.equipamento||'—'}</strong></td>
+          <td style="color:var(--muted);font-size:12px;">${m.equipamentos?.tipo||'—'}</td>
+          <td style="color:var(--muted);font-size:12px;">${m.equipamentos?.combustivel||'—'}</td>
+          <td style="color:var(--muted);font-size:12px;">${capacidade}</td>
+          <td><span class="badge ${badgeClass(m.status)}">${m.status}</span></td>
+          <td>${m.clientes?.razao_social||'—'}</td>
+          <td style="color:var(--muted);">${m.usuario||'—'}</td>
+        </tr>`;
+      }).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhuma movimentação encontrada</div>';
 }
