@@ -1178,6 +1178,7 @@ async function editarContrato(id) {
     await carregarContratos();
   };
 }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 document.querySelectorAll('.modal-overlay').forEach(o => {
