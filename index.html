@@ -840,7 +840,7 @@ async function carregarMovimentacoes() {
   }
 
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
-    `<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustível</th><th>Capacidade</th><th>Status</th><th>Cliente</th><th>Operador</th></tr></thead><tbody>${
+    `<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustível</th><th>Capacidade</th><th>Status</th><th>Cliente</th><th>Usuário</th></tr></thead><tbody>${
       movs.map(m => {
         const obs = (m.equipamentos?.observacoes || '').split('·').map(p => p.trim());
         const capacidade = obs[0] || '—';
