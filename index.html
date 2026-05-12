@@ -428,6 +428,21 @@ textarea.form-input { resize: vertical; min-height: 70px; }
       <div class="form-group"><div class="form-label">Origem</div>
         <select class="form-select" id="eq-origem"><option>Próprio</option><option>Terceiro</option></select>
       </div>
+      <div class="form-group"><div class="form-label">Fornecedor</div>
+        <select class="form-select" id="eq-fornecedor">
+          <option value="">— Nenhum —</option>
+          <option>VERTIC</option>
+          <option>TROPHEUS</option>
+          <option>BIGMAQ</option>
+          <option>COPRAL</option>
+          <option>VALE DO NÍQUEL</option>
+          <option>HORUS/INTEL</option>
+          <option>MOVIMINAS</option>
+          <option>SOLUTION</option>
+          <option>MERCOSAT</option>
+          <option>GOOL EMPILHADEIRAS</option>
+        </select>
+      </div>
       <input type="hidden" id="eq-status" value="D" />
       <input type="hidden" id="eq-cliente" value="" />
       <input type="hidden" id="eq-contrato" value="" />
@@ -713,16 +728,23 @@ function renderEquipamentos(list) {
   document.getElementById('equip-count').textContent = list.length + ' registros';
   const badgeClass = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
   document.getElementById('equip-table-body').innerHTML = list.length ?
-    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Combustível</th><th>Ano</th></tr></thead><tbody>${
-      list.map(e => `<tr>
+    `<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Fornecedor</th><th>Combustível</th><th>Ano</th></tr></thead><tbody>${
+      list.map(e => {
+        const obs = e.observacoes || '';
+        const parts = obs.split('·').map(p => p.trim());
+        const capacidade = parts[0] || '—';
+        const ano = parts[1] || '—';
+        const fornecedor = parts[2] || '—';
+        return `<tr>
         <td class="frota">${e.frota}</td>
         <td><strong>${e.equipamento}</strong></td>
         <td>${e.tipo||'—'}</td>
-        <td>${e.observacoes ? e.observacoes.split('·')[0].trim() : '—'}</td>
+        <td>${capacidade}</td>
         <td>${e.origem||'—'}</td>
+        <td>${e.origem === 'Terceiro' ? `<span style="color:var(--amber);font-weight:500;">${fornecedor}</span>` : '—'}</td>
         <td>${e.combustivel||'—'}</td>
-        <td>${e.observacoes ? (e.observacoes.split('·')[1]||'').trim() : '—'}</td>
-      </tr>`).join('')
+        <td>${ano}</td>
+      </tr>`;}).join('')
     }</tbody></table>` :
     '<div class="loading">Nenhum equipamento cadastrado</div>';
 }
@@ -753,7 +775,11 @@ async function salvarEquipamento() {
     horimetro_inicial: parseFloat(document.getElementById('eq-hini').value) || 0,
     horimetro_atual:   parseFloat(document.getElementById('eq-hini').value) || 0,
     status_atual: document.getElementById('eq-status').value,
-    observacoes: document.getElementById('eq-obs').value
+    observacoes: [
+      document.getElementById('eq-cap').value || '',
+      document.getElementById('eq-ano').value || '',
+      document.getElementById('eq-fornecedor').value || ''
+    ].filter(Boolean).join(' · ')
   });
   if (error) return showToast('Erro: ' + error.message, true);
   closeModal('modal-equip');
