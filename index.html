@@ -700,7 +700,7 @@ async function carregarDashboard() {
 
   // Custo mês
   const inicio = new Date(); inicio.setDate(1);
-  const { data: custos } = await db.from('custos').select('custo_total').gte('data', inicio.toISOString().split('T')[0]);
+  const { data: custos } = await db.from('custos').select('custo_total,frete,combustivel,pneus,pecas,servicos').gte('data', inicio.toISOString().split('T')[0]);
   const totalCusto = custos ? custos.reduce((s, c) => s + (c.custo_total || 0), 0) : 0;
   document.getElementById('kpi-custo').textContent = 'R$ ' + totalCusto.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
