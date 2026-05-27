@@ -693,10 +693,12 @@ async function carregarMovimentacoes() {
     }
   }
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
-    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Status</th><th>Cliente</th><th>Usuario</th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th></tr></thead><tbody>' +
     movs.map(m => {
       const obs = (m.equipamentos?.observacoes || '').split(' . ').map(p => p.trim());
-      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[0]||'-') + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td></tr>';
+      const cap = obs[0] || '-';
+      const ano = obs[1] || '-';
+      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + cap + '</td><td style="color:var(--muted);font-size:12px">' + ano + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td></tr>';
     }).join('') + '</tbody></table>' :
     '<div class="loading">Nenhuma movimentacao encontrada</div>';
 }
