@@ -149,6 +149,7 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
   <div class="nav-item" onclick="nav('custos',this)"><span class="nav-icon">&#128176;</span><span>Custo por Equipamento</span></div>
+  <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Inspecao de Equipamento</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
@@ -250,6 +251,21 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
+    <!-- INSPECAO -->
+    <div class="view" id="v-inspecao">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Inspecoes de Equipamentos</div>
+          <button class="btn btn-primary" onclick="openModal('modal-inspecao')">+ Nova Inspecao</button>
+        </div>
+        <div class="filters" style="padding:12px 16px;border-bottom:1px solid var(--border)">
+          <select class="form-select" id="filter-insp-equip" onchange="carregarInspecoes()"><option value="">Todos os equipamentos</option></select>
+          <select class="form-select" id="filter-insp-cliente" onchange="carregarInspecoes()"><option value="">Todos os clientes</option></select>
+        </div>
+        <div id="inspecao-table-body"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
     <!-- HISTORICO -->
     <div class="view" id="v-historico">
       <div class="filters">
@@ -295,6 +311,63 @@ textarea.form-input{resize:vertical;min-height:70px}
 
   </div>
 </div>
+</div>
+
+<!-- MODAL INSPECAO -->
+<div class="modal-overlay" id="modal-inspecao">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><div class="modal-title" id="modal-inspecao-title">Nova Inspecao</div><button class="modal-close" onclick="closeModal('modal-inspecao')">x</button></div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Data da Inspecao *</div><input class="form-input" type="date" id="insp-data" /></div>
+      <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="insp-equip"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="insp-cliente"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">Tipo de Inspecao</div>
+        <select class="form-select" id="insp-tipo">
+          <option>Checklist Operacional</option>
+          <option>Inspecao de Seguranca</option>
+          <option>Manutencao Preventiva</option>
+          <option>Manutencao Corretiva</option>
+          <option>Vistoria de Entrega</option>
+          <option>Vistoria de Devolucao</option>
+          <option>Inspecao Fotografica</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Status do Equipamento</div>
+        <select class="form-select" id="insp-status-equip">
+          <option>Bom estado</option>
+          <option>Estado regular</option>
+          <option>Necessita manutencao</option>
+          <option>Inoperante</option>
+        </select>
+      </div>
+      <div class="form-group full"><div class="form-label">Descricao / Observacoes</div><textarea class="form-input" id="insp-desc" placeholder="Descricao da inspecao, itens verificados..."></textarea></div>
+      <div class="form-group full">
+        <div class="form-label">Anexar Arquivos (Fotos, PDF, Word)</div>
+        <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2)" onclick="document.getElementById('insp-files').click()">
+          <div style="font-size:24px;margin-bottom:8px">&#128206;</div>
+          <div style="font-size:13px;color:var(--muted)">Clique para selecionar arquivos</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Fotos, PDF, Word, Excel — multiplos arquivos</div>
+        </div>
+        <input type="file" id="insp-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mostrarArquivosSelecionados()" />
+        <div id="insp-files-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+    <input type="hidden" id="insp-id" value="" />
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-inspecao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarInspecao()">Salvar Inspecao</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER INSPECAO -->
+<div class="modal-overlay" id="modal-ver-inspecao">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header"><div class="modal-title">Detalhes da Inspecao</div><button class="modal-close" onclick="closeModal('modal-ver-inspecao')">x</button></div>
+    <div id="ver-inspecao-content"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modal-ver-inspecao')">Fechar</button></div>
+  </div>
 </div>
 
 <!-- MODAL EQUIPAMENTO -->
@@ -498,6 +571,7 @@ const pageMap = {
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   custos:       { title: 'Custo por Equipamento', loader: carregarCustos },
+  inspecao:     { title: 'Inspecao de Equipamento', loader: carregarInspecoes },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   contratos:    { title: 'Contratos', loader: carregarContratos },
@@ -964,6 +1038,129 @@ function carregarUsuarios() {
     Object.entries(USERS).map(([email, u]) =>
       '<tr><td><strong>' + u.nome + '</strong></td><td>' + email + '</td><td><span class="badge" style="' + (badgePerfil[u.perfil]||'') + '">' + u.perfil + '</span></td></tr>'
     ).join('') + '</tbody></table>';
+}
+
+// ============================================================
+// INSPECAO
+// ============================================================
+async function carregarInspecoes() {
+  const selEquip = document.getElementById('filter-insp-equip');
+  const selCli = document.getElementById('filter-insp-cliente');
+  if (selEquip && selEquip.options.length === 1) {
+    allEquipamentos.forEach(e => { const o = document.createElement('option'); o.value = e.id; o.textContent = e.frota + ' . ' + e.equipamento; selEquip.appendChild(o); });
+  }
+  if (selCli && selCli.options.length === 1) {
+    allClientes.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.razao_social; selCli.appendChild(o); });
+  }
+  const ie = document.getElementById('insp-equip');
+  if (ie) ie.innerHTML = '<option value="">Selecione...</option>' + allEquipamentos.map(e => '<option value="' + e.id + '">' + e.frota + ' . ' + e.equipamento + '</option>').join('');
+  const ic = document.getElementById('insp-cliente');
+  if (ic) ic.innerHTML = '<option value="">- Nenhum -</option>' + allClientes.map(c => '<option value="' + c.id + '">' + c.razao_social + '</option>').join('');
+  let q = db.from('inspecoes').select('*, equipamentos(frota,equipamento), clientes(razao_social), inspecao_arquivos(id,nome_arquivo,url_arquivo,tipo_arquivo)').order('data_inspecao', { ascending: false });
+  const fEquip = document.getElementById('filter-insp-equip')?.value;
+  const fCli = document.getElementById('filter-insp-cliente')?.value;
+  if (fEquip) q = q.eq('equipamento_id', fEquip);
+  if (fCli) q = q.eq('cliente_id', fCli);
+  const { data: insp } = await q.limit(50);
+  const tipoIcon = { 'Checklist Operacional':'OK', 'Inspecao de Seguranca':'SEG', 'Manutencao Preventiva':'PREV', 'Manutencao Corretiva':'COR', 'Vistoria de Entrega':'ENT', 'Vistoria de Devolucao':'DEV', 'Inspecao Fotografica':'FOTO', 'Outro':'OUT' };
+  const statusColor = { 'Bom estado':'var(--green)', 'Estado regular':'var(--amber)', 'Necessita manutencao':'var(--red)', 'Inoperante':'#64748b' };
+  document.getElementById('inspecao-table-body').innerHTML = insp && insp.length ?
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Cliente</th><th>Tipo</th><th>Status Equip.</th><th>Arquivos</th><th>Usuario</th><th></th></tr></thead><tbody>' +
+    insp.map(i => {
+      const nArq = i.inspecao_arquivos ? i.inspecao_arquivos.length : 0;
+      const cor = statusColor[i.status_equipamento] || 'var(--muted)';
+      return '<tr><td>' + (i.data_inspecao||'-') + '</td><td><strong>' + (i.equipamentos?.frota||'-') + '</strong> . ' + (i.equipamentos?.equipamento||'-') + '</td><td>' + (i.clientes?.razao_social||'-') + '</td><td>' + (i.tipo_inspecao||'-') + '</td><td><span style="color:' + cor + ';font-weight:500">' + (i.status_equipamento||'-') + '</span></td><td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">' + nArq + ' arquivo(s)</span></td><td style="color:var(--muted)">' + (i.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verInspecao(\'' + i.id + '\')">Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarInspecao(\'' + i.id + '\')">X</button></td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="loading">Nenhuma inspecao registrada</div>';
+}
+
+function mostrarArquivosSelecionados() {
+  const files = document.getElementById('insp-files').files;
+  const preview = document.getElementById('insp-files-preview');
+  preview.innerHTML = '';
+  Array.from(files).forEach(f => {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:6px';
+    div.textContent = f.name;
+    preview.appendChild(div);
+  });
+}
+
+async function salvarInspecao() {
+  const equipId = document.getElementById('insp-equip').value;
+  const data = document.getElementById('insp-data').value;
+  if (!equipId || !data) return showToast('Preencha os campos obrigatorios', true);
+  const { data: insp, error } = await db.from('inspecoes').insert({
+    equipamento_id: equipId,
+    cliente_id: document.getElementById('insp-cliente').value || null,
+    data_inspecao: data,
+    tipo_inspecao: document.getElementById('insp-tipo').value,
+    status_equipamento: document.getElementById('insp-status-equip').value,
+    descricao: document.getElementById('insp-desc').value,
+    usuario: currentUser?.nome || '-'
+  }).select().single();
+  if (error) return showToast('Erro: ' + error.message, true);
+  const files = document.getElementById('insp-files').files;
+  if (files.length > 0) {
+    for (const file of Array.from(files)) {
+      const path = insp.id + '/' + Date.now() + '_' + file.name;
+      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file);
+      if (!upErr) {
+        const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+        await db.from('inspecao_arquivos').insert({ inspecao_id: insp.id, nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type });
+      }
+    }
+  }
+  closeModal('modal-inspecao');
+  document.getElementById('insp-files-preview').innerHTML = '';
+  document.getElementById('insp-files').value = '';
+  showToast('Inspecao salva com ' + files.length + ' arquivo(s)!');
+  await carregarInspecoes();
+}
+
+async function verInspecao(id) {
+  const { data: i } = await db.from('inspecoes').select('*, equipamentos(frota,equipamento), clientes(razao_social), inspecao_arquivos(*)').eq('id', id).single();
+  if (!i) return;
+  const arquivos = i.inspecao_arquivos || [];
+  const isImg = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const statusColor = { 'Bom estado':'var(--green)', 'Estado regular':'var(--amber)', 'Necessita manutencao':'var(--red)', 'Inoperante':'#64748b' };
+  const cor = statusColor[i.status_equipamento] || 'var(--muted)';
+  document.getElementById('ver-inspecao-content').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">EQUIPAMENTO</div><div style="font-weight:600">' + (i.equipamentos?.frota||'-') + ' . ' + (i.equipamentos?.equipamento||'-') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CLIENTE</div><div style="font-weight:600">' + (i.clientes?.razao_social||'-') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">' + (i.data_inspecao||'-') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">' + (i.tipo_inspecao||'-') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">STATUS DO EQUIPAMENTO</div><div style="font-weight:600;color:' + cor + '">' + (i.status_equipamento||'-') + '</div></div>' +
+    (i.descricao ? '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DESCRICAO</div><div style="font-size:13px">' + i.descricao + '</div></div>' : '') +
+    '</div>' +
+    '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos Anexados (' + arquivos.length + ')</div>' +
+    (arquivos.length > 0 ?
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
+      arquivos.map(a =>
+        '<a href="' + a.url_arquivo + '" target="_blank" style="text-decoration:none">' +
+        (isImg(a.url_arquivo) ?
+          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="' + a.url_arquivo + '" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.nome_arquivo + '</div></div>' :
+          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:32px;margin-bottom:6px">' + (a.nome_arquivo?.endsWith('.pdf') ? 'PDF' : 'DOC') + '</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir arquivo</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">' + a.nome_arquivo + '</div></div>'
+        ) + '</a>'
+      ).join('') + '</div>' :
+      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>'
+    );
+  openModal('modal-ver-inspecao');
+}
+
+async function deletarInspecao(id) {
+  if (!confirm('Deseja excluir esta inspecao e todos os arquivos?')) return;
+  const { data: arqs } = await db.from('inspecao_arquivos').select('url_arquivo').eq('inspecao_id', id);
+  if (arqs) {
+    for (const a of arqs) {
+      const parts = a.url_arquivo.split('/inspecoes/');
+      if (parts[1]) await db.storage.from('inspecoes').remove([decodeURIComponent(parts[1])]);
+    }
+  }
+  await db.from('inspecoes').delete().eq('id', id);
+  showToast('Inspecao excluida!');
+  await carregarInspecoes();
 }
 
 function popularSelectEquipamentos() {
