@@ -154,6 +154,8 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
   <div class="nav-item" onclick="nav('contratos',this)"><span class="nav-icon">&#128196;</span><span>Contratos</span></div>
+  <div class="nav-section">Financeiro</div>
+  <div class="nav-item" onclick="nav('dre',this)"><span class="nav-icon">&#128200;</span><span>Resultado por Equipamento</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item" onclick="nav('usuarios',this)"><span class="nav-icon">&#128101;</span><span>Usuarios</span></div>
   <div class="user-footer">
@@ -396,6 +398,33 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
+    <!-- DRE -->
+    <div class="view" id="v-dre">
+      <!-- FILTROS -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select class="form-select" style="width:200px" id="dre-filter-equip" onchange="carregarDRE()"><option value="">Todos os equipamentos</option></select>
+        <select class="form-select" style="width:180px" id="dre-filter-cliente" onchange="carregarDRE()"><option value="">Todos os clientes</option></select>
+        <select class="form-select" style="width:140px" id="dre-filter-mes" onchange="carregarDRE()">
+          <option value="">Todos os meses</option>
+          <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Marco</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <select class="form-select" style="width:120px" id="dre-filter-ano" onchange="carregarDRE()">
+          <option value="">Todos os anos</option>
+          <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('modal-dre')">+ Lancar Resultado</button>
+      </div>
+
+      <!-- DRE CONSOLIDADA -->
+      <div id="dre-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
+
+      <!-- LANCAMENTOS -->
+      <div class="table-wrap" style="margin-top:16px">
+        <div class="table-header"><div class="table-title">Lancamentos <span class="table-count" id="dre-count"></span></div></div>
+        <div id="dre-table-body"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
       <div class="table-wrap">
@@ -462,6 +491,88 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="modal-header"><div class="modal-title">Detalhes da Inspecao</div><button class="modal-close" onclick="closeModal('modal-ver-inspecao')">x</button></div>
     <div id="ver-inspecao-content"></div>
     <div class="modal-footer"><button class="btn" onclick="closeModal('modal-ver-inspecao')">Fechar</button></div>
+  </div>
+</div>
+
+<!-- MODAL DRE -->
+<div class="modal-overlay" id="modal-dre">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header"><div class="modal-title" id="modal-dre-title">Lancar Resultado</div><button class="modal-close" onclick="fecharDRE()">x</button></div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Mes de Referencia *</div><input class="form-input" type="month" id="dre-mes-ref" /></div>
+      <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="dre-equip"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="dre-cliente"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="dre-contrato"><option value="">- Nenhum -</option></select></div>
+    </div>
+
+    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">RECEITAS</div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Receita Recorrente (R$)</div><input class="form-input" type="number" id="dre-rec-rec" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Receita Novos Negocios (R$)</div><input class="form-input" type="number" id="dre-rec-nov" placeholder="0" oninput="calcDRE()" /></div>
+    </div>
+
+    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">IMPOSTOS S/ RECEITA</div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">PIS 1,65% (R$)</div><input class="form-input" type="number" id="dre-pis" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">COFINS 7,6% (R$)</div><input class="form-input" type="number" id="dre-cofins" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">ISS 5% (R$)</div><input class="form-input" type="number" id="dre-iss" placeholder="0" oninput="calcDRE()" /></div>
+    </div>
+
+    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">MAO DE OBRA</div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Salarios (R$)</div><input class="form-input" type="number" id="dre-sal" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Periculosidade (R$)</div><input class="form-input" type="number" id="dre-peric" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Bonus (R$)</div><input class="form-input" type="number" id="dre-bonus" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Encargos Sociais (R$)</div><input class="form-input" type="number" id="dre-enc" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Alimentacao (R$)</div><input class="form-input" type="number" id="dre-alim" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Transporte (R$)</div><input class="form-input" type="number" id="dre-transp" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Auxilio Moradia (R$)</div><input class="form-input" type="number" id="dre-moradia" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">PJ Alocado (R$)</div><input class="form-input" type="number" id="dre-pj" placeholder="0" oninput="calcDRE()" /></div>
+    </div>
+
+    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">CUSTOS OPERACIONAIS</div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Manutencao - Pecas + Servicos (R$)</div><input class="form-input" type="number" id="dre-manut" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Material de Borracharia (R$)</div><input class="form-input" type="number" id="dre-borra" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Combustiveis / Lubrificantes (R$)</div><input class="form-input" type="number" id="dre-comb" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Outros Insumos Diretos (R$)</div><input class="form-input" type="number" id="dre-insumos" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Alugueis Maq/Equip/Veics (R$)</div><input class="form-input" type="number" id="dre-alug" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Provisionamento Preventivas (R$)</div><input class="form-input" type="number" id="dre-prov" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Depreciacao Equipamentos (R$)</div><input class="form-input" type="number" id="dre-depr" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Uniformes / EPIs (R$)</div><input class="form-input" type="number" id="dre-epis" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Servicos Terceiros (R$)</div><input class="form-input" type="number" id="dre-serv3" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Fretes (R$)</div><input class="form-input" type="number" id="dre-frete" placeholder="0" oninput="calcDRE()" /></div>
+    </div>
+
+    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">CUSTOS ADMINISTRATIVOS</div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Mao de Obra Apoio GMP 3% (R$)</div><input class="form-input" type="number" id="dre-adm-mob" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Consultoria / Serv.Terc (R$)</div><input class="form-input" type="number" id="dre-adm-cons" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Passagens Aereas (R$)</div><input class="form-input" type="number" id="dre-adm-pass" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Hoteis / Diarias / Translados (R$)</div><input class="form-input" type="number" id="dre-adm-hotel" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Cursos / Seminarios / Mentorias (R$)</div><input class="form-input" type="number" id="dre-adm-curso" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Brindes / Marketing (R$)</div><input class="form-input" type="number" id="dre-adm-brindes" placeholder="0" oninput="calcDRE()" /></div>
+    </div>
+
+    <!-- PREVIEW RESULTADO -->
+    <div style="margin-top:20px;background:var(--surface2);border-radius:12px;padding:16px" id="dre-preview">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Preview do Resultado</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Receita Bruta</div><div style="font-size:16px;font-weight:700;color:var(--green)" id="prev-rec">R$ 0</div></div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Receita Liquida</div><div style="font-size:16px;font-weight:700;color:var(--accent2)" id="prev-liq">R$ 0</div></div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Margem Contribuicao</div><div style="font-size:16px;font-weight:700" id="prev-mc">R$ 0</div></div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">% Margem Contrib.</div><div style="font-size:16px;font-weight:700" id="prev-mc-pct">0%</div></div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Resultado GMP</div><div style="font-size:16px;font-weight:700" id="prev-gmp">R$ 0</div></div>
+        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">% Margem GMP</div><div style="font-size:16px;font-weight:700" id="prev-gmp-pct">0%</div></div>
+      </div>
+    </div>
+
+    <div class="form-group full" style="margin-top:14px"><div class="form-label">Observacoes</div><textarea class="form-input" id="dre-obs" placeholder="Observacoes do periodo..."></textarea></div>
+    <input type="hidden" id="dre-id" value="" />
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharDRE()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarDRE()">Salvar Resultado</button>
+    </div>
   </div>
 </div>
 
@@ -670,6 +781,7 @@ const pageMap = {
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   contratos:    { title: 'Contratos', loader: carregarContratos },
+  dre:          { title: 'Resultado por Equipamento', loader: carregarDRE },
   usuarios:     { title: 'Usuarios', loader: carregarUsuarios }
 };
 
@@ -1448,6 +1560,252 @@ async function deletarInspecao(id) {
   await db.from('inspecoes').delete().eq('id', id);
   showToast('Inspecao excluida!');
   await carregarInspecoes();
+}
+
+// ============================================================
+// DRE - RESULTADO POR EQUIPAMENTO
+// ============================================================
+function v(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+function fmt(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function pct(val, base) { return base > 0 ? (val/base*100).toFixed(1) + '%' : '0%'; }
+
+function calcDRE() {
+  const recBruta = v('dre-rec-rec') + v('dre-rec-nov');
+  const impostos = v('dre-pis') + v('dre-cofins') + v('dre-iss');
+  const recLiq = recBruta - impostos;
+  const maoObra = v('dre-sal') + v('dre-peric') + v('dre-bonus') + v('dre-enc') + v('dre-alim') + v('dre-transp') + v('dre-moradia') + v('dre-pj');
+  const custOp = v('dre-manut') + v('dre-borra') + v('dre-comb') + v('dre-insumos') + v('dre-alug') + v('dre-prov') + v('dre-depr') + v('dre-epis') + v('dre-serv3') + v('dre-frete');
+  const mc = recLiq - maoObra - custOp;
+  const custAdm = v('dre-adm-mob') + v('dre-adm-cons') + v('dre-adm-pass') + v('dre-adm-hotel') + v('dre-adm-curso') + v('dre-adm-brindes');
+  const resGMP = mc - custAdm;
+
+  const corMC = mc >= 0 ? 'var(--green)' : 'var(--red)';
+  const corGMP = resGMP >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const el = (id, val, cor) => { const e = document.getElementById(id); if(e){e.textContent=val; if(cor)e.style.color=cor;} };
+  el('prev-rec', fmt(recBruta), 'var(--green)');
+  el('prev-liq', fmt(recLiq), 'var(--accent2)');
+  el('prev-mc', fmt(mc), corMC);
+  el('prev-mc-pct', pct(mc, recLiq), corMC);
+  el('prev-gmp', fmt(resGMP), corGMP);
+  el('prev-gmp-pct', pct(resGMP, recLiq), corGMP);
+}
+
+async function carregarDRE() {
+  // Popular filtros
+  const seEquip = document.getElementById('dre-filter-equip');
+  if (seEquip && seEquip.options.length === 1) {
+    allEquipamentos.forEach(e => { const o = document.createElement('option'); o.value=e.id; o.textContent=e.frota+' . '+e.equipamento; seEquip.appendChild(o); });
+  }
+  const seCli = document.getElementById('dre-filter-cliente');
+  if (seCli && seCli.options.length === 1) {
+    allClientes.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=c.razao_social; seCli.appendChild(o); });
+  }
+  // Popular selects do modal
+  const de = document.getElementById('dre-equip');
+  if (de) de.innerHTML = '<option value="">Selecione...</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' . '+e.equipamento+'</option>').join('');
+  const dc = document.getElementById('dre-cliente');
+  if (dc) dc.innerHTML = '<option value="">- Nenhum -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+  const dct = document.getElementById('dre-contrato');
+  if (dct) dct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
+
+  const fEquip = document.getElementById('dre-filter-equip')?.value;
+  const fCli = document.getElementById('dre-filter-cliente')?.value;
+  const fMes = document.getElementById('dre-filter-mes')?.value;
+  const fAno = document.getElementById('dre-filter-ano')?.value;
+
+  let q = db.from('resultado').select('*, equipamentos(frota,equipamento), clientes(razao_social), contratos(numero)').order('mes_referencia', { ascending: false });
+  if (fEquip) q = q.eq('equipamento_id', fEquip);
+  if (fCli) q = q.eq('cliente_id', fCli);
+  if (fAno && fMes) q = q.gte('mes_referencia', fAno+'-'+fMes+'-01').lte('mes_referencia', fAno+'-'+fMes+'-31');
+  else if (fAno) q = q.gte('mes_referencia', fAno+'-01-01').lte('mes_referencia', fAno+'-12-31');
+  else if (fMes) { const y = new Date().getFullYear(); q = q.gte('mes_referencia', y+'-'+fMes+'-01').lte('mes_referencia', y+'-'+fMes+'-31'); }
+
+  const { data: rows } = await q.limit(100);
+  document.getElementById('dre-count').textContent = (rows?.length||0) + ' lancamentos';
+
+  if (!rows || !rows.length) {
+    document.getElementById('dre-content').innerHTML = '<div class="loading">Nenhum resultado lancado para o filtro selecionado</div>';
+    document.getElementById('dre-table-body').innerHTML = '<div class="loading">Nenhum lancamento</div>';
+    return;
+  }
+
+  // Consolida totais
+  const tot = r => ({
+    recBruta: (r.receita_recorrente||0)+(r.receita_novos_negocios||0),
+    impostos: (r.pis||0)+(r.cofins||0)+(r.iss||0),
+    maoObra: (r.salarios||0)+(r.periculosidade||0)+(r.bonus||0)+(r.encargos_sociais||0)+(r.alimentacao||0)+(r.transporte||0)+(r.auxilio_moradia||0)+(r.pj_alocado||0),
+    custOp: (r.manutencao||0)+(r.borracharia||0)+(r.combustiveis||0)+(r.outros_insumos||0)+(r.aluguel_maquinas||0)+(r.provisionamento_preventivas||0)+(r.depreciacao||0)+(r.uniformes_epis||0)+(r.servicos_terceiros||0)+(r.fretes||0),
+    custAdm: (r.mao_obra_apoio||0)+(r.consultoria||0)+(r.passagens_aereas||0)+(r.hoteis_diarias||0)+(r.cursos||0)+(r.brindes||0)
+  });
+
+  // Soma consolidada
+  let totRec=0, totImp=0, totMO=0, totCO=0, totCA=0;
+  rows.forEach(r => { const t=tot(r); totRec+=t.recBruta; totImp+=t.impostos; totMO+=t.maoObra; totCO+=t.custOp; totCA+=t.custAdm; });
+  const totLiq = totRec - totImp;
+  const totMC = totLiq - totMO - totCO;
+  const totGMP = totMC - totCA;
+  const corMC = totMC>=0?'var(--green)':'var(--red)';
+  const corGMP = totGMP>=0?'var(--green)':'var(--red)';
+
+  // DRE Visual
+  const linha = (label, val, cor, bold, indent) =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;'+(bold?'font-weight:700;background:var(--surface2);border-radius:6px;':'')+(indent?'padding-left:24px;':'')+'">' +
+    '<span style="font-size:13px;color:'+(cor||'var(--text)')+'">'+(indent?'&nbsp;&nbsp;&nbsp;':'')+label+'</span>' +
+    '<span style="font-size:13px;font-weight:600;color:'+(cor||'var(--text)')+'">'+fmt(val)+'</span></div>';
+
+  const secao = (label, cor) =>
+    '<div style="padding:8px 12px;margin-top:8px;background:rgba('+( cor==='green'?'16,185,129':cor==='red'?'239,68,68':cor==='amber'?'245,158,11':'139,92,246' )+',0.1);border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--'+cor+')">'+label+'</div>';
+
+  document.getElementById('dre-content').innerHTML =
+    '<div class="form-card">' +
+    '<div class="form-card-title">DRE Consolidada</div>' +
+    secao('Receita Bruta', 'green') +
+    linha('Receita Recorrente', rows.reduce((s,r)=>s+(r.receita_recorrente||0),0), null, false, true) +
+    linha('Receita Novos Negocios', rows.reduce((s,r)=>s+(r.receita_novos_negocios||0),0), null, false, true) +
+    linha('TOTAL RECEITA BRUTA', totRec, 'var(--green)', true) +
+    secao('(-) Impostos s/ Receita', 'red') +
+    linha('PIS 1,65%', rows.reduce((s,r)=>s+(r.pis||0),0), 'var(--red)', false, true) +
+    linha('COFINS 7,6%', rows.reduce((s,r)=>s+(r.cofins||0),0), 'var(--red)', false, true) +
+    linha('ISS 5%', rows.reduce((s,r)=>s+(r.iss||0),0), 'var(--red)', false, true) +
+    linha('RECEITA LIQUIDA', totLiq, 'var(--accent2)', true) +
+    secao('(-) Mao de Obra', 'amber') +
+    linha('Salarios', rows.reduce((s,r)=>s+(r.salarios||0),0), null, false, true) +
+    linha('Periculosidade', rows.reduce((s,r)=>s+(r.periculosidade||0),0), null, false, true) +
+    linha('Bonus', rows.reduce((s,r)=>s+(r.bonus||0),0), null, false, true) +
+    linha('Encargos Sociais', rows.reduce((s,r)=>s+(r.encargos_sociais||0),0), null, false, true) +
+    linha('Alimentacao', rows.reduce((s,r)=>s+(r.alimentacao||0),0), null, false, true) +
+    linha('Transporte', rows.reduce((s,r)=>s+(r.transporte||0),0), null, false, true) +
+    linha('Auxilio Moradia', rows.reduce((s,r)=>s+(r.auxilio_moradia||0),0), null, false, true) +
+    linha('PJ Alocado', rows.reduce((s,r)=>s+(r.pj_alocado||0),0), null, false, true) +
+    secao('(-) Custos Operacionais', 'purple') +
+    linha('Manutencao', rows.reduce((s,r)=>s+(r.manutencao||0),0), null, false, true) +
+    linha('Borracharia', rows.reduce((s,r)=>s+(r.borracharia||0),0), null, false, true) +
+    linha('Combustiveis / Lubrificantes', rows.reduce((s,r)=>s+(r.combustiveis||0),0), null, false, true) +
+    linha('Outros Insumos Diretos', rows.reduce((s,r)=>s+(r.outros_insumos||0),0), null, false, true) +
+    linha('Alugueis Maq/Equip/Veics', rows.reduce((s,r)=>s+(r.aluguel_maquinas||0),0), null, false, true) +
+    linha('Provisionamento Preventivas', rows.reduce((s,r)=>s+(r.provisionamento_preventivas||0),0), null, false, true) +
+    linha('Depreciacao', rows.reduce((s,r)=>s+(r.depreciacao||0),0), null, false, true) +
+    linha('Uniformes / EPIs', rows.reduce((s,r)=>s+(r.uniformes_epis||0),0), null, false, true) +
+    linha('Servicos Terceiros', rows.reduce((s,r)=>s+(r.servicos_terceiros||0),0), null, false, true) +
+    linha('Fretes', rows.reduce((s,r)=>s+(r.fretes||0),0), null, false, true) +
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:'+(totMC>=0?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)')+';border-radius:8px;border:1px solid '+(totMC>=0?'var(--green)':'var(--red)')+'">' +
+    '<span style="font-size:14px;font-weight:700;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">MARGEM DE CONTRIBUICAO</span>' +
+    '<div style="text-align:right"><div style="font-size:16px;font-weight:700;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">'+fmt(totMC)+'</div><div style="font-size:12px;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">'+pct(totMC,totLiq)+'</div></div></div>' +
+    secao('(-) Custos Administrativos GMP', 'teal') +
+    linha('Mao de Obra Apoio GMP 3%', rows.reduce((s,r)=>s+(r.mao_obra_apoio||0),0), null, false, true) +
+    linha('Consultoria / Serv.Terc', rows.reduce((s,r)=>s+(r.consultoria||0),0), null, false, true) +
+    linha('Passagens Aereas', rows.reduce((s,r)=>s+(r.passagens_aereas||0),0), null, false, true) +
+    linha('Hoteis / Diarias / Translados', rows.reduce((s,r)=>s+(r.hoteis_diarias||0),0), null, false, true) +
+    linha('Cursos / Seminarios / Mentorias', rows.reduce((s,r)=>s+(r.cursos||0),0), null, false, true) +
+    linha('Brindes / Marketing', rows.reduce((s,r)=>s+(r.brindes||0),0), null, false, true) +
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:'+(totGMP>=0?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)')+';border-radius:8px;border:1px solid '+(totGMP>=0?'var(--green)':'var(--red)')+'">' +
+    '<span style="font-size:14px;font-weight:700;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">RESULTADO GMP</span>' +
+    '<div style="text-align:right"><div style="font-size:16px;font-weight:700;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">'+fmt(totGMP)+'</div><div style="font-size:12px;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">'+pct(totGMP,totLiq)+'</div></div></div>' +
+    '</div>';
+
+  // Tabela de lancamentos
+  document.getElementById('dre-table-body').innerHTML =
+    '<table><thead><tr><th>Mes</th><th>Equipamento</th><th>Cliente</th><th>Receita Bruta</th><th>Rec. Liquida</th><th>Margem Contrib.</th><th>% MC</th><th>Resultado GMP</th><th>% GMP</th><th></th></tr></thead><tbody>' +
+    rows.map(r => {
+      const t = tot(r);
+      const liq = t.recBruta - t.impostos;
+      const mc = liq - t.maoObra - t.custOp;
+      const gmp = mc - t.custAdm;
+      const cMC = mc>=0?'var(--green)':'var(--red)';
+      const cGMP = gmp>=0?'var(--green)':'var(--red)';
+      return '<tr>' +
+        '<td>'+r.mes_referencia?.substring(0,7)+'</td>' +
+        '<td><strong>'+(r.equipamentos?.frota||'-')+'</strong></td>' +
+        '<td>'+(r.clientes?.razao_social||'-')+'</td>' +
+        '<td style="color:var(--green)">'+fmt(t.recBruta)+'</td>' +
+        '<td style="color:var(--accent2)">'+fmt(liq)+'</td>' +
+        '<td style="color:'+cMC+'">'+fmt(mc)+'</td>' +
+        '<td style="color:'+cMC+'">'+pct(mc,liq)+'</td>' +
+        '<td style="color:'+cGMP+'">'+fmt(gmp)+'</td>' +
+        '<td style="color:'+cGMP+'">'+pct(gmp,liq)+'</td>' +
+        '<td style="white-space:nowrap">' +
+        '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRE(\''+r.id+'\')">&#9999;&#65039;</button> ' +
+        '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRE(\''+r.id+'\')">&#128465;&#65039;</button>' +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function salvarDRE() {
+  const equipId = document.getElementById('dre-equip').value;
+  const mes = document.getElementById('dre-mes-ref').value;
+  if (!equipId || !mes) return showToast('Preencha equipamento e mes de referencia', true);
+  const id = document.getElementById('dre-id').value;
+  const dados = {
+    equipamento_id: equipId,
+    cliente_id: document.getElementById('dre-cliente').value || null,
+    contrato_id: document.getElementById('dre-contrato').value || null,
+    mes_referencia: mes + '-01',
+    receita_recorrente: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
+    pis: v('dre-pis'), cofins: v('dre-cofins'), iss: v('dre-iss'),
+    salarios: v('dre-sal'), periculosidade: v('dre-peric'), bonus: v('dre-bonus'),
+    encargos_sociais: v('dre-enc'), alimentacao: v('dre-alim'), transporte: v('dre-transp'),
+    auxilio_moradia: v('dre-moradia'), pj_alocado: v('dre-pj'),
+    manutencao: v('dre-manut'), borracharia: v('dre-borra'), combustiveis: v('dre-comb'),
+    outros_insumos: v('dre-insumos'), aluguel_maquinas: v('dre-alug'),
+    provisionamento_preventivas: v('dre-prov'), depreciacao: v('dre-depr'),
+    uniformes_epis: v('dre-epis'), servicos_terceiros: v('dre-serv3'), fretes: v('dre-frete'),
+    mao_obra_apoio: v('dre-adm-mob'), consultoria: v('dre-adm-cons'),
+    passagens_aereas: v('dre-adm-pass'), hoteis_diarias: v('dre-adm-hotel'),
+    cursos: v('dre-adm-curso'), brindes: v('dre-adm-brindes'),
+    observacoes: document.getElementById('dre-obs').value,
+    usuario: currentUser?.nome || '-'
+  };
+  let error;
+  if (id) { ({ error } = await db.from('resultado').update(dados).eq('id', id)); }
+  else { ({ error } = await db.from('resultado').insert(dados)); }
+  if (error) return showToast('Erro: ' + error.message, true);
+  fecharDRE();
+  showToast(id ? 'Resultado atualizado!' : 'Resultado salvo!');
+  await carregarDRE();
+}
+
+async function editarDRE(id) {
+  const { data: r } = await db.from('resultado').select('*').eq('id', id).single();
+  if (!r) return;
+  document.getElementById('dre-id').value = r.id;
+  document.getElementById('dre-mes-ref').value = r.mes_referencia?.substring(0,7) || '';
+  document.getElementById('dre-equip').value = r.equipamento_id || '';
+  document.getElementById('dre-cliente').value = r.cliente_id || '';
+  document.getElementById('dre-contrato').value = r.contrato_id || '';
+  const set = (id, val) => { const e = document.getElementById(id); if(e) e.value = val||0; };
+  set('dre-rec-rec', r.receita_recorrente); set('dre-rec-nov', r.receita_novos_negocios);
+  set('dre-pis', r.pis); set('dre-cofins', r.cofins); set('dre-iss', r.iss);
+  set('dre-sal', r.salarios); set('dre-peric', r.periculosidade); set('dre-bonus', r.bonus);
+  set('dre-enc', r.encargos_sociais); set('dre-alim', r.alimentacao); set('dre-transp', r.transporte);
+  set('dre-moradia', r.auxilio_moradia); set('dre-pj', r.pj_alocado);
+  set('dre-manut', r.manutencao); set('dre-borra', r.borracharia); set('dre-comb', r.combustiveis);
+  set('dre-insumos', r.outros_insumos); set('dre-alug', r.aluguel_maquinas);
+  set('dre-prov', r.provisionamento_preventivas); set('dre-depr', r.depreciacao);
+  set('dre-epis', r.uniformes_epis); set('dre-serv3', r.servicos_terceiros); set('dre-frete', r.fretes);
+  set('dre-adm-mob', r.mao_obra_apoio); set('dre-adm-cons', r.consultoria);
+  set('dre-adm-pass', r.passagens_aereas); set('dre-adm-hotel', r.hoteis_diarias);
+  set('dre-adm-curso', r.cursos); set('dre-adm-brindes', r.brindes);
+  document.getElementById('dre-obs').value = r.observacoes || '';
+  document.getElementById('modal-dre-title').textContent = 'Editar Resultado';
+  calcDRE();
+  openModal('modal-dre');
+}
+
+async function deletarDRE(id) {
+  if (!confirm('Deseja excluir este lancamento de resultado?')) return;
+  const { error } = await db.from('resultado').delete().eq('id', id);
+  if (error) return showToast('Erro: ' + error.message, true);
+  showToast('Resultado excluido!');
+  await carregarDRE();
+}
+
+function fecharDRE() {
+  document.getElementById('dre-id').value = '';
+  document.getElementById('modal-dre-title').textContent = 'Lancar Resultado';
+  ['dre-rec-rec','dre-rec-nov','dre-pis','dre-cofins','dre-iss','dre-sal','dre-peric','dre-bonus','dre-enc','dre-alim','dre-transp','dre-moradia','dre-pj','dre-manut','dre-borra','dre-comb','dre-insumos','dre-alug','dre-prov','dre-depr','dre-epis','dre-serv3','dre-frete','dre-adm-mob','dre-adm-cons','dre-adm-pass','dre-adm-hotel','dre-adm-curso','dre-adm-brindes'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
+  calcDRE();
+  closeModal('modal-dre');
 }
 
 function popularSelectEquipamentos() {
