@@ -225,9 +225,24 @@ textarea.form-input{resize:vertical;min-height:70px}
           <div class="table-title">Movimentacoes <span class="table-count" id="mov-count"></span></div>
           <button class="btn btn-primary" onclick="openModal('modal-mov')">+ Registrar Movimentacao</button>
         </div>
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
-          <input class="form-input" type="date" id="filter-mov-data" onchange="carregarMovimentacoes()" style="width:180px" />
-          <div id="mov-resumo" style="font-size:13px;color:var(--muted)"></div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div style="font-size:12px;color:var(--muted);font-weight:500">Filtrar por:</div>
+          <input class="form-input" type="date" id="filter-mov-data" onchange="carregarMovimentacoes()" style="width:160px" />
+          <select class="form-select" style="width:140px" id="filter-mov-mes" onchange="carregarMovimentacoes()">
+            <option value="">Todos os meses</option>
+            <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+            <option value="03">Marco</option><option value="04">Abril</option>
+            <option value="05">Maio</option><option value="06">Junho</option>
+            <option value="07">Julho</option><option value="08">Agosto</option>
+            <option value="09">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select class="form-select" style="width:120px" id="filter-mov-ano" onchange="carregarMovimentacoes()">
+            <option value="">Todos os anos</option>
+            <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+          </select>
+          <button class="btn" onclick="limparFiltrosMov()">Limpar</button>
+          <div id="mov-resumo" style="font-size:13px;color:var(--muted);margin-left:8px"></div>
         </div>
         <div id="mov-table-body"><div class="loading">Carregando...</div></div>
       </div>
@@ -246,6 +261,24 @@ textarea.form-input{resize:vertical;min-height:70px}
         <div class="table-header">
           <div class="table-title">Lancamentos de Custos</div>
           <button class="btn btn-primary" onclick="openModal('modal-custo')">+ Lancar Custo</button>
+        </div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div style="font-size:12px;color:var(--muted);font-weight:500">Filtrar por:</div>
+          <input class="form-input" type="date" id="filter-custo-dia" style="width:160px" onchange="carregarCustos()" placeholder="Dia especifico" />
+          <select class="form-select" style="width:140px" id="filter-custo-mes" onchange="carregarCustos()">
+            <option value="">Todos os meses</option>
+            <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+            <option value="03">Marco</option><option value="04">Abril</option>
+            <option value="05">Maio</option><option value="06">Junho</option>
+            <option value="07">Julho</option><option value="08">Agosto</option>
+            <option value="09">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select class="form-select" style="width:120px" id="filter-custo-ano" onchange="carregarCustos()">
+            <option value="">Todos os anos</option>
+            <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+          </select>
+          <button class="btn" onclick="limparFiltrosCusto()">Limpar</button>
         </div>
         <div id="custo-table-body"><div class="loading">Carregando...</div></div>
       </div>
@@ -746,79 +779,6 @@ async function deletarEquipamento(id, frota) {
   await carregarEquipamentos();
 }
 
-async function carregarMovimentacoes() {
-  const data = document.getElementById('filter-mov-data').value;
-  let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('criado_em', { ascending: false });
-  if (data) q = q.eq('data', data);
-  const { data: movs } = await q.limit(50);
-  const bc = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
-  const total = movs ? movs.length : 0;
-  const countEl = document.getElementById('mov-count');
-  if (countEl) countEl.textContent = total + ' registros';
-  const resumoEl = document.getElementById('mov-resumo');
-  if (resumoEl) {
-    const totalEquip = allEquipamentos.length;
-    if (total === 0) {
-      resumoEl.innerHTML = '<span style="color:var(--red)">Nenhum lancamento hoje ainda</span>';
-    } else {
-      const cor = total >= totalEquip ? 'var(--green)' : 'var(--amber)';
-      const icone = total >= totalEquip ? 'OK' : 'Atencao';
-      resumoEl.innerHTML = '<span style="color:' + cor + ';font-weight:600">' + total + ' de ' + totalEquip + ' equipamentos lancados - ' + icone + '</span>';
-    }
-  }
-  document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
-    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th></tr></thead><tbody>' +
-    movs.map(m => {
-      const obs = (m.equipamentos?.observacoes || '').split(' . ').map(p => p.trim());
-      const cap = obs[0] || '-';
-      const ano = obs[1] || '-';
-      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + cap + '</td><td style="color:var(--muted);font-size:12px">' + ano + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td></tr>';
-    }).join('') + '</tbody></table>' :
-    '<div class="loading">Nenhuma movimentacao encontrada</div>';
-}
-
-async function salvarMovimentacao() {
-  const equipId = document.getElementById('mv-equip').value;
-  const status = document.getElementById('mv-status').value;
-  const data = document.getElementById('mv-data').value;
-  if (!equipId || !status || !data) return showToast('Preencha os campos obrigatorios', true);
-  const hfim = parseFloat(document.getElementById('mv-hfim').value) || null;
-  const { error } = await db.from('movimentacoes').insert({
-    data, equipamento_id: equipId, status,
-    cliente_id: document.getElementById('mv-cliente').value || null,
-    regiao: document.getElementById('mv-regiao').value || null,
-    horimetro_inicial: parseFloat(document.getElementById('mv-hini').value) || null,
-    horimetro_final: hfim,
-    comentarios: document.getElementById('mv-coment').value,
-    usuario: currentUser?.nome || '-'
-  });
-  if (error) return showToast('Erro: ' + error.message, true);
-  if (hfim) await db.from('equipamentos').update({ horimetro_atual: hfim, status_atual: status }).eq('id', equipId);
-  else await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
-  closeModal('modal-mov');
-  showToast('Movimentacao registrada!');
-  await carregarMovimentacoes();
-  await carregarEquipamentos();
-}
-
-async function carregarCustos() {
-  const { data } = await db.from('custos').select('*, equipamentos(frota,equipamento)').order('data', { ascending: false }).limit(50);
-  const campos = ['frete','combustivel','pneus','pecas','servicos'];
-  const kpis = ['kpi-frete','kpi-comb','kpi-pneus','kpi-pecas','kpi-serv'];
-  if (data) {
-    campos.forEach((t, i) => {
-      const tot = data.reduce((s, c) => s + (c[t] || 0), 0);
-      const el = document.getElementById(kpis[i]);
-      if (el) el.textContent = 'R$ ' + tot.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-    });
-  }
-  document.getElementById('custo-table-body').innerHTML = data && data.length ?
-    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descricao</th><th>Frete</th><th>Combustivel</th><th>Pneus</th><th>Pecas</th><th>Servicos</th><th>Total</th><th>Lancado por</th><th></th></tr></thead><tbody>' +
-    data.map(c =>
-      '<tr><td>' + (c.data||'-') + '</td><td>' + (c.equipamentos?.frota||'-') + ' . ' + (c.equipamentos?.equipamento||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (c.descricao||'-') + '</td><td>' + (c.frete ? 'R$ '+c.frete.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.combustivel ? 'R$ '+c.combustivel.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pneus ? 'R$ '+c.pneus.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pecas ? 'R$ '+c.pecas.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.servicos ? 'R$ '+c.servicos.toLocaleString('pt-BR') : '-') + '</td><td><strong style="color:var(--green)">R$ ' + (c.custo_total||0).toLocaleString('pt-BR') + '</strong></td><td style="color:var(--muted)">' + (c.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCusto(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCusto(\'' + c.id + '\')">&#128465;&#65039;</button></td></tr>'
-    ).join('') + '</tbody></table>' :
-    '<div class="loading">Nenhum custo lancado</div>';
-}
 
 async function salvarCusto() {
   const id = document.getElementById('ct-id').value;
@@ -1043,6 +1003,96 @@ function carregarUsuarios() {
 // ============================================================
 // INSPECAO
 // ============================================================
+async function carregarMovimentacoes() {
+  const dia = document.getElementById('filter-mov-data')?.value;
+  const mes = document.getElementById('filter-mov-mes')?.value;
+  const ano = document.getElementById('filter-mov-ano')?.value;
+  let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('criado_em', { ascending: false });
+  if (dia) { q = q.eq('data', dia); }
+  else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
+  else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
+  else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
+  const { data: movs } = await q.limit(200);
+  const bc = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
+  const total = movs ? movs.length : 0;
+  const countEl = document.getElementById('mov-count');
+  if (countEl) countEl.textContent = total + ' registros';
+  const resumoEl = document.getElementById('mov-resumo');
+  if (resumoEl) {
+    const totalEquip = allEquipamentos.length;
+    if (total === 0) { resumoEl.innerHTML = '<span style="color:var(--red)">Nenhum lancamento encontrado</span>'; }
+    else { const cor = total >= totalEquip ? 'var(--green)' : 'var(--amber)'; resumoEl.innerHTML = '<span style="color:' + cor + ';font-weight:600">' + total + ' de ' + totalEquip + ' equipamentos lancados</span>'; }
+  }
+  document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
+    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th></tr></thead><tbody>' +
+    movs.map(m => {
+      const obs = (m.equipamentos?.observacoes || '').split(' . ').map(p => p.trim());
+      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[0]||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[1]||'-') + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="loading">Nenhuma movimentacao encontrada</div>';
+}
+
+function limparFiltrosMov() {
+  ['filter-mov-data','filter-mov-mes','filter-mov-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  carregarMovimentacoes();
+}
+
+async function salvarMovimentacao() {
+  const equipId = document.getElementById('mv-equip').value;
+  const status = document.getElementById('mv-status').value;
+  const data = document.getElementById('mv-data').value;
+  if (!equipId || !status || !data) return showToast('Preencha os campos obrigatorios', true);
+  const hfim = parseFloat(document.getElementById('mv-hfim').value) || null;
+  const { error } = await db.from('movimentacoes').insert({
+    data, equipamento_id: equipId, status,
+    cliente_id: document.getElementById('mv-cliente').value || null,
+    regiao: document.getElementById('mv-regiao').value || null,
+    horimetro_inicial: parseFloat(document.getElementById('mv-hini').value) || null,
+    horimetro_final: hfim,
+    comentarios: document.getElementById('mv-coment').value,
+    usuario: currentUser?.nome || '-'
+  });
+  if (error) return showToast('Erro: ' + error.message, true);
+  if (hfim) await db.from('equipamentos').update({ horimetro_atual: hfim, status_atual: status }).eq('id', equipId);
+  else await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
+  closeModal('modal-mov');
+  showToast('Movimentacao registrada!');
+  await carregarMovimentacoes();
+  await carregarEquipamentos();
+}
+
+async function carregarCustos() {
+  const dia = document.getElementById('filter-custo-dia')?.value;
+  const mes = document.getElementById('filter-custo-mes')?.value;
+  const ano = document.getElementById('filter-custo-ano')?.value;
+  let q = db.from('custos').select('*, equipamentos(frota,equipamento)').order('data', { ascending: false });
+  if (dia) { q = q.eq('data', dia); }
+  else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
+  else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
+  else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
+  const { data } = await q.limit(100);
+  const campos = ['frete','combustivel','pneus','pecas','servicos'];
+  const kpis = ['kpi-frete','kpi-comb','kpi-pneus','kpi-pecas','kpi-serv'];
+  if (data) {
+    campos.forEach((t, i) => {
+      const tot = data.reduce((s, c) => s + (c[t] || 0), 0);
+      const el = document.getElementById(kpis[i]);
+      if (el) el.textContent = 'R$ ' + tot.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+    });
+  }
+  document.getElementById('custo-table-body').innerHTML = data && data.length ?
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descricao</th><th>Frete</th><th>Combustivel</th><th>Pneus</th><th>Pecas</th><th>Servicos</th><th>Total</th><th>Lancado por</th><th></th></tr></thead><tbody>' +
+    data.map(c =>
+      '<tr><td>' + (c.data||'-') + '</td><td>' + (c.equipamentos?.frota||'-') + ' . ' + (c.equipamentos?.equipamento||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (c.descricao||'-') + '</td><td>' + (c.frete ? 'R$ '+c.frete.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.combustivel ? 'R$ '+c.combustivel.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pneus ? 'R$ '+c.pneus.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pecas ? 'R$ '+c.pecas.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.servicos ? 'R$ '+c.servicos.toLocaleString('pt-BR') : '-') + '</td><td><strong style="color:var(--green)">R$ ' + (c.custo_total||0).toLocaleString('pt-BR') + '</strong></td><td style="color:var(--muted)">' + (c.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCusto(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCusto(\'' + c.id + '\')">&#128465;&#65039;</button></td></tr>'
+    ).join('') + '</tbody></table>' :
+    '<div class="loading">Nenhum custo encontrado</div>';
+}
+
+function limparFiltrosCusto() {
+  ['filter-custo-dia','filter-custo-mes','filter-custo-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  carregarCustos();
+}
+
 async function carregarInspecoes() {
   const selEquip = document.getElementById('filter-insp-equip');
   const selCli = document.getElementById('filter-insp-cliente');
