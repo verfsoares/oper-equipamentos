@@ -227,7 +227,14 @@ textarea.form-input{resize:vertical;min-height:70px}
         </div>
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <div style="font-size:12px;color:var(--muted);font-weight:500">Filtrar por:</div>
-          <input class="form-input" type="date" id="filter-mov-data" onchange="carregarMovimentacoes()" style="width:160px" />
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--muted)">De:</span>
+            <input class="form-input" type="date" id="filter-mov-ini" style="width:150px" onchange="carregarMovimentacoes()" />
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--muted)">Ate:</span>
+            <input class="form-input" type="date" id="filter-mov-fim" style="width:150px" onchange="carregarMovimentacoes()" />
+          </div>
           <select class="form-select" style="width:140px" id="filter-mov-mes" onchange="carregarMovimentacoes()">
             <option value="">Todos os meses</option>
             <option value="01">Janeiro</option><option value="02">Fevereiro</option>
@@ -264,7 +271,14 @@ textarea.form-input{resize:vertical;min-height:70px}
         </div>
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <div style="font-size:12px;color:var(--muted);font-weight:500">Filtrar por:</div>
-          <input class="form-input" type="date" id="filter-custo-dia" style="width:160px" onchange="carregarCustos()" placeholder="Dia especifico" />
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--muted)">De:</span>
+            <input class="form-input" type="date" id="filter-custo-ini" style="width:150px" onchange="carregarCustos()" />
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--muted)">Ate:</span>
+            <input class="form-input" type="date" id="filter-custo-fim" style="width:150px" onchange="carregarCustos()" />
+          </div>
           <select class="form-select" style="width:140px" id="filter-custo-mes" onchange="carregarCustos()">
             <option value="">Todos os meses</option>
             <option value="01">Janeiro</option><option value="02">Fevereiro</option>
@@ -1004,15 +1018,18 @@ function carregarUsuarios() {
 // INSPECAO
 // ============================================================
 async function carregarMovimentacoes() {
-  const dia = document.getElementById('filter-mov-data')?.value;
+  const ini = document.getElementById('filter-mov-ini')?.value;
+  const fim = document.getElementById('filter-mov-fim')?.value;
   const mes = document.getElementById('filter-mov-mes')?.value;
   const ano = document.getElementById('filter-mov-ano')?.value;
   let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('criado_em', { ascending: false });
-  if (dia) { q = q.eq('data', dia); }
+  if (ini && fim) { q = q.gte('data', ini).lte('data', fim); }
+  else if (ini) { q = q.gte('data', ini); }
+  else if (fim) { q = q.lte('data', fim); }
   else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
   else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
   else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
-  const { data: movs } = await q.limit(200);
+  const { data: movs } = await q.limit(500);
   const bc = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
   const total = movs ? movs.length : 0;
   const countEl = document.getElementById('mov-count');
@@ -1033,7 +1050,7 @@ async function carregarMovimentacoes() {
 }
 
 function limparFiltrosMov() {
-  ['filter-mov-data','filter-mov-mes','filter-mov-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['filter-mov-ini','filter-mov-fim','filter-mov-mes','filter-mov-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   carregarMovimentacoes();
 }
 
@@ -1062,15 +1079,18 @@ async function salvarMovimentacao() {
 }
 
 async function carregarCustos() {
-  const dia = document.getElementById('filter-custo-dia')?.value;
+  const ini = document.getElementById('filter-custo-ini')?.value;
+  const fim = document.getElementById('filter-custo-fim')?.value;
   const mes = document.getElementById('filter-custo-mes')?.value;
   const ano = document.getElementById('filter-custo-ano')?.value;
   let q = db.from('custos').select('*, equipamentos(frota,equipamento)').order('data', { ascending: false });
-  if (dia) { q = q.eq('data', dia); }
+  if (ini && fim) { q = q.gte('data', ini).lte('data', fim); }
+  else if (ini) { q = q.gte('data', ini); }
+  else if (fim) { q = q.lte('data', fim); }
   else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
   else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
   else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
-  const { data } = await q.limit(100);
+  const { data } = await q.limit(500);
   const campos = ['frete','combustivel','pneus','pecas','servicos'];
   const kpis = ['kpi-frete','kpi-comb','kpi-pneus','kpi-pecas','kpi-serv'];
   if (data) {
@@ -1089,7 +1109,7 @@ async function carregarCustos() {
 }
 
 function limparFiltrosCusto() {
-  ['filter-custo-dia','filter-custo-mes','filter-custo-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['filter-custo-ini','filter-custo-fim','filter-custo-mes','filter-custo-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   carregarCustos();
 }
 
