@@ -1133,10 +1133,10 @@ async function carregarMovimentacoes() {
     else { const cor = total >= totalEquip ? 'var(--green)' : 'var(--amber)'; resumoEl.innerHTML = '<span style="color:' + cor + ';font-weight:600">' + total + ' de ' + totalEquip + ' equipamentos lancados</span>'; }
   }
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
-    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th><th></th></tr></thead><tbody>' +
     movs.map(m => {
       const obs = (m.equipamentos?.observacoes || '').split(' . ').map(p => p.trim());
-      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[0]||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[1]||'-') + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td></tr>';
+      return '<tr><td>' + (m.data||'-') + '</td><td class="frota">' + (m.equipamentos?.frota||'-') + '</td><td><strong>' + (m.equipamentos?.equipamento||'-') + '</strong></td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.tipo||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (m.equipamentos?.combustivel||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[0]||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (obs[1]||'-') + '</td><td><span class="badge ' + bc(m.status) + '">' + m.status + '</span></td><td>' + (m.clientes?.razao_social||'-') + '</td><td style="color:var(--muted)">' + (m.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarMovimentacao(\'' + m.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarMovimentacao(\'' + m.id + '\')">&#128465;&#65039;</button></td></tr>';
     }).join('') + '</tbody></table>' :
     '<div class="loading">Nenhuma movimentacao encontrada</div>';
 }
@@ -1144,6 +1144,52 @@ async function carregarMovimentacoes() {
 function limparFiltrosMov() {
   ['filter-mov-ini','filter-mov-fim','filter-mov-mes','filter-mov-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   carregarMovimentacoes();
+}
+
+async function editarMovimentacao(id) {
+  const { data: m } = await db.from('movimentacoes').select('*').eq('id', id).single();
+  if (!m) return;
+  document.getElementById('mv-data').value = m.data || '';
+  document.getElementById('mv-equip').value = m.equipamento_id || '';
+  document.getElementById('mv-status').value = m.status || 'A';
+  document.getElementById('mv-cliente').value = m.cliente_id || '';
+  document.getElementById('mv-regiao').value = m.regiao || '';
+  document.getElementById('mv-hini').value = m.horimetro_inicial || '';
+  document.getElementById('mv-hfim').value = m.horimetro_final || '';
+  document.getElementById('mv-coment').value = m.comentarios || '';
+  openModal('modal-mov');
+  document.querySelector('#modal-mov .modal-title').textContent = 'Editar Movimentacao';
+  document.querySelector('#modal-mov .btn-primary').onclick = async () => {
+    const status = document.getElementById('mv-status').value;
+    const hfim = parseFloat(document.getElementById('mv-hfim').value) || null;
+    const { error } = await db.from('movimentacoes').update({
+      data: document.getElementById('mv-data').value,
+      equipamento_id: document.getElementById('mv-equip').value,
+      status,
+      cliente_id: document.getElementById('mv-cliente').value || null,
+      regiao: document.getElementById('mv-regiao').value || null,
+      horimetro_inicial: parseFloat(document.getElementById('mv-hini').value) || null,
+      horimetro_final: hfim,
+      comentarios: document.getElementById('mv-coment').value,
+      usuario: currentUser?.nome || '-'
+    }).eq('id', id);
+    if (error) return showToast('Erro: ' + error.message, true);
+    if (hfim) await db.from('equipamentos').update({ horimetro_atual: hfim, status_atual: status }).eq('id', m.equipamento_id);
+    else await db.from('equipamentos').update({ status_atual: status }).eq('id', m.equipamento_id);
+    closeModal('modal-mov');
+    document.querySelector('#modal-mov .modal-title').textContent = 'Registrar Movimentacao';
+    document.querySelector('#modal-mov .btn-primary').onclick = salvarMovimentacao;
+    showToast('Movimentacao atualizada!');
+    await carregarMovimentacoes();
+  };
+}
+
+async function deletarMovimentacao(id) {
+  if (!confirm('Deseja excluir este apontamento?')) return;
+  const { error } = await db.from('movimentacoes').delete().eq('id', id);
+  if (error) return showToast('Erro: ' + error.message, true);
+  showToast('Apontamento excluido!');
+  await carregarMovimentacoes();
 }
 
 async function salvarMovimentacao() {
