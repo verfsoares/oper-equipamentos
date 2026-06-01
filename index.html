@@ -1099,22 +1099,59 @@ async function salvarInspecao() {
     descricao: document.getElementById('insp-desc').value,
     usuario: currentUser?.nome || '-'
   }).select().single();
-  if (error) return showToast('Erro: ' + error.message, true);
+  if (error) return showToast('Erro ao salvar: ' + error.message, true);
+
   const files = document.getElementById('insp-files').files;
+  let uploadOk = 0;
+  let uploadErro = 0;
+
   if (files.length > 0) {
     for (const file of Array.from(files)) {
-      const path = insp.id + '/' + Date.now() + '_' + file.name;
-      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file);
-      if (!upErr) {
-        const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
-        await db.from('inspecao_arquivos').insert({ inspecao_id: insp.id, nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type });
+      try {
+        const timestamp = Date.now();
+        const nomeSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = insp.id + '/' + timestamp + '_' + nomeSeguro;
+        
+        const { data: up, error: upErr } = await db.storage
+          .from('inspecoes')
+          .upload(path, file, { cacheControl: '3600', upsert: false });
+        
+        if (upErr) {
+          console.error('Erro upload:', upErr);
+          uploadErro++;
+        } else {
+          const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+          const { error: dbErr } = await db.from('inspecao_arquivos').insert({
+            inspecao_id: insp.id,
+            nome_arquivo: file.name,
+            url_arquivo: urlData.publicUrl,
+            tipo_arquivo: file.type
+          });
+          if (dbErr) {
+            console.error('Erro DB:', dbErr);
+            uploadErro++;
+          } else {
+            uploadOk++;
+          }
+        }
+      } catch(e) {
+        console.error('Erro geral:', e);
+        uploadErro++;
       }
     }
   }
+
   closeModal('modal-inspecao');
   document.getElementById('insp-files-preview').innerHTML = '';
   document.getElementById('insp-files').value = '';
-  showToast('Inspecao salva com ' + files.length + ' arquivo(s)!');
+  
+  if (uploadErro > 0) {
+    showToast('Inspecao salva mas ' + uploadErro + ' arquivo(s) com erro!', true);
+  } else if (uploadOk > 0) {
+    showToast('Inspecao salva com ' + uploadOk + ' arquivo(s)!');
+  } else {
+    showToast('Inspecao salva!');
+  }
   await carregarInspecoes();
 }
 
