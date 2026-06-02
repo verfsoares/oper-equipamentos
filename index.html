@@ -615,11 +615,6 @@ textarea.form-input{resize:vertical;min-height:70px}
           <optgroup label="── RECEITA">
             <option value="receita">Receita Bruta</option>
           </optgroup>
-          <optgroup label="── IMPOSTOS">
-            <option value="pis">PIS 1,65%</option>
-            <option value="cofins">COFINS 7,6%</option>
-            <option value="iss">ISS 5%</option>
-          </optgroup>
           <optgroup label="── MÃO DE OBRA">
             <option value="salarios">Salários</option>
             <option value="periculosidade">Periculosidade</option>
@@ -1944,7 +1939,10 @@ async function carregarDREResultado() {
   const g = (conta,m,nat) => dados[conta]?.[m]?.[nat] || 0;
   const soma = (contas,m,nat) => contas.reduce((s,c)=>s+g(c,m,nat),0);
   const recMes = (m,nat) => Object.values(dadosCliente).reduce((s,c)=>s+(c.vals[m][nat]||0),0);
-  const liqMes = (m,nat) => recMes(m,nat)-g('pis',m,nat)-g('cofins',m,nat)-g('iss',m,nat);
+  const pisMes    = (m,nat) => parseFloat((recMes(m,nat) * 0.0165).toFixed(2));
+  const cofinsMes = (m,nat) => parseFloat((recMes(m,nat) * 0.076).toFixed(2));
+  const issMes    = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
+  const liqMes = (m,nat) => recMes(m,nat) - pisMes(m,nat) - cofinsMes(m,nat) - issMes(m,nat);
   const moContas = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
   const coContas = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const admContas = ['mo_apoio','consultoria','passagens','hoteis','cursos','brindes'];
@@ -2001,6 +1999,9 @@ async function carregarDREResultado() {
     // Linhas calculadas
     const getVals = (nat) => {
       if (conta.id==='total_receita') return Array(12).fill(0).map((_,m)=>recMes(m,nat));
+      if (conta.id==='pis')    return Array(12).fill(0).map((_,m)=>pisMes(m,nat));
+      if (conta.id==='cofins') return Array(12).fill(0).map((_,m)=>cofinsMes(m,nat));
+      if (conta.id==='iss')    return Array(12).fill(0).map((_,m)=>issMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
       if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
       if (conta.id==='gpm_valor') return Array(12).fill(0).map((_,m)=>gpmMes(m,nat));
@@ -2099,26 +2100,13 @@ async function salvarDRELancamento() {
   else { ({ error } = await db.from('dre_lancamentos').insert(dados)); }
   if (error) return showToast('Erro: ' + error.message, true);
 
-  // Se for receita nova, calcula impostos automaticamente
-  if (conta === 'receita' && !id) {
-    const pis    = parseFloat((valor * 0.0165).toFixed(2));
-    const cofins = parseFloat((valor * 0.076).toFixed(2));
-    const iss    = parseFloat((valor * 0.05).toFixed(2));
-    const base = { natureza, cliente_id, contrato_id, mes_referencia: mes+'-01', usuario };
-    await db.from('dre_lancamentos').insert({ ...base, conta:'pis',    valor:pis,    observacoes:'PIS 1,65% auto s/ receita' });
-    await db.from('dre_lancamentos').insert({ ...base, conta:'cofins', valor:cofins, observacoes:'COFINS 7,6% auto s/ receita' });
-    await db.from('dre_lancamentos').insert({ ...base, conta:'iss',    valor:iss,    observacoes:'ISS 5% auto s/ receita' });
-    showToast('Receita salva! Impostos calculados automaticamente ✓');
-  } else {
-    showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
-  }
-
   closeModal('modal-drei');
   document.getElementById('drei-id').value = '';
   document.getElementById('drei-valor').value = '';
   document.getElementById('drei-obs').value = '';
   document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
   selecionarNatureza('recorrente');
+  showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
   await carregarDREResultado();
 }
 
