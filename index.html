@@ -198,8 +198,15 @@ textarea.form-input{resize:vertical;min-height:70px}
         </div>
       </div>
       <!-- TABELA DRE -->
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;margin-bottom:20px">
         <div id="dre-resultado-content"><div class="loading">Carregando...</div></div>
+      </div>
+      <!-- LANCAMENTOS -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Lançamentos <span class="table-count" id="drei-count"></span></div>
+        </div>
+        <div id="drei-lancamentos"><div class="loading">Carregando...</div></div>
       </div>
     </div>
 
@@ -1126,7 +1133,10 @@ async function salvarEquipamento() {
   const frota = document.getElementById('eq-frota').value.trim();
   const desc = document.getElementById('eq-desc').value;
   if (!frota || !desc) return showToast('Preencha os campos obrigatorios', true);
-  const obs = [document.getElementById('eq-cap').value, document.getElementById('eq-ano').value, document.getElementById('eq-fornecedor').value].filter(Boolean).join(' . ');
+  const cap = document.getElementById('eq-cap').value || '';
+  const ano = document.getElementById('eq-ano').value || '';
+  const forn = document.getElementById('eq-fornecedor').value || '';
+  const obs = cap + ' . ' + ano + ' . ' + forn;
   const dados = {
     frota, equipamento: desc,
     tipo: document.getElementById('eq-tipo').value,
@@ -1806,9 +1816,10 @@ async function carregarDREResultado() {
   const ano = document.getElementById('drei-ano')?.value || new Date().getFullYear();
 
   const { data: rows } = await db.from('dre_lancamentos')
-    .select('*, clientes(razao_social)')
+    .select('*, clientes(razao_social), equipamentos(frota), contratos(numero)')
     .gte('mes_referencia', ano+'-01-01')
-    .lte('mes_referencia', ano+'-12-31');
+    .lte('mes_referencia', ano+'-12-31')
+    .order('mes_referencia', { ascending: false });
 
   if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
 
@@ -1926,6 +1937,41 @@ async function carregarDREResultado() {
     thMes+'</tr>'+
     '<tr style="background:rgba(255,255,255,0.03);border-bottom:2px solid var(--border2)">'+thSub+'</tr>'+
     '</thead><tbody>'+rowsHtml+'</tbody></table></div>';
+
+  // Lista de lancamentos com editar/excluir
+  const contaLabels = {
+    receita:'Receita Bruta', pis:'PIS 1,65%', cofins:'COFINS 7,6%', iss:'ISS 5%',
+    salarios:'Salários', periculosidade:'Periculosidade', bonus:'Bônus', encargos:'Encargos Sociais',
+    alimentacao:'Alimentação', transporte:'Transporte', aux_moradia:'Auxílio Moradia', pj_alocado:'PJ Alocado',
+    manutencao:'Manutenção', borracharia:'Borracharia', combustiveis:'Combustíveis', outros_insumos:'Outros Insumos',
+    alugueis:'Aluguéis', provisionamento:'Provisionamento', depreciacao:'Depreciação',
+    uniformes:'Uniformes/EPIs', servicos_terc:'Serviços Terceiros', fretes:'Fretes',
+    mo_apoio:'MO Apoio GPM 3%', consultoria:'Consultoria', passagens:'Passagens Aéreas',
+    hoteis:'Hotéis/Diárias', cursos:'Cursos/Seminários', brindes:'Brindes/Marketing'
+  };
+
+  const countEl = document.getElementById('drei-count');
+  if (countEl) countEl.textContent = rows.length + ' registros';
+
+  const lancEl = document.getElementById('drei-lancamentos');
+  if (lancEl) {
+    lancEl.innerHTML = rows.length ?
+      '<table><thead><tr><th>Mês</th><th>Natureza</th><th>Conta</th><th>Cliente</th><th>Valor</th><th>Descrição</th><th>Usuário</th><th></th></tr></thead><tbody>' +
+      rows.sort((a,b) => b.mes_referencia?.localeCompare(a.mes_referencia)).map(r =>
+        '<tr><td>'+r.mes_referencia?.substring(0,7)+'</td>'+
+        '<td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+(r.natureza==='recorrente'?'rgba(16,185,129,0.15)':'rgba(139,92,246,0.15)')+';color:'+(r.natureza==='recorrente'?'var(--green)':'var(--purple)')+'">'+( r.natureza==='recorrente'?'REC':'PRJ')+'</span></td>'+
+        '<td style="font-size:12px">'+(contaLabels[r.conta]||r.conta||'-')+'</td>'+
+        '<td style="font-size:12px;color:var(--muted)">'+(r.clientes?.razao_social||'-')+'</td>'+
+        '<td style="color:var(--green);font-weight:600">R$ '+(r.valor||0).toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>'+
+        '<td style="font-size:12px;color:var(--muted)">'+(r.observacoes||'-')+'</td>'+
+        '<td style="font-size:12px;color:var(--muted)">'+(r.usuario||'-')+'</td>'+
+        '<td style="white-space:nowrap">'+
+        '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRELancamento(\''+r.id+'\')">&#9999;&#65039;</button> '+
+        '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRELancamento(\''+r.id+'\')">&#128465;&#65039;</button>'+
+        '</td></tr>'
+      ).join('') + '</tbody></table>' :
+      '<div class="loading">Nenhum lançamento no período</div>';
+  }
 }
 
 async function salvarDRELancamento() {
@@ -1934,9 +1980,9 @@ async function salvarDRELancamento() {
   const natureza = document.getElementById('drei-natureza').value;
   const valor = parseFloat(document.getElementById('drei-valor').value) || 0;
   if (!mes || !conta || !valor) return showToast('Preencha mês, conta e valor', true);
-  const { error } = await db.from('dre_lancamentos').insert({
-    conta,
-    natureza,
+  const id = document.getElementById('drei-id').value;
+  const dados = {
+    conta, natureza,
     cliente_id: document.getElementById('drei-cliente').value || null,
     equipamento_id: document.getElementById('drei-equip-sel').value || null,
     contrato_id: document.getElementById('drei-contrato-sel').value || null,
@@ -1944,12 +1990,44 @@ async function salvarDRELancamento() {
     valor,
     observacoes: document.getElementById('drei-obs').value,
     usuario: currentUser?.nome || '-'
-  });
+  };
+  let error;
+  if (id) { ({ error } = await db.from('dre_lancamentos').update(dados).eq('id', id)); }
+  else { ({ error } = await db.from('dre_lancamentos').insert(dados)); }
   if (error) return showToast('Erro: ' + error.message, true);
   closeModal('modal-drei');
+  document.getElementById('drei-id').value = '';
   document.getElementById('drei-valor').value = '';
   document.getElementById('drei-obs').value = '';
-  showToast('Lançamento salvo!');
+  document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
+  selecionarNatureza('recorrente');
+  showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
+  await carregarDREResultado();
+}
+
+async function editarDRELancamento(id) {
+  const { data: r } = await db.from('dre_lancamentos').select('*').eq('id', id).single();
+  if (!r) return;
+  document.getElementById('drei-id').value = r.id;
+  document.getElementById('drei-mes').value = r.mes_referencia?.substring(0,7) || '';
+  document.getElementById('drei-tipo').value = r.conta || '';
+  document.getElementById('drei-natureza').value = r.natureza || 'recorrente';
+  document.getElementById('drei-valor').value = r.valor || '';
+  document.getElementById('drei-obs').value = r.observacoes || '';
+  document.getElementById('drei-cliente').value = r.cliente_id || '';
+  document.getElementById('drei-equip-sel').value = r.equipamento_id || '';
+  document.getElementById('drei-contrato-sel').value = r.contrato_id || '';
+  selecionarNatureza(r.natureza || 'recorrente');
+  atualizarContasDRE();
+  document.getElementById('modal-drei-title').textContent = 'Editar Lançamento';
+  openModal('modal-drei');
+}
+
+async function deletarDRELancamento(id) {
+  if (!confirm('Deseja excluir este lançamento?')) return;
+  const { error } = await db.from('dre_lancamentos').delete().eq('id', id);
+  if (error) return showToast('Erro: ' + error.message, true);
+  showToast('Lançamento excluído!');
   await carregarDREResultado();
 }
 
