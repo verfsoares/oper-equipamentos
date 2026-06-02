@@ -1935,11 +1935,12 @@ async function carregarDREResultado() {
   const cofinsMes = (m,nat) => parseFloat((recMes(m,nat) * 0.076).toFixed(2));
   const issMes    = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
   const liqMes = (m,nat) => recMes(m,nat) - pisMes(m,nat) - cofinsMes(m,nat) - issMes(m,nat);
-  const moContas = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
-  const coContas = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
+  const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
+  const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
+  const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
   const admContas = ['mo_apoio','consultoria','passagens','hoteis','cursos','brindes'];
-  const mcMes = (m,nat) => liqMes(m,nat)-soma(moContas,m,nat)-soma(coContas,m,nat);
-  const gpmMes = (m,nat) => mcMes(m,nat)-soma(admContas,m,nat);
+  const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
+  const gpmMes = (m,nat) => mcMes(m,nat) - soma(admContas,m,nat);
 
   const fmtN = (v,cor) => {
     const c = cor||(v<0?'var(--red)':v===0?'var(--muted)':'inherit');
@@ -1974,9 +1975,8 @@ async function carregarDREResultado() {
     const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
 
     if (conta.tipo === 'subtotal_operacao') {
-      // OPERAÇÃO — header mas com valores calculados
-      const vR = Array(12).fill(0).map((_,m)=>soma(moContas,m,'recorrente')+soma(coContas,m,'recorrente'));
-      const vP = Array(12).fill(0).map((_,m)=>soma(moContas,m,'projetado')+soma(coContas,m,'projetado'));
+      const vR = Array(12).fill(0).map((_,m)=>totalOpMes(m,'recorrente'));
+      const vP = Array(12).fill(0).map((_,m)=>totalOpMes(m,'projetado'));
       const cells = Array(12).fill(0).map((_,m)=>fmtN(vR[m],'var(--amber)')+fmtN(vP[m],'var(--amber)')).join('');
       const tR = vR.reduce((s,v)=>s+v,0), tP = vP.reduce((s,v)=>s+v,0);
       rowsHtml += '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)"><td style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--amber);position:sticky;left:0;background:var(--surface2)">'+conta.label+'</td>'+cells+fmtN(tR,'var(--amber)')+fmtN(tP,'var(--amber)')+'</tr>';
@@ -2008,7 +2008,7 @@ async function carregarDREResultado() {
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
       if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
       if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
-      if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat)+soma(coContas,m,nat));
+      if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>totalOpMes(m,nat));
       if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
       if (conta.id==='gpm_valor') return Array(12).fill(0).map((_,m)=>gpmMes(m,nat));
       return Array(12).fill(0).map((_,m)=>g(conta.id,m,nat));
