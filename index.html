@@ -1803,44 +1803,45 @@ const PLANO_CONTAS = [
 
 // Grupos de unidades de negocio
 const GRUPOS_DRE = {
-  todas:  null, // sem filtro
-  anglo:  ['anglo'], // clientes cujo nome contém "anglo"
-  csnmg:  ['pires','fernandinho','almox','entreposto','casa de pedra'],
-  csnsp:  ['taubate','taubaté','santo amaro']
+  todas: null,
+  anglo: ['anglo'],
+  csnmg: ['pires','fernandinho','almox','entreposto','casa de pedra'],
+  csnsp: ['taubate','taubaté','santo amaro']
 };
+
+// Retorna IDs dos clientes que pertencem ao grupo
+function getClientesDoGrupo(grupo) {
+  if (grupo === 'todas' || !GRUPOS_DRE[grupo]) return null; // null = sem filtro
+  const palavras = GRUPOS_DRE[grupo];
+  return allClientes
+    .filter(c => palavras.some(p => c.razao_social.toLowerCase().includes(p)))
+    .map(c => c.id);
+}
 
 function selecionarGrupo(grupo) {
   document.getElementById('drei-grupo-ativo').value = grupo;
-  // Reseta visual dos botoes
   ['todas','anglo','csnmg','csnsp'].forEach(g => {
     const btn = document.getElementById('grp-btn-'+g);
     if (btn) { btn.style.background='var(--surface2)'; btn.style.color='var(--muted)'; btn.style.borderColor='var(--border2)'; }
   });
-  // Destaca botao ativo
-  if (grupo !== 'custom') {
-    const btn = document.getElementById('grp-btn-'+grupo);
-    const cores = { todas:'var(--accent2)', anglo:'var(--amber)', csnmg:'var(--green)', csnsp:'var(--teal)' };
-    const bgs = { todas:'rgba(59,130,246,0.2)', anglo:'rgba(245,158,11,0.2)', csnmg:'rgba(16,185,129,0.2)', csnsp:'rgba(20,184,166,0.2)' };
-    if (btn) { btn.style.background=bgs[grupo]; btn.style.color=cores[grupo]; btn.style.borderColor=cores[grupo]; }
-    // Limpa select de cliente especifico
-    document.getElementById('drei-filter-cliente').value = '';
-  }
+  const btn = document.getElementById('grp-btn-'+grupo);
+  const cores = { todas:'var(--accent2)', anglo:'var(--amber)', csnmg:'var(--green)', csnsp:'var(--teal)' };
+  const bgs = { todas:'rgba(59,130,246,0.2)', anglo:'rgba(245,158,11,0.2)', csnmg:'rgba(16,185,129,0.2)', csnsp:'rgba(20,184,166,0.2)' };
+  if (btn) { btn.style.background=bgs[grupo]; btn.style.color=cores[grupo]; btn.style.borderColor=cores[grupo]; }
   carregarDREResultado();
 }
 
-function obterClientesFiltrados(rows) {
+function obterRowsFiltrados(rows) {
   const grupo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
-  const clienteEspecifico = document.getElementById('drei-filter-cliente')?.value;
-
-  if (grupo === 'custom' && clienteEspecifico) {
-    return rows.filter(r => r.cliente_id === clienteEspecifico);
-  }
-  if (grupo === 'todas' || !GRUPOS_DRE[grupo]) return rows;
-
-  const palavras = GRUPOS_DRE[grupo];
+  if (grupo === 'todas') return rows;
+  const ids = getClientesDoGrupo(grupo);
+  if (!ids || ids.length === 0) return [];
+  // Inclui lancamentos COM cliente do grupo OU sem cliente (custos gerais)
+  // Para receita: filtra só do cliente
+  // Para custos sem cliente_id: inclui sempre (sao gerais)
   return rows.filter(r => {
-    const nome = (r.clientes?.razao_social || '').toLowerCase();
-    return palavras.some(p => nome.includes(p));
+    if (!r.cliente_id) return true; // custo geral, inclui em todos
+    return ids.includes(r.cliente_id);
   });
 }
 
@@ -1886,8 +1887,6 @@ async function abrirModalDRE() {
   // Popular selects
   const sc = document.getElementById('drei-cliente');
   if (sc) sc.innerHTML = '<option value="">- Geral -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
-  const sf = document.getElementById('drei-filter-cliente');
-  if (sf) sf.innerHTML = '<option value="">— Por unidade específica —</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
   const se = document.getElementById('drei-equip-sel');
   if (se) se.innerHTML = '<option value="">- Nenhum -</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
   const sct = document.getElementById('drei-contrato-sel');
@@ -1909,15 +1908,8 @@ async function carregarDREResultado() {
   if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
 
   // Aplica filtro de grupo
-  const rowsFiltrados = obterClientesFiltrados(rows);
-  const grupoNome = { todas:'Todas as Unidades', anglo:'Anglo American', csnmg:'CSN MG (Pires + Fernandinho + Almoxarifado + Entreposto)', csnsp:'CSN SP (Taubaté + Santo Amaro)', custom:'Unidade específica' };
+  const rowsFiltrados = obterRowsFiltrados(rows);
   const grupoAtivo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
-
-  // Popular select de cliente especifico se ainda não populado
-  const sf = document.getElementById('drei-filter-cliente');
-  if (sf && sf.options.length <= 1) {
-    sf.innerHTML = '<option value="">— Por unidade específica —</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
-  }
 
   const dados = {};
   const dadosCliente = {}; // [cliente_id][mes][natureza]
