@@ -1839,13 +1839,9 @@ function obterRowsFiltrados(rows) {
   if (grupo === 'todas') return rows;
   const ids = getClientesDoGrupo(grupo);
   if (!ids || ids.length === 0) return [];
-  // Inclui lancamentos COM cliente do grupo OU sem cliente (custos gerais)
-  // Para receita: filtra só do cliente
-  // Para custos sem cliente_id: inclui sempre (sao gerais)
-  return rows.filter(r => {
-    if (!r.cliente_id) return true; // custo geral, inclui em todos
-    return ids.includes(r.cliente_id);
-  });
+  // Filtra APENAS lancamentos com cliente do grupo
+  // Lançamentos sem cliente_id NAO aparecem nas unidades especificas
+  return rows.filter(r => r.cliente_id && ids.includes(r.cliente_id));
 }
 
 function selecionarNatureza(nat) {
