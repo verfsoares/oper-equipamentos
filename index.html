@@ -2090,6 +2090,7 @@ async function carregarDREResultado() {
         '<td style="font-size:12px;color:var(--muted)">'+(r.observacoes||'-')+'</td>'+
         '<td style="font-size:12px;color:var(--muted)">'+(r.usuario||'-')+'</td>'+
         '<td style="white-space:nowrap">'+
+        '<button class="btn" style="padding:4px 8px;font-size:11px;color:var(--teal);border-color:rgba(20,184,166,0.3)" onclick="replicarDRELancamento(\''+r.id+'\')" title="Replicar até o final do ano">&#128260; Replicar</button> '+
         '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRELancamento(\''+r.id+'\')">&#9999;&#65039;</button> '+
         '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRELancamento(\''+r.id+'\')">&#128465;&#65039;</button>'+
         '</td></tr>'
@@ -2127,6 +2128,41 @@ async function salvarDRELancamento() {
   document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
   selecionarNatureza('recorrente');
   showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
+  await carregarDREResultado();
+}
+
+async function replicarDRELancamento(id) {
+  const { data: r } = await db.from('dre_lancamentos').select('*').eq('id', id).single();
+  if (!r) return;
+
+  const mesOrigem = new Date(r.mes_referencia + 'T12:00:00');
+  const anoRef = mesOrigem.getFullYear();
+  const mesInicio = mesOrigem.getMonth() + 1; // mês seguinte
+  const mesFim = 12;
+
+  if (mesInicio > mesFim) return showToast('Este lançamento já está em Dezembro!', true);
+
+  const quantMeses = mesFim - mesInicio + 1;
+  if (!confirm('Replicar "' + (r.observacoes||r.conta) + '" (R$ ' + (r.valor||0).toLocaleString('pt-BR') + ') para os meses ' + (mesInicio+1 > 12 ? 'já está no último mês' : (mesInicio) + ' a ' + mesFim + '/' + anoRef) + '?\n\n' + quantMeses + ' mês(es) serão criados.')) return;
+
+  let criados = 0;
+  for (let m = mesInicio + 1; m <= 12; m++) {
+    const mesStr = anoRef + '-' + String(m).padStart(2,'0') + '-01';
+    const { error } = await db.from('dre_lancamentos').insert({
+      conta: r.conta,
+      natureza: r.natureza || 'recorrente',
+      cliente_id: r.cliente_id || null,
+      equipamento_id: r.equipamento_id || null,
+      contrato_id: r.contrato_id || null,
+      mes_referencia: mesStr,
+      valor: r.valor,
+      observacoes: r.observacoes || '',
+      usuario: currentUser?.nome || '-'
+    });
+    if (!error) criados++;
+  }
+
+  showToast('Replicado em ' + criados + ' mês(es) até Dezembro/' + anoRef + '!');
   await carregarDREResultado();
 }
 
