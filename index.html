@@ -1799,6 +1799,7 @@ const PLANO_CONTAS = [
   { id:'hoteis', label:'Hotéis/Diárias/Transl.', nivel:2, tipo:'conta', cor:null },
   { id:'cursos', label:'Cursos/Seminários/Mentorias', nivel:2, tipo:'conta', cor:null },
   { id:'brindes', label:'Brindes/Marketing', nivel:2, tipo:'conta', cor:null },
+  { id:'total_adm', label:'= TOTAL CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'subtotal_adm', cor:'var(--teal)' },
   { id:'gpm_valor', label:'= RESULTADO GPM (R$)', nivel:1, tipo:'resultado', cor:null },
   { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
 ];
@@ -1968,11 +1969,11 @@ async function carregarDREResultado() {
 
   PLANO_CONTAS.forEach(conta => {
     const indent = conta.nivel===2?'padding-left:18px':conta.nivel===3?'padding-left:32px':'';
-    const isSubtotal = ['subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total'].includes(conta.tipo);
-    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total'].includes(conta.tipo)?'background:rgba(255,255,255,0.04)':'';
-    const bold = ['header','subheader','total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
+    const isSubtotal = ['subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total','subtotal_adm'].includes(conta.tipo);
+    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total','subtotal_adm'].includes(conta.tipo)?'background:rgba(255,255,255,0.04)':'';
+    const bold = ['header','subheader','total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total','subtotal_adm'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
     const fSize = ['header','subheader','subtotal_operacao'].includes(conta.tipo)?'font-size:12px':'font-size:11px';
-    const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
+    const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total','subtotal_adm'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
 
     if (conta.tipo === 'subtotal_operacao') {
       const vR = Array(12).fill(0).map((_,m)=>totalOpMes(m,'recorrente'));
@@ -2007,7 +2008,7 @@ async function carregarDREResultado() {
       if (conta.id==='iss')       return Array(12).fill(0).map((_,m)=>issMes(m,nat));
       if (conta.id==='mo_apoio')  return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
-      if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
+      if (conta.id==='total_adm')   return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat)+soma(admContas,m,nat));
       if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
       if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>totalOpMes(m,nat));
       if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
@@ -2035,7 +2036,7 @@ async function carregarDREResultado() {
     const cells = Array(12).fill(0).map((_,m)=>fmtN(valsR[m], conta.cor)+fmtN(valsP[m], conta.cor && 'var(--purple)')).join('');
     const tR = valsR.reduce((s,v)=>s+v,0);
     const tP = valsP.reduce((s,v)=>s+v,0);
-    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao'].includes(conta.id);
+    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao','total_adm'].includes(conta.id);
     const corR = isRes?(tR>=0?'var(--green)':'var(--red)'):(conta.cor||null);
     rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cells+fmtN(tR,corR)+fmtN(tP,'var(--purple)')+'</tr>';
   });
