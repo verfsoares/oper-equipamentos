@@ -616,7 +616,7 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="salarios">Salários</option>
             <option value="periculosidade">Periculosidade</option>
             <option value="bonus">Bônus</option>
-            <option value="encargos">Encargos Sociais</option>
+            <option value="encargos">Encargos</option>
             <option value="alimentacao">Alimentação</option>
             <option value="transporte">Transporte</option>
             <option value="aux_moradia">Auxílio Moradia</option>
@@ -695,7 +695,7 @@ textarea.form-input{resize:vertical;min-height:70px}
       <div class="form-group"><div class="form-label">Salarios (R$)</div><input class="form-input" type="number" id="dre-sal" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Periculosidade (R$)</div><input class="form-input" type="number" id="dre-peric" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Bonus (R$)</div><input class="form-input" type="number" id="dre-bonus" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Encargos Sociais (R$)</div><input class="form-input" type="number" id="dre-enc" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Encargos (R$)</div><input class="form-input" type="number" id="dre-enc" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Alimentacao (R$)</div><input class="form-input" type="number" id="dre-alim" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Transporte (R$)</div><input class="form-input" type="number" id="dre-transp" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Auxilio Moradia (R$)</div><input class="form-input" type="number" id="dre-moradia" placeholder="0" oninput="calcDRE()" /></div>
@@ -1771,7 +1771,7 @@ const PLANO_CONTAS = [
   { id:'salarios', label:'Salários', nivel:3, tipo:'conta', cor:null },
   { id:'periculosidade', label:'Periculosidade', nivel:3, tipo:'conta', cor:null },
   { id:'bonus', label:'Bônus', nivel:3, tipo:'conta', cor:null },
-  { id:'encargos', label:'Encargos Sociais', nivel:3, tipo:'conta', cor:null },
+  { id:'encargos', label:'Encargos', nivel:3, tipo:'conta', cor:null },
   { id:'alimentacao', label:'Alimentação', nivel:3, tipo:'conta', cor:null },
   { id:'transporte', label:'Transporte', nivel:3, tipo:'conta', cor:null },
   { id:'aux_moradia', label:'Auxílio Moradia', nivel:3, tipo:'conta', cor:null },
@@ -2076,7 +2076,7 @@ async function carregarDREResultado() {
   // Lista de lancamentos com editar/excluir
   const contaLabels = {
     receita:'Receita Bruta', pis:'PIS 1,65%', cofins:'COFINS 7,6%', iss:'ISS 5%',
-    salarios:'Salários', periculosidade:'Periculosidade', bonus:'Bônus', encargos:'Encargos Sociais',
+    salarios:'Salários', periculosidade:'Periculosidade', bonus:'Bônus', encargos:'Encargos',
     alimentacao:'Alimentação', transporte:'Transporte', aux_moradia:'Auxílio Moradia', pj_alocado:'PJ Alocado',
     manutencao:'Manutenção', borracharia:'Borracharia', combustiveis:'Combustíveis', outros_insumos:'Outros Insumos',
     alugueis:'Aluguéis', provisionamento:'Provisionamento', depreciacao:'Depreciação',
@@ -2466,7 +2466,7 @@ async function carregarDRE() {
     linha('Salarios', rows.reduce((s,r)=>s+(r.salarios||0),0), null, false, true) +
     linha('Periculosidade', rows.reduce((s,r)=>s+(r.periculosidade||0),0), null, false, true) +
     linha('Bonus', rows.reduce((s,r)=>s+(r.bonus||0),0), null, false, true) +
-    linha('Encargos Sociais', rows.reduce((s,r)=>s+(r.encargos_sociais||0),0), null, false, true) +
+    linha('Encargos', rows.reduce((s,r)=>s+(r.encargos_sociais||0),0), null, false, true) +
     linha('Alimentacao', rows.reduce((s,r)=>s+(r.alimentacao||0),0), null, false, true) +
     linha('Transporte', rows.reduce((s,r)=>s+(r.transporte||0),0), null, false, true) +
     linha('Auxilio Moradia', rows.reduce((s,r)=>s+(r.auxilio_moradia||0),0), null, false, true) +
