@@ -2081,13 +2081,13 @@ async function carregarDREResultado() {
   };
 
   const countEl = document.getElementById('drei-count');
-  if (countEl) countEl.textContent = rows.length + ' registros';
+  if (countEl) countEl.textContent = rowsFiltrados.length + ' registros';
 
   const lancEl = document.getElementById('drei-lancamentos');
   if (lancEl) {
-    lancEl.innerHTML = rows.length ?
+    lancEl.innerHTML = rowsFiltrados.length ?
       '<table><thead><tr><th>Mês</th><th>Natureza</th><th>Conta</th><th>Cliente</th><th>Valor</th><th>Descrição</th><th>Usuário</th><th></th></tr></thead><tbody>' +
-      rows.sort((a,b) => b.mes_referencia?.localeCompare(a.mes_referencia)).map(r =>
+      [...rowsFiltrados].sort((a,b) => b.mes_referencia?.localeCompare(a.mes_referencia)).map(r =>
         '<tr><td>'+r.mes_referencia?.substring(0,7)+'</td>'+
         '<td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+(r.natureza==='recorrente'?'rgba(16,185,129,0.15)':'rgba(139,92,246,0.15)')+';color:'+(r.natureza==='recorrente'?'var(--green)':'var(--purple)')+'">'+( r.natureza==='recorrente'?'REC':'PRJ')+'</span></td>'+
         '<td style="font-size:12px">'+(contaLabels[r.conta]||r.conta||'-')+'</td>'+
