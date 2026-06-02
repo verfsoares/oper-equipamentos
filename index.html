@@ -1190,11 +1190,29 @@ async function editarEquipamento(id) {
 }
 
 async function deletarEquipamento(id, frota) {
-  if (!confirm('Deseja excluir o equipamento ' + frota + '?')) return;
+  if (!confirm('Deseja excluir o equipamento ' + frota + '?\n\nATENÇÃO: Todos os apontamentos, custos e inspeções deste equipamento também serão excluídos!')) return;
+  // Exclui registros relacionados primeiro
+  await db.from('movimentacoes').delete().eq('equipamento_id', id);
+  await db.from('custos').delete().eq('equipamento_id', id);
+  await db.from('inspecoes').delete().eq('equipamento_id', id);
+  await db.from('dre_lancamentos').delete().eq('equipamento_id', id);
+  // Agora exclui o equipamento
   const { error } = await db.from('equipamentos').delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Equipamento excluido!');
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Equipamento ' + frota + ' excluído!');
   await carregarEquipamentos();
+}
+
+async function deletarCliente(id, nome) {
+  if (!confirm('Deseja excluir o cliente ' + nome + '?\n\nATENÇÃO: Os apontamentos e lançamentos vinculados a este cliente serão desvinculados.')) return;
+  // Desvincula movimentacoes
+  await db.from('movimentacoes').update({ cliente_id: null }).eq('cliente_id', id);
+  await db.from('dre_lancamentos').update({ cliente_id: null }).eq('cliente_id', id);
+  // Exclui o cliente
+  const { error } = await db.from('clientes').delete().eq('id', id);
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  showToast('Cliente ' + nome + ' excluído!');
+  await carregarClientes();
 }
 
 
@@ -1397,13 +1415,6 @@ async function editarCliente(id) {
   openModal('modal-cliente');
 }
 
-async function deletarCliente(id, nome) {
-  if (!confirm('Deseja excluir o cliente ' + nome + '?')) return;
-  const { error } = await db.from('clientes').delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Cliente excluido!');
-  await carregarClientes();
-}
 
 function fecharCliente() {
   document.getElementById('cl-id').value = '';
