@@ -2017,17 +2017,29 @@ async function carregarDREResultado() {
     };
 
     if (conta.id==='mc_pct') {
-      const cells = Array(12).fill(0).map((_,m)=>fmtP(mcMes(m,'recorrente'),liqMes(m,'recorrente'))+fmtP(mcMes(m,'projetado'),liqMes(m,'projetado'))).join('');
-      const totMcR=totRec(m=>mcMes(m,'recorrente')), liqR=totRec(m=>liqMes(m,'recorrente'));
-      const totMcP=totPrj(m=>mcMes(m,'projetado')), liqP=totPrj(m=>liqMes(m,'projetado'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,liqR)+fmtP(totMcP,liqP)+'</tr>';
+      // % = Margem Contribuicao / Receita Bruta
+      const cells = Array(12).fill(0).map((_,m)=>
+        fmtP(mcMes(m,'recorrente'),recMes(m,'recorrente')) +
+        fmtP(mcMes(m,'projetado'),recMes(m,'projetado'))
+      ).join('');
+      const totMcR  = totRec(m=>mcMes(m,'recorrente'));
+      const totRecR = totRec(m=>recMes(m,'recorrente'));
+      const totMcP  = totPrj(m=>mcMes(m,'projetado'));
+      const totRecP = totPrj(m=>recMes(m,'projetado'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,totRecR)+fmtP(totMcP,totRecP)+'</tr>';
       return;
     }
     if (conta.id==='gpm_pct') {
-      const cells = Array(12).fill(0).map((_,m)=>fmtP(gpmMes(m,'recorrente'),liqMes(m,'recorrente'))+fmtP(gpmMes(m,'projetado'),liqMes(m,'projetado'))).join('');
-      const totGR=totRec(m=>gpmMes(m,'recorrente')), liqR=totRec(m=>liqMes(m,'recorrente'));
-      const totGP=totPrj(m=>gpmMes(m,'projetado')), liqP=totPrj(m=>liqMes(m,'projetado'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,liqR)+fmtP(totGP,liqP)+'</tr>';
+      // % = Resultado GPM / Receita Bruta
+      const cells = Array(12).fill(0).map((_,m)=>
+        fmtP(gpmMes(m,'recorrente'),recMes(m,'recorrente')) +
+        fmtP(gpmMes(m,'projetado'),recMes(m,'projetado'))
+      ).join('');
+      const totGR   = totRec(m=>gpmMes(m,'recorrente'));
+      const totRecR = totRec(m=>recMes(m,'recorrente'));
+      const totGP   = totPrj(m=>gpmMes(m,'projetado'));
+      const totRecP = totPrj(m=>recMes(m,'projetado'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,totRecR)+fmtP(totGP,totRecP)+'</tr>';
       return;
     }
 
