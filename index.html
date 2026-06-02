@@ -145,7 +145,6 @@ textarea.form-input{resize:vertical;min-height:70px}
   </div>
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dre-resultado',this)"><span class="nav-icon">&#128200;</span><span>DRE</span></div>
-  <div class="nav-item" onclick="nav('dre-projetada',this)"><span class="nav-icon">&#128201;</span><span>DRE Projetada</span></div>
   <div class="nav-item" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operacao</div>
@@ -181,7 +180,7 @@ textarea.form-input{resize:vertical;min-height:70px}
           <option value="2025">2025</option>
           <option value="2024">2024</option>
         </select>
-        <button class="btn btn-primary" onclick="openModal('modal-drei')">+ Lançar</button>
+        <button class="btn btn-primary" onclick="abrirModalDRE()">+ Lançar</button>
         <button class="btn" onclick="carregarDREResultado()">&#8635; Atualizar</button>
       </div>
       <!-- TABELA DRE -->
@@ -560,50 +559,68 @@ textarea.form-input{resize:vertical;min-height:70px}
 
 <!-- MODAL LANCAMENTO DRE -->
 <div class="modal-overlay" id="modal-drei">
-  <div class="modal" style="max-width:500px">
+  <div class="modal" style="max-width:540px">
     <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
     <div class="form-grid">
-      <div class="form-group"><div class="form-label">Mes de Referencia *</div><input class="form-input" type="month" id="drei-mes" /></div>
+      <div class="form-group"><div class="form-label">Mês de Referência *</div><input class="form-input" type="month" id="drei-mes" /></div>
       <div class="form-group"><div class="form-label">Tipo *</div>
+        <select class="form-select" id="drei-natureza">
+          <option value="recorrente">Recorrente</option>
+          <option value="projetado">Projetado</option>
+        </select>
+      </div>
+      <div class="form-group full"><div class="form-label">Conta da DRE *</div>
         <select class="form-select" id="drei-tipo" onchange="atualizarContasDRE()">
-          <option value="receita">Receita Bruta</option>
-          <option value="pis">PIS 1,65%</option>
-          <option value="cofins">COFINS 7,6%</option>
-          <option value="iss">ISS 5%</option>
-          <option value="salarios">Salários</option>
-          <option value="periculosidade">Periculosidade</option>
-          <option value="bonus">Bônus</option>
-          <option value="encargos">Encargos Sociais</option>
-          <option value="alimentacao">Alimentação</option>
-          <option value="transporte">Transporte</option>
-          <option value="aux_moradia">Auxílio Moradia</option>
-          <option value="pj_alocado">PJ Alocado</option>
-          <option value="manutencao">Manutenção (Peças + Serviços)</option>
-          <option value="borracharia">Material de Borracharia</option>
-          <option value="combustiveis">Combustíveis/Lubrificantes</option>
-          <option value="outros_insumos">Outros Insumos Diretos</option>
-          <option value="alugueis">Aluguéis Máqs/Equiptos/Veics</option>
-          <option value="provisionamento">Provisionamento Preventivas</option>
-          <option value="depreciacao">Depreciação Equipamentos</option>
-          <option value="uniformes">Uniformes/EPIs</option>
-          <option value="servicos_terc">Serviços Terceiros</option>
-          <option value="fretes">Fretes</option>
-          <option value="mo_apoio">MO Apoio GPM 3%</option>
-          <option value="consultoria">Consultoria/Serv.Terc</option>
-          <option value="passagens">Passagens Aéreas</option>
-          <option value="hoteis">Hotéis/Diárias/Transl.</option>
-          <option value="cursos">Cursos/Seminários/Mentorias</option>
-          <option value="brindes">Brindes/Marketing</option>
+          <optgroup label="── RECEITA">
+            <option value="receita">Receita Bruta</option>
+          </optgroup>
+          <optgroup label="── IMPOSTOS">
+            <option value="pis">PIS 1,65%</option>
+            <option value="cofins">COFINS 7,6%</option>
+            <option value="iss">ISS 5%</option>
+          </optgroup>
+          <optgroup label="── MÃO DE OBRA">
+            <option value="salarios">Salários</option>
+            <option value="periculosidade">Periculosidade</option>
+            <option value="bonus">Bônus</option>
+            <option value="encargos">Encargos Sociais</option>
+            <option value="alimentacao">Alimentação</option>
+            <option value="transporte">Transporte</option>
+            <option value="aux_moradia">Auxílio Moradia</option>
+            <option value="pj_alocado">PJ Alocado</option>
+          </optgroup>
+          <optgroup label="── CUSTOS OPERACIONAIS">
+            <option value="manutencao">Manutenção (Peças + Serviços)</option>
+            <option value="borracharia">Material de Borracharia</option>
+            <option value="combustiveis">Combustíveis/Lubrificantes</option>
+            <option value="outros_insumos">Outros Insumos Diretos</option>
+            <option value="alugueis">Aluguéis Máqs/Equiptos/Veics</option>
+            <option value="provisionamento">Provisionamento Preventivas</option>
+            <option value="depreciacao">Depreciação Equipamentos</option>
+            <option value="uniformes">Uniformes/EPIs</option>
+            <option value="servicos_terc">Serviços Terceiros</option>
+            <option value="fretes">Fretes</option>
+          </optgroup>
+          <optgroup label="── CUSTOS ADMINISTRATIVOS">
+            <option value="mo_apoio">MO Apoio GPM 3%</option>
+            <option value="consultoria">Consultoria/Serv.Terc</option>
+            <option value="passagens">Passagens Aéreas</option>
+            <option value="hoteis">Hotéis/Diárias/Transl.</option>
+            <option value="cursos">Cursos/Seminários/Mentorias</option>
+            <option value="brindes">Brindes/Marketing</option>
+          </optgroup>
         </select>
       </div>
       <div class="form-group" id="drei-cliente-group"><div class="form-label">Unidade de Negócio (Cliente)</div><select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select></div>
+      <div class="form-group"><div class="form-label">Equipamento</div><select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="drei-contrato-sel"><option value="">- Nenhum -</option></select></div>
       <div class="form-group"><div class="form-label">Valor (R$) *</div><input class="form-input" type="number" id="drei-valor" placeholder="0,00" /></div>
-      <div class="form-group full"><div class="form-label">Observação</div><input class="form-input" id="drei-obs" placeholder="Descrição..." /></div>
+      <div class="form-group full"><div class="form-label">Descrição / Observação</div><input class="form-input" id="drei-obs" placeholder="Ex: Pneu dianteiro EP-K-121, NF 1234..." /></div>
     </div>
     <input type="hidden" id="drei-id" value="" />
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-drei')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarDRELancamento()">Salvar</button>
+      <button class="btn btn-primary" onclick="salvarDRELancamento()">Salvar Lançamento</button>
     </div>
   </div>
 </div>
@@ -1732,93 +1749,165 @@ function atualizarContasDRE() {
   if (clienteGroup) clienteGroup.style.display = tipo === 'receita' ? 'flex' : 'none';
 }
 
-async function carregarDREResultado() {
-  const ano = document.getElementById('drei-ano')?.value || new Date().getFullYear();
+async function abrirModalDRE() {
+  const hoje = new Date();
+  const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
+  document.getElementById('drei-mes').value = mesAtual;
+  document.getElementById('drei-id').value = '';
+  document.getElementById('drei-valor').value = '';
+  document.getElementById('drei-obs').value = '';
+  // Popular selects
   const sc = document.getElementById('drei-cliente');
   if (sc) sc.innerHTML = '<option value="">- Geral -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
-  const { data: rows } = await db.from('dre_lancamentos').select('*, clientes(razao_social)').gte('mes_referencia', ano+'-01-01').lte('mes_referencia', ano+'-12-31');
+  const se = document.getElementById('drei-equip-sel');
+  if (se) se.innerHTML = '<option value="">- Nenhum -</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
+  const sct = document.getElementById('drei-contrato-sel');
+  if (sct) sct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
+  atualizarContasDRE();
+  openModal('modal-drei');
+}
+
+async function carregarDREResultado() {
+  const ano = document.getElementById('drei-ano')?.value || new Date().getFullYear();
+
+  const { data: rows } = await db.from('dre_lancamentos')
+    .select('*, clientes(razao_social)')
+    .gte('mes_referencia', ano+'-01-01')
+    .lte('mes_referencia', ano+'-12-31');
+
   if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
 
+  // Organiza: dados[conta][mes][natureza] = valor
   const dados = {};
-  const dadosCliente = {};
+  const dadosCliente = {}; // [cliente_id][mes][natureza]
+
   rows.forEach(r => {
     const m = new Date(r.mes_referencia+'T12:00:00').getMonth();
-    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(0);
-    dados[r.conta][m] += r.valor || 0;
+    const nat = r.natureza || 'recorrente';
+    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(null).map(()=>({recorrente:0,projetado:0}));
+    dados[r.conta][m][nat] = (dados[r.conta][m][nat]||0) + (r.valor||0);
     if (r.conta === 'receita' && r.cliente_id) {
-      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(0) };
-      dadosCliente[r.cliente_id].vals[m] += r.valor || 0;
+      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(null).map(()=>({recorrente:0,projetado:0})) };
+      dadosCliente[r.cliente_id].vals[m][nat] = (dadosCliente[r.cliente_id].vals[m][nat]||0) + (r.valor||0);
     }
   });
 
-  const g = (conta, m) => dados[conta]?.[m] || 0;
-  const soma = (contas, m) => contas.reduce((s,c) => s+g(c,m), 0);
-  const fmtN = (v, cor) => { const c = cor||(v<0?'var(--red)':v>0?'inherit':'var(--muted)'); return '<td style="text-align:right;font-size:12px;color:'+c+';padding:6px 10px;white-space:nowrap">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>'; };
-  const fmtP = (v, base) => { const p=base!==0?(v/base*100).toFixed(1)+'%':'-'; const c=v>=0?'var(--green)':'var(--red)'; return '<td style="text-align:right;font-size:12px;color:'+c+';padding:6px 10px">'+p+'</td>'; };
+  const g = (conta,m,nat) => dados[conta]?.[m]?.[nat] || 0;
+  const soma = (contas,m,nat) => contas.reduce((s,c)=>s+g(c,m,nat),0);
+  const recMes = (m,nat) => Object.values(dadosCliente).reduce((s,c)=>s+(c.vals[m][nat]||0),0);
+  const liqMes = (m,nat) => recMes(m,nat)-g('pis',m,nat)-g('cofins',m,nat)-g('iss',m,nat);
   const moContas = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
   const coContas = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const admContas = ['mo_apoio','consultoria','passagens','hoteis','cursos','brindes'];
-  const recMes = m => Object.values(dadosCliente).reduce((s,c)=>s+c.vals[m],0);
-  const liqMes = m => recMes(m)-g('pis',m)-g('cofins',m)-g('iss',m);
-  const mcMes = m => liqMes(m)-soma(moContas,m)-soma(coContas,m);
-  const gpmMes = m => mcMes(m)-soma(admContas,m);
+  const mcMes = (m,nat) => liqMes(m,nat)-soma(moContas,m,nat)-soma(coContas,m,nat);
+  const gpmMes = (m,nat) => mcMes(m,nat)-soma(admContas,m,nat);
 
-  const mesesCols = MESES_LABELS.map((l,i)=>'<th style="text-align:right;min-width:90px;font-size:11px;color:var(--muted);padding:8px 10px">'+l+'/'+String(ano).slice(2)+'</th>').join('')+'<th style="text-align:right;min-width:100px;font-size:11px;color:var(--accent2);padding:8px 10px">TOTAL</th>';
+  const fmtN = (v,cor) => {
+    const c = cor||(v<0?'var(--red)':v===0?'var(--muted)':'inherit');
+    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border)">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>';
+  };
+  const fmtP = (v,base) => {
+    const p = base!==0?(v/base*100).toFixed(1)+'%':'-';
+    const c = v>=0?'var(--green)':'var(--red)';
+    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;border-left:1px solid var(--border)">'+p+'</td>';
+  };
+  const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'recorrente')).reduce((s,v)=>s+v,0);
+  const totPrj = fn => Array(12).fill(0).map((_,m)=>fn(m,'projetado')).reduce((s,v)=>s+v,0);
+
+  // Cabeçalho com 2 sub-colunas por mês
+  const thMes = MESES_LABELS.map(l =>
+    '<th colspan="2" style="text-align:center;font-size:11px;color:var(--muted);padding:6px 4px;border-left:2px solid var(--border2)">'+l+'/'+String(ano).slice(2)+'</th>'
+  ).join('') + '<th colspan="2" style="text-align:center;font-size:11px;color:var(--accent2);padding:6px 4px;border-left:2px solid var(--border2)">TOTAL</th>';
+
+  const thSub = Array(13).fill(0).map(()=>
+    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">REC</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">PRJ</th>'
+  ).join('');
 
   let rowsHtml = '';
+
   PLANO_CONTAS.forEach(conta => {
-    const indent = conta.nivel===2?'padding-left:20px':conta.nivel===3?'padding-left:36px':'';
-    const bg = ['header'].includes(conta.tipo)?'background:rgba(255,255,255,0.05)':['subheader'].includes(conta.tipo)?'background:rgba(255,255,255,0.02)':['total','resultado','pct'].includes(conta.tipo)?'background:rgba(255,255,255,0.03)':'';
+    const indent = conta.nivel===2?'padding-left:18px':conta.nivel===3?'padding-left:32px':'';
+    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct'].includes(conta.tipo)?'background:rgba(255,255,255,0.03)':'';
     const bold = ['header','subheader','total','resultado','pct'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
+    const fSize = ['header','subheader'].includes(conta.tipo)?'font-size:12px':'font-size:11px';
+    const borderB = ['total','resultado','pct'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
 
     if (['header','subheader'].includes(conta.tipo)) {
-      rowsHtml += '<tr style="'+bg+'"><td colspan="14" style="padding:8px 12px;'+indent+';font-size:12px;'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td></tr>';
+      rowsHtml += '<tr style="'+bg+'"><td colspan="27" style="padding:7px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td></tr>';
       return;
     }
+
     if (conta.tipo === 'clientes') {
       Object.entries(dadosCliente).forEach(([cid,cdata]) => {
-        const tot = cdata.vals.reduce((s,v)=>s+v,0);
-        rowsHtml += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 12px 6px 28px;font-size:12px;color:var(--muted)">'+cdata.nome+'</td>'+cdata.vals.map(v=>fmtN(v,'var(--green)')).join('')+fmtN(tot,'var(--green)')+'</tr>';
+        const cells = Array(12).fill(0).map((_,m)=>fmtN(cdata.vals[m].recorrente,'var(--green)')+fmtN(cdata.vals[m].projetado,'var(--purple)')).join('');
+        const totR = Array(12).fill(0).map((_,m)=>cdata.vals[m].recorrente).reduce((s,v)=>s+v,0);
+        const totP = Array(12).fill(0).map((_,m)=>cdata.vals[m].projetado).reduce((s,v)=>s+v,0);
+        rowsHtml += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 12px 5px 28px;font-size:11px;color:var(--muted);position:sticky;left:0;background:var(--surface)">'+cdata.nome+'</td>'+cells+fmtN(totR,'var(--green)')+fmtN(totP,'var(--purple)')+'</tr>';
       });
-      if (!Object.keys(dadosCliente).length) rowsHtml += '<tr><td colspan="14" style="padding:6px 28px;font-size:12px;color:var(--muted)">Nenhuma receita lançada — clique em + Lançar</td></tr>';
+      if (!Object.keys(dadosCliente).length) rowsHtml += '<tr><td colspan="27" style="padding:5px 28px;font-size:11px;color:var(--muted)">Nenhuma receita lançada</td></tr>';
       return;
     }
 
-    let vals = Array(12).fill(0);
-    if (conta.id==='total_receita') vals = Array(12).fill(0).map((_,m)=>recMes(m));
-    else if (conta.id==='receita_liq') vals = Array(12).fill(0).map((_,m)=>liqMes(m));
-    else if (conta.id==='mc_valor') vals = Array(12).fill(0).map((_,m)=>mcMes(m));
-    else if (conta.id==='mc_pct') { const cells=Array(12).fill(0).map((_,m)=>fmtP(mcMes(m),liqMes(m))).join('')+fmtP(Array(12).fill(0).map((_,m)=>mcMes(m)).reduce((s,v)=>s+v,0),Array(12).fill(0).map((_,m)=>liqMes(m)).reduce((s,v)=>s+v,0)); const tot=Array(12).fill(0).map((_,m)=>mcMes(m)).reduce((s,v)=>s+v,0); const cor=tot>=0?'var(--green)':'var(--red)'; rowsHtml+='<tr style="'+bg+';border-bottom:2px solid var(--border)"><td style="padding:8px 12px;'+indent+';font-size:13px;'+bold+';color:'+cor+'">'+conta.label+'</td>'+cells+'</tr>'; return; }
-    else if (conta.id==='gpm_valor') vals = Array(12).fill(0).map((_,m)=>gpmMes(m));
-    else if (conta.id==='gpm_pct') { const cells=Array(12).fill(0).map((_,m)=>fmtP(gpmMes(m),liqMes(m))).join('')+fmtP(Array(12).fill(0).map((_,m)=>gpmMes(m)).reduce((s,v)=>s+v,0),Array(12).fill(0).map((_,m)=>liqMes(m)).reduce((s,v)=>s+v,0)); const tot=Array(12).fill(0).map((_,m)=>gpmMes(m)).reduce((s,v)=>s+v,0); const cor=tot>=0?'var(--green)':'var(--red)'; rowsHtml+='<tr style="'+bg+';border-bottom:2px solid var(--border)"><td style="padding:8px 12px;'+indent+';font-size:13px;'+bold+';color:'+cor+'">'+conta.label+'</td>'+cells+'</tr>'; return; }
-    else vals = Array(12).fill(0).map((_,m)=>g(conta.id,m));
+    // Linhas calculadas
+    const getVals = (nat) => {
+      if (conta.id==='total_receita') return Array(12).fill(0).map((_,m)=>recMes(m,nat));
+      if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
+      if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
+      if (conta.id==='gpm_valor') return Array(12).fill(0).map((_,m)=>gpmMes(m,nat));
+      return Array(12).fill(0).map((_,m)=>g(conta.id,m,nat));
+    };
 
-    const tot = vals.reduce((s,v)=>s+v,0);
+    if (conta.id==='mc_pct') {
+      const cells = Array(12).fill(0).map((_,m)=>fmtP(mcMes(m,'recorrente'),liqMes(m,'recorrente'))+fmtP(mcMes(m,'projetado'),liqMes(m,'projetado'))).join('');
+      const totMcR=totRec(m=>mcMes(m,'recorrente')), liqR=totRec(m=>liqMes(m,'recorrente'));
+      const totMcP=totPrj(m=>mcMes(m,'projetado')), liqP=totPrj(m=>liqMes(m,'projetado'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,liqR)+fmtP(totMcP,liqP)+'</tr>';
+      return;
+    }
+    if (conta.id==='gpm_pct') {
+      const cells = Array(12).fill(0).map((_,m)=>fmtP(gpmMes(m,'recorrente'),liqMes(m,'recorrente'))+fmtP(gpmMes(m,'projetado'),liqMes(m,'projetado'))).join('');
+      const totGR=totRec(m=>gpmMes(m,'recorrente')), liqR=totRec(m=>liqMes(m,'recorrente'));
+      const totGP=totPrj(m=>gpmMes(m,'projetado')), liqP=totPrj(m=>liqMes(m,'projetado'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,liqR)+fmtP(totGP,liqP)+'</tr>';
+      return;
+    }
+
+    const valsR = getVals('recorrente');
+    const valsP = getVals('projetado');
+    const cells = Array(12).fill(0).map((_,m)=>fmtN(valsR[m], conta.cor)+fmtN(valsP[m], conta.cor && 'var(--purple)')).join('');
+    const tR = valsR.reduce((s,v)=>s+v,0);
+    const tP = valsP.reduce((s,v)=>s+v,0);
     const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor'].includes(conta.id);
-    const corVal = isRes ? (tot>=0?'var(--green)':'var(--red)') : (conta.cor||null);
-    const borderB = isRes ? 'border-bottom:2px solid var(--border)' : 'border-bottom:1px solid var(--border)';
-    const paddingV = isRes ? 'padding:8px 12px' : 'padding:6px 12px';
-    const fSize = isRes ? 'font-size:13px' : 'font-size:12px';
-    rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="'+paddingV+';'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td>'+vals.map(v=>fmtN(v,corVal)).join('')+fmtN(tot,corVal)+'</tr>';
+    const corR = isRes?(tR>=0?'var(--green)':'var(--red)'):(conta.cor||null);
+    rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cells+fmtN(tR,corR)+fmtN(tP,'var(--purple)')+'</tr>';
   });
 
   document.getElementById('dre-resultado-content').innerHTML =
-    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">'+
-    '<thead><tr style="background:rgba(255,255,255,0.05);border-bottom:2px solid var(--border)">'+
-    '<th style="text-align:left;padding:10px 12px;font-size:12px;color:var(--muted);min-width:220px;position:sticky;left:0;background:var(--surface2)">CONTA</th>'+
-    mesesCols+'</tr></thead><tbody>'+rowsHtml+'</tbody></table></div>';
+    '<div style="overflow-x:auto"><table style="border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:max-content">'+
+    '<thead>'+
+    '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)">'+
+    '<th rowspan="2" style="text-align:left;padding:10px 12px;font-size:12px;color:var(--muted);min-width:200px;position:sticky;left:0;background:var(--surface2)">CONTA</th>'+
+    thMes+'</tr>'+
+    '<tr style="background:rgba(255,255,255,0.03);border-bottom:2px solid var(--border2)">'+thSub+'</tr>'+
+    '</thead><tbody>'+rowsHtml+'</tbody></table></div>';
 }
 
 async function salvarDRELancamento() {
   const mes = document.getElementById('drei-mes').value;
-  const tipo = document.getElementById('drei-tipo').value;
+  const conta = document.getElementById('drei-tipo').value;
+  const natureza = document.getElementById('drei-natureza').value;
   const valor = parseFloat(document.getElementById('drei-valor').value) || 0;
-  if (!mes || !tipo || !valor) return showToast('Preencha mês, tipo e valor', true);
+  if (!mes || !conta || !valor) return showToast('Preencha mês, conta e valor', true);
   const { error } = await db.from('dre_lancamentos').insert({
-    conta: tipo,
+    conta,
+    natureza,
     cliente_id: document.getElementById('drei-cliente').value || null,
+    equipamento_id: document.getElementById('drei-equip-sel').value || null,
+    contrato_id: document.getElementById('drei-contrato-sel').value || null,
     mes_referencia: mes + '-01',
     valor,
+    observacoes: document.getElementById('drei-obs').value,
     usuario: currentUser?.nome || '-'
   });
   if (error) return showToast('Erro: ' + error.message, true);
@@ -1829,8 +1918,10 @@ async function salvarDRELancamento() {
   await carregarDREResultado();
 }
 
+
 // ============================================================
 // DRE RECORRENTE E PROJETADA
+// ============================================================
 function prefixo(tipo) { return tipo === 'recorrente' ? 'drec' : 'drep'; }
 function tabela(tipo) { return tipo === 'recorrente' ? 'resultado_recorrente' : 'resultado_projetado'; }
 
