@@ -221,7 +221,7 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
-    <!-- DRE REAORRENTE -->
+    <!-- DRE REALIZADO -->
     <div class="view" id="v-dre-realizado">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <select class="form-select" style="width:200px" id="drec-filter-equip" onchange="carregarDRETipo('realizado')"><option value="">Todos os equipamentos</option></select>
@@ -594,13 +594,13 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="modal" style="max-width:540px">
     <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
 
-    <!-- SELECTOR REA / PRV -->
+    <!-- SELECTOR REALIZADO / PREVISTO -->
     <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border2);border-radius:10px;overflow:hidden">
       <button id="btn-nat-rec" onclick="selecionarNatureza('realizado')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(16,185,129,0.2);color:var(--green);border-right:1px solid var(--border2)">
-        &#9679; REAORRENTE
+        &#9679; REALIZADO
       </button>
       <button id="btn-nat-prj" onclick="selecionarNatureza('previsto')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted)">
-        &#9711; PROJETADO
+        &#9711; PREVISTO
       </button>
     </div>
     <input type="hidden" id="drei-natureza" value="realizado" />
@@ -1839,9 +1839,14 @@ function obterRowsFiltrados(rows) {
   if (grupo === 'todas') return rows;
   const ids = getClientesDoGrupo(grupo);
   if (!ids || ids.length === 0) return [];
-  // Filtra APENAS lancamentos com cliente do grupo
-  // Lançamentos sem cliente_id NAO aparecem nas unidades especificas
-  return rows.filter(r => r.cliente_id && ids.includes(r.cliente_id));
+  return rows.filter(r => {
+    // Receita: filtra estritamente pelo cliente do grupo
+    if (r.conta === 'receita') return r.cliente_id && ids.includes(r.cliente_id);
+    // Custos COM cliente: filtra pelo cliente do grupo
+    if (r.cliente_id) return ids.includes(r.cliente_id);
+    // Custos SEM cliente: nao aparecem nas unidades especificas
+    return false;
+  });
 }
 
 function selecionarNatureza(nat) {
@@ -2200,7 +2205,7 @@ async function deletarDRELancamento(id) {
 
 
 // ============================================================
-// DRE REAORRENTE E PROJETADA
+// DRE REALIZADO E PREVISTO
 // ============================================================
 function prefixo(tipo) { return tipo === 'realizado' ? 'drec' : 'drep'; }
 function tabela(tipo) { return tipo === 'realizado' ? 'resultado_realizado' : 'resultado_previsto'; }
