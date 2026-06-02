@@ -141,7 +141,7 @@ textarea.form-input{resize:vertical;min-height:70px}
 <div id="sidebar">
   <div class="brand">
     <div class="brand-icon">&#9881;&#65039;</div>
-    <div><div class="brand-name">OPER</div><div class="brand-sub">Gestao Operacional</div></div>
+    <div><div class="brand-name">OPER</div><div class="brand-sub">Unidade de Negocio Movimentacao de Carga</div></div>
   </div>
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dre-resultado',this)"><span class="nav-icon">&#128200;</span><span>DRE</span></div>
@@ -174,7 +174,7 @@ textarea.form-input{resize:vertical;min-height:70px}
     <!-- DRE RESULTADO -->
     <div class="view active" id="v-dre-resultado">
       <!-- FILTROS -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <select class="form-select" style="width:120px" id="drei-ano" onchange="carregarDREResultado()">
           <option value="2026">2026</option>
           <option value="2025">2025</option>
@@ -182,6 +182,20 @@ textarea.form-input{resize:vertical;min-height:70px}
         </select>
         <button class="btn btn-primary" onclick="abrirModalDRE()">+ Lançar</button>
         <button class="btn" onclick="carregarDREResultado()">&#8635; Atualizar</button>
+      </div>
+      <!-- LEGENDA -->
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--muted);font-weight:600">LEGENDA:</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:14px;height:14px;border-radius:3px;background:rgba(16,185,129,0.25);border:1px solid var(--green)"></div>
+          <span style="font-size:12px;color:var(--green);font-weight:600">REC</span>
+          <span style="font-size:12px;color:var(--muted)">= Recorrente (contratos em andamento)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:14px;height:14px;border-radius:3px;background:rgba(139,92,246,0.25);border:1px solid var(--purple)"></div>
+          <span style="font-size:12px;color:var(--purple);font-weight:600">PRJ</span>
+          <span style="font-size:12px;color:var(--muted)">= Projetado (novos negócios futuros)</span>
+        </div>
       </div>
       <!-- TABELA DRE -->
       <div style="overflow-x:auto">
@@ -561,15 +575,21 @@ textarea.form-input{resize:vertical;min-height:70px}
 <div class="modal-overlay" id="modal-drei">
   <div class="modal" style="max-width:540px">
     <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
+
+    <!-- SELECTOR REC / PRJ -->
+    <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border2);border-radius:10px;overflow:hidden">
+      <button id="btn-nat-rec" onclick="selecionarNatureza('recorrente')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(16,185,129,0.2);color:var(--green);border-right:1px solid var(--border2)">
+        &#9679; RECORRENTE
+      </button>
+      <button id="btn-nat-prj" onclick="selecionarNatureza('projetado')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted)">
+        &#9711; PROJETADO
+      </button>
+    </div>
+    <input type="hidden" id="drei-natureza" value="recorrente" />
+
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Mês de Referência *</div><input class="form-input" type="month" id="drei-mes" /></div>
-      <div class="form-group"><div class="form-label">Tipo *</div>
-        <select class="form-select" id="drei-natureza">
-          <option value="recorrente">Recorrente</option>
-          <option value="projetado">Projetado</option>
-        </select>
-      </div>
-      <div class="form-group full"><div class="form-label">Conta da DRE *</div>
+      <div class="form-group"><div class="form-label">Conta da DRE *</div>
         <select class="form-select" id="drei-tipo" onchange="atualizarContasDRE()">
           <optgroup label="── RECEITA">
             <option value="receita">Receita Bruta</option>
@@ -612,10 +632,10 @@ textarea.form-input{resize:vertical;min-height:70px}
         </select>
       </div>
       <div class="form-group" id="drei-cliente-group"><div class="form-label">Unidade de Negócio (Cliente)</div><select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select></div>
-      <div class="form-group"><div class="form-label">Equipamento</div><select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">Máquina / Equipamento</div><select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select></div>
       <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="drei-contrato-sel"><option value="">- Nenhum -</option></select></div>
       <div class="form-group"><div class="form-label">Valor (R$) *</div><input class="form-input" type="number" id="drei-valor" placeholder="0,00" /></div>
-      <div class="form-group full"><div class="form-label">Descrição / Observação</div><input class="form-input" id="drei-obs" placeholder="Ex: Pneu dianteiro EP-K-121, NF 1234..." /></div>
+      <div class="form-group full"><div class="form-label">Descrição / Observação</div><input class="form-input" id="drei-obs" placeholder="Ex: Pneu EP-K-121, NF 1234, Salário operador João..." /></div>
     </div>
     <input type="hidden" id="drei-id" value="" />
     <div class="modal-footer">
@@ -1742,6 +1762,19 @@ const PLANO_CONTAS = [
   { id:'gpm_valor', label:'= RESULTADO GPM (R$)', nivel:1, tipo:'resultado', cor:null },
   { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
 ];
+
+function selecionarNatureza(nat) {
+  document.getElementById('drei-natureza').value = nat;
+  const btnRec = document.getElementById('btn-nat-rec');
+  const btnPrj = document.getElementById('btn-nat-prj');
+  if (nat === 'recorrente') {
+    btnRec.style.background = 'rgba(16,185,129,0.2)'; btnRec.style.color = 'var(--green)';
+    btnPrj.style.background = 'var(--surface2)'; btnPrj.style.color = 'var(--muted)';
+  } else {
+    btnPrj.style.background = 'rgba(139,92,246,0.2)'; btnPrj.style.color = 'var(--purple)';
+    btnRec.style.background = 'var(--surface2)'; btnRec.style.color = 'var(--muted)';
+  }
+}
 
 function atualizarContasDRE() {
   const tipo = document.getElementById('drei-tipo').value;
