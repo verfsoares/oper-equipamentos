@@ -652,9 +652,18 @@ textarea.form-input{resize:vertical;min-height:70px}
           </optgroup>
         </select>
       </div>
-      <div class="form-group" id="drei-cliente-group"><div class="form-label">Unidade de Negócio (Cliente)</div><select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select></div>
-      <div class="form-group"><div class="form-label">Máquina / Equipamento</div><select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select></div>
-      <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="drei-contrato-sel"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group" id="drei-cliente-group">
+        <div class="form-label">Unidade de Negócio (Cliente)</div>
+        <select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select>
+      </div>
+      <div class="form-group" id="drei-contrato-group" style="display:none">
+        <div class="form-label">Contrato</div>
+        <select class="form-select" id="drei-contrato-sel"><option value="">- Nenhum -</option></select>
+      </div>
+      <div class="form-group" id="drei-equip-group" style="display:none">
+        <div class="form-label">Máquina / Equipamento</div>
+        <select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select>
+      </div>
       <div class="form-group"><div class="form-label">Valor (R$) *</div><input class="form-input" type="number" id="drei-valor" placeholder="0,00" /></div>
       <div class="form-group full"><div class="form-label">Descrição / Observação</div><input class="form-input" id="drei-obs" placeholder="Ex: Pneu EP-K-121, NF 1234, Salário operador João..." /></div>
     </div>
@@ -1857,9 +1866,21 @@ function selecionarNatureza(nat) {
 }
 
 function atualizarContasDRE() {
-  const tipo = document.getElementById('drei-tipo').value;
-  const clienteGroup = document.getElementById('drei-cliente-group');
-  if (clienteGroup) clienteGroup.style.display = tipo === 'receita' ? 'flex' : 'none';
+  const conta = document.getElementById('drei-tipo').value;
+  const isReceita = conta === 'receita';
+  const isImposto = ['pis','cofins','iss'].includes(conta);
+
+  // Cliente/Unidade de Negocio — aparece sempre
+  const gcli = document.getElementById('drei-cliente-group');
+  if (gcli) gcli.style.display = 'flex';
+
+  // Contrato — aparece na receita
+  const gcon = document.getElementById('drei-contrato-group');
+  if (gcon) gcon.style.display = isReceita ? 'flex' : 'none';
+
+  // Maquina — aparece nas despesas (nao na receita nem nos impostos)
+  const geq = document.getElementById('drei-equip-group');
+  if (geq) geq.style.display = (!isReceita && !isImposto) ? 'flex' : 'none';
 }
 
 async function abrirModalDRE() {
