@@ -1767,7 +1767,7 @@ const PLANO_CONTAS = [
   { id:'cofins', label:'(-) COFINS 7,6%', nivel:2, tipo:'conta', cor:'var(--red)' },
   { id:'iss', label:'(-) ISS 5%', nivel:2, tipo:'conta', cor:'var(--red)' },
   { id:'receita_liq', label:'= RECEITA LÍQUIDA', nivel:1, tipo:'total', cor:'var(--accent2)' },
-  { id:'operacao', label:'OPERAÇÃO', nivel:1, tipo:'header', cor:'var(--amber)' },
+  { id:'operacao', label:'OPERAÇÃO', nivel:1, tipo:'subtotal_operacao', cor:'var(--amber)' },
   { id:'mao_obra', label:'MÃO DE OBRA', nivel:2, tipo:'subheader', cor:'var(--amber)' },
   { id:'salarios', label:'Salários', nivel:3, tipo:'conta', cor:null },
   { id:'periculosidade', label:'Periculosidade', nivel:3, tipo:'conta', cor:null },
@@ -1777,6 +1777,7 @@ const PLANO_CONTAS = [
   { id:'transporte', label:'Transporte', nivel:3, tipo:'conta', cor:null },
   { id:'aux_moradia', label:'Auxílio Moradia', nivel:3, tipo:'conta', cor:null },
   { id:'pj_alocado', label:'PJ Alocado', nivel:3, tipo:'conta', cor:null },
+  { id:'total_mao_obra', label:'= TOTAL MÃO DE OBRA', nivel:2, tipo:'subtotal_mo', cor:'var(--amber)' },
   { id:'custos_op', label:'CUSTOS OPERACIONAIS', nivel:2, tipo:'subheader', cor:'var(--purple)' },
   { id:'manutencao', label:'Manutenção (Peças + Serviços)', nivel:3, tipo:'conta', cor:null },
   { id:'borracharia', label:'Material de Borracharia', nivel:3, tipo:'conta', cor:null },
@@ -1788,6 +1789,8 @@ const PLANO_CONTAS = [
   { id:'uniformes', label:'Uniformes/EPIs', nivel:3, tipo:'conta', cor:null },
   { id:'servicos_terc', label:'Serviços Terceiros', nivel:3, tipo:'conta', cor:null },
   { id:'fretes', label:'Fretes', nivel:3, tipo:'conta', cor:null },
+  { id:'total_custos_op', label:'= TOTAL CUSTOS OPERACIONAIS', nivel:2, tipo:'subtotal_co', cor:'var(--purple)' },
+  { id:'total_operacao', label:'= TOTAL OPERAÇÃO', nivel:1, tipo:'subtotal_operacao_total', cor:'var(--amber)' },
   { id:'mc_valor', label:'= MARGEM CONTRIBUIÇÃO (R$)', nivel:1, tipo:'resultado', cor:null },
   { id:'mc_pct', label:'= MARGEM CONTRIBUIÇÃO (%)', nivel:1, tipo:'pct', cor:null },
   { id:'custos_adm', label:'CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'header', cor:'var(--teal)' },
@@ -1964,10 +1967,21 @@ async function carregarDREResultado() {
 
   PLANO_CONTAS.forEach(conta => {
     const indent = conta.nivel===2?'padding-left:18px':conta.nivel===3?'padding-left:32px':'';
-    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct'].includes(conta.tipo)?'background:rgba(255,255,255,0.03)':'';
-    const bold = ['header','subheader','total','resultado','pct'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
-    const fSize = ['header','subheader'].includes(conta.tipo)?'font-size:12px':'font-size:11px';
-    const borderB = ['total','resultado','pct'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
+    const isSubtotal = ['subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total'].includes(conta.tipo);
+    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total'].includes(conta.tipo)?'background:rgba(255,255,255,0.04)':'';
+    const bold = ['header','subheader','total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
+    const fSize = ['header','subheader','subtotal_operacao'].includes(conta.tipo)?'font-size:12px':'font-size:11px';
+    const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
+
+    if (conta.tipo === 'subtotal_operacao') {
+      // OPERAÇÃO — header mas com valores calculados
+      const vR = Array(12).fill(0).map((_,m)=>soma(moContas,m,'recorrente')+soma(coContas,m,'recorrente'));
+      const vP = Array(12).fill(0).map((_,m)=>soma(moContas,m,'projetado')+soma(coContas,m,'projetado'));
+      const cells = Array(12).fill(0).map((_,m)=>fmtN(vR[m],'var(--amber)')+fmtN(vP[m],'var(--amber)')).join('');
+      const tR = vR.reduce((s,v)=>s+v,0), tP = vP.reduce((s,v)=>s+v,0);
+      rowsHtml += '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)"><td style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--amber);position:sticky;left:0;background:var(--surface2)">'+conta.label+'</td>'+cells+fmtN(tR,'var(--amber)')+fmtN(tP,'var(--amber)')+'</tr>';
+      return;
+    }
 
     if (['header','subheader'].includes(conta.tipo)) {
       rowsHtml += '<tr style="'+bg+'"><td colspan="27" style="padding:7px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td></tr>';
@@ -1992,6 +2006,9 @@ async function carregarDREResultado() {
       if (conta.id==='cofins') return Array(12).fill(0).map((_,m)=>cofinsMes(m,nat));
       if (conta.id==='iss')    return Array(12).fill(0).map((_,m)=>issMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
+      if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
+      if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
+      if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat)+soma(coContas,m,nat));
       if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
       if (conta.id==='gpm_valor') return Array(12).fill(0).map((_,m)=>gpmMes(m,nat));
       return Array(12).fill(0).map((_,m)=>g(conta.id,m,nat));
@@ -2017,7 +2034,7 @@ async function carregarDREResultado() {
     const cells = Array(12).fill(0).map((_,m)=>fmtN(valsR[m], conta.cor)+fmtN(valsP[m], conta.cor && 'var(--purple)')).join('');
     const tR = valsR.reduce((s,v)=>s+v,0);
     const tP = valsP.reduce((s,v)=>s+v,0);
-    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor'].includes(conta.id);
+    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao'].includes(conta.id);
     const corR = isRes?(tR>=0?'var(--green)':'var(--red)'):(conta.cor||null);
     rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cells+fmtN(tR,corR)+fmtN(tP,'var(--purple)')+'</tr>';
   });
