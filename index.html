@@ -1946,21 +1946,27 @@ async function carregarDREResultado() {
   const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
   const gpmMes = (m,nat) => mcMes(m,nat) - moApoioMes(m,nat) - soma(admContas,m,nat);
 
-  const fmtN = (v,cor) => {
-    if (v === 0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border)">-</td>';
-    const c = cor || (v < 0 ? 'var(--red)' : 'inherit');
-    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border)">R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>';
+  const fmtN = (v, nat, corOverride) => {
+    const bg = nat==='previsto' ? 'rgba(139,92,246,0.04)' : '';
+    if (v === 0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">-</td>';
+    const c = corOverride || (v < 0 ? 'var(--red)' : 'inherit');
+    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>';
   };
-  const fmtNResult = (v) => {
-    // Para linhas de resultado — sempre mostra, mesmo negativo
-    const c = v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--muted)';
-    return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border)">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>';
+  const fmtNResult = (v, nat) => {
+    const bg = nat==='previsto' ? 'rgba(139,92,246,0.08)' : 'rgba(16,185,129,0.06)';
+    const c = nat==='previsto'
+      ? (v>0?'#a78bfa':v<0?'var(--red)':'var(--muted)')
+      : (v>0?'var(--green)':v<0?'var(--red)':'var(--muted)');
+    return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>';
   };
-  const fmtP = (v,base) => {
-    if (base === 0 && v === 0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)">-</td>';
-    const p = base !== 0 ? (v/base*100).toFixed(1)+'%' : (v > 0 ? '∞' : v < 0 ? '-∞' : '-');
-    const c = v >= 0 ? 'var(--green)' : 'var(--red)';
-    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;border-left:1px solid var(--border)">'+p+'</td>';
+  const fmtP = (v, base, nat) => {
+    const bg = nat==='previsto' ? 'rgba(139,92,246,0.08)' : 'rgba(16,185,129,0.06)';
+    if (base===0 && v===0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">-</td>';
+    const p = base!==0 ? (v/base*100).toFixed(1)+'%' : (v>0?'∞':v<0?'-∞':'-');
+    const c = nat==='previsto'
+      ? (v>=0?'#a78bfa':'var(--red)')
+      : (v>=0?'var(--green)':'var(--red)');
+    return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">'+p+'</td>';
   };
   const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'realizado')).reduce((s,v)=>s+v,0);
   const totPrj = fn => Array(12).fill(0).map((_,m)=>fn(m,'previsto')).reduce((s,v)=>s+v,0);
@@ -1971,8 +1977,8 @@ async function carregarDREResultado() {
   ).join('') + '<th colspan="2" style="text-align:center;font-size:11px;color:var(--accent2);padding:6px 4px;border-left:2px solid var(--border2)">TOTAL</th>';
 
   const thSub = Array(13).fill(0).map(()=>
-    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">REA</th>'+
-    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">PRV</th>'
+    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:600;background:rgba(16,185,129,0.06)">REA</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:600;background:rgba(139,92,246,0.06)">PRV</th>'
   ).join('');
 
   let rowsHtml = '';
@@ -2027,29 +2033,23 @@ async function carregarDREResultado() {
     };
 
     if (conta.id==='mc_pct') {
-      // % = Margem Contribuicao / Receita Bruta
       const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(mcMes(m,'realizado'),recMes(m,'realizado')) +
-        fmtP(mcMes(m,'previsto'),recMes(m,'previsto'))
+        fmtP(mcMes(m,'realizado'),recMes(m,'realizado'),'realizado') +
+        fmtP(mcMes(m,'previsto'),recMes(m,'previsto'),'previsto')
       ).join('');
-      const totMcR  = totRec(m=>mcMes(m,'realizado'));
-      const totRecR = totRec(m=>recMes(m,'realizado'));
-      const totMcP  = totPrj(m=>mcMes(m,'previsto'));
-      const totRecP = totPrj(m=>recMes(m,'previsto'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,totRecR)+fmtP(totMcP,totRecP)+'</tr>';
+      const totMcR=totRec(m=>mcMes(m,'realizado')), totRecR=totRec(m=>recMes(m,'realizado'));
+      const totMcP=totPrj(m=>mcMes(m,'previsto')), totRecP=totPrj(m=>recMes(m,'previsto'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,totRecR,'realizado')+fmtP(totMcP,totRecP,'previsto')+'</tr>';
       return;
     }
     if (conta.id==='gpm_pct') {
-      // % = Resultado GPM / Receita Bruta
       const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(gpmMes(m,'realizado'),recMes(m,'realizado')) +
-        fmtP(gpmMes(m,'previsto'),recMes(m,'previsto'))
+        fmtP(gpmMes(m,'realizado'),recMes(m,'realizado'),'realizado') +
+        fmtP(gpmMes(m,'previsto'),recMes(m,'previsto'),'previsto')
       ).join('');
-      const totGR   = totRec(m=>gpmMes(m,'realizado'));
-      const totRecR = totRec(m=>recMes(m,'realizado'));
-      const totGP   = totPrj(m=>gpmMes(m,'previsto'));
-      const totRecP = totPrj(m=>recMes(m,'previsto'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,totRecR)+fmtP(totGP,totRecP)+'</tr>';
+      const totGR=totRec(m=>gpmMes(m,'realizado')), totRecR=totRec(m=>recMes(m,'realizado'));
+      const totGP=totPrj(m=>gpmMes(m,'previsto')), totRecP=totPrj(m=>recMes(m,'previsto'));
+      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,totRecR,'realizado')+fmtP(totGP,totRecP,'previsto')+'</tr>';
       return;
     }
 
@@ -2058,11 +2058,11 @@ async function carregarDREResultado() {
     const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao','total_adm'].includes(conta.id);
     // Para linhas de resultado calculado, sempre mostrar mesmo negativo
     const cellsFn = isRes
-      ? Array(12).fill(0).map((_,m)=>fmtNResult(valsR[m])+fmtNResult(valsP[m])).join('')
-      : Array(12).fill(0).map((_,m)=>fmtN(valsR[m], conta.cor)+fmtN(valsP[m], conta.cor && 'var(--purple)')).join('');
+      ? Array(12).fill(0).map((_,m)=>fmtNResult(valsR[m],'realizado')+fmtNResult(valsP[m],'previsto')).join('')
+      : Array(12).fill(0).map((_,m)=>fmtN(valsR[m],'realizado',conta.cor)+fmtN(valsP[m],'previsto',conta.cor)).join('');
     const tR = valsR.reduce((s,v)=>s+v,0);
     const tP = valsP.reduce((s,v)=>s+v,0);
-    const totCellsFn = isRes ? fmtNResult(tR)+fmtNResult(tP) : fmtN(tR, conta.cor && (tR>=0?conta.cor:'var(--red)'))+fmtN(tP,'var(--purple)');
+    const totCellsFn = isRes ? fmtNResult(tR,'realizado')+fmtNResult(tP,'previsto') : fmtN(tR,'realizado',conta.cor)+fmtN(tP,'previsto',conta.cor);
     rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cellsFn+totCellsFn+'</tr>';
   });
 
