@@ -1946,14 +1946,19 @@ async function carregarDREResultado() {
   const fmtN = (v, nat, corOverride) => {
     const bg = nat==='previsto' ? 'rgba(139,92,246,0.04)' : '';
     if (v === 0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">-</td>';
-    const c = corOverride || (v < 0 ? 'var(--red)' : 'inherit');
+    // PRV: tudo roxo exceto vermelho se negativo
+    const c = corOverride
+      ? corOverride
+      : nat==='previsto'
+        ? (v < 0 ? 'var(--red)' : '#a78bfa')
+        : (v < 0 ? 'var(--red)' : 'inherit');
     return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>';
   };
   const fmtNResult = (v, nat) => {
     const bg = nat==='previsto' ? 'rgba(139,92,246,0.08)' : 'rgba(16,185,129,0.06)';
     const c = nat==='previsto'
-      ? (v>0?'#a78bfa':v<0?'var(--red)':'var(--muted)')
-      : (v>0?'var(--green)':v<0?'var(--red)':'var(--muted)');
+      ? (v < 0 ? 'var(--red)' : '#a78bfa')
+      : (v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--muted)');
     return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>';
   };
   const fmtP = (v, base, nat) => {
@@ -1961,8 +1966,8 @@ async function carregarDREResultado() {
     if (base===0 && v===0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">-</td>';
     const p = base!==0 ? (v/base*100).toFixed(1)+'%' : (v>0?'∞':v<0?'-∞':'-');
     const c = nat==='previsto'
-      ? (v>=0?'#a78bfa':'var(--red)')
-      : (v>=0?'var(--green)':'var(--red)');
+      ? (v < 0 ? 'var(--red)' : '#a78bfa')
+      : (v >= 0 ? 'var(--green)' : 'var(--red)');
     return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">'+p+'</td>';
   };
   const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'realizado')).reduce((s,v)=>s+v,0);
@@ -2056,10 +2061,12 @@ async function carregarDREResultado() {
     // Para linhas de resultado calculado, sempre mostrar mesmo negativo
     const cellsFn = isRes
       ? Array(12).fill(0).map((_,m)=>fmtNResult(valsR[m],'realizado')+fmtNResult(valsP[m],'previsto')).join('')
-      : Array(12).fill(0).map((_,m)=>fmtN(valsR[m],'realizado',conta.cor)+fmtN(valsP[m],'previsto',conta.cor)).join('');
+      : Array(12).fill(0).map((_,m)=>fmtN(valsR[m],'realizado',conta.cor)+fmtN(valsP[m],'previsto',conta.cor==='var(--red)'?'var(--red)':null)).join('');
     const tR = valsR.reduce((s,v)=>s+v,0);
     const tP = valsP.reduce((s,v)=>s+v,0);
-    const totCellsFn = isRes ? fmtNResult(tR,'realizado')+fmtNResult(tP,'previsto') : fmtN(tR,'realizado',conta.cor)+fmtN(tP,'previsto',conta.cor);
+    const totCellsFn = isRes
+      ? fmtNResult(tR,'realizado')+fmtNResult(tP,'previsto')
+      : fmtN(tR,'realizado',conta.cor)+fmtN(tP,'previsto',conta.cor==='var(--red)'?'var(--red)':null);
     rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cellsFn+totCellsFn+'</tr>';
   });
 
