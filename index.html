@@ -621,6 +621,7 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="transporte">Transporte</option>
             <option value="aux_moradia">Auxílio Moradia</option>
             <option value="pj_alocado">PJ Alocado</option>
+            <option value="seguro_vida">Seguro de Vida</option>
           </optgroup>
           <optgroup label="── CUSTOS OPERACIONAIS">
             <option value="manutencao">Manutenção (Peças + Serviços)</option>
@@ -1776,6 +1777,7 @@ const PLANO_CONTAS = [
   { id:'transporte', label:'Transporte', nivel:3, tipo:'conta', cor:null },
   { id:'aux_moradia', label:'Auxílio Moradia', nivel:3, tipo:'conta', cor:null },
   { id:'pj_alocado', label:'PJ Alocado', nivel:3, tipo:'conta', cor:null },
+  { id:'seguro_vida', label:'Seguro de Vida', nivel:3, tipo:'conta', cor:null },
   { id:'total_mao_obra', label:'= TOTAL MÃO DE OBRA', nivel:2, tipo:'subtotal_mo', cor:'var(--amber)' },
   { id:'custos_op', label:'CUSTOS OPERACIONAIS', nivel:2, tipo:'subheader', cor:'var(--purple)' },
   { id:'manutencao', label:'Manutenção (Peças + Serviços)', nivel:3, tipo:'conta', cor:null },
@@ -1937,7 +1939,7 @@ async function carregarDREResultado() {
   const issMes     = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
   const moApoioMes = (m,nat) => parseFloat((recMes(m,nat) * 0.03).toFixed(2));
   const liqMes = (m,nat) => recMes(m,nat) - pisMes(m,nat) - cofinsMes(m,nat) - issMes(m,nat);
-  const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
+  const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado','seguro_vida'];
   const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
   const admContas  = ['consultoria','passagens','hoteis','cursos','brindes']; // mo_apoio calculado automaticamente
@@ -2077,7 +2079,7 @@ async function carregarDREResultado() {
   const contaLabels = {
     receita:'Receita Bruta', pis:'PIS 1,65%', cofins:'COFINS 7,6%', iss:'ISS 5%',
     salarios:'Salários', periculosidade:'Periculosidade', bonus:'Bônus', encargos:'Encargos',
-    alimentacao:'Alimentação', transporte:'Transporte', aux_moradia:'Auxílio Moradia', pj_alocado:'PJ Alocado',
+    alimentacao:'Alimentação', transporte:'Transporte', aux_moradia:'Auxílio Moradia', pj_alocado:'PJ Alocado', seguro_vida:'Seguro de Vida',
     manutencao:'Manutenção', borracharia:'Borracharia', combustiveis:'Combustíveis', outros_insumos:'Outros Insumos',
     alugueis:'Aluguéis', provisionamento:'Provisionamento', depreciacao:'Depreciação',
     uniformes:'Uniformes/EPIs', servicos_terc:'Serviços Terceiros', fretes:'Fretes',
