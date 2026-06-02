@@ -635,7 +635,6 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="fretes">Fretes</option>
           </optgroup>
           <optgroup label="── CUSTOS ADMINISTRATIVOS">
-            <option value="mo_apoio">MO Apoio GPM 3%</option>
             <option value="consultoria">Consultoria/Serv.Terc</option>
             <option value="passagens">Passagens Aéreas</option>
             <option value="hoteis">Hotéis/Diárias/Transl.</option>
@@ -1931,16 +1930,17 @@ async function carregarDREResultado() {
   const g = (conta,m,nat) => dados[conta]?.[m]?.[nat] || 0;
   const soma = (contas,m,nat) => contas.reduce((s,c)=>s+g(c,m,nat),0);
   const recMes = (m,nat) => Object.values(dadosCliente).reduce((s,c)=>s+(c.vals[m][nat]||0),0);
-  const pisMes    = (m,nat) => parseFloat((recMes(m,nat) * 0.0165).toFixed(2));
-  const cofinsMes = (m,nat) => parseFloat((recMes(m,nat) * 0.076).toFixed(2));
-  const issMes    = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
+  const pisMes     = (m,nat) => parseFloat((recMes(m,nat) * 0.0165).toFixed(2));
+  const cofinsMes  = (m,nat) => parseFloat((recMes(m,nat) * 0.076).toFixed(2));
+  const issMes     = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
+  const moApoioMes = (m,nat) => parseFloat((recMes(m,nat) * 0.03).toFixed(2));
   const liqMes = (m,nat) => recMes(m,nat) - pisMes(m,nat) - cofinsMes(m,nat) - issMes(m,nat);
   const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
   const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
-  const admContas = ['mo_apoio','consultoria','passagens','hoteis','cursos','brindes'];
+  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes']; // mo_apoio calculado automaticamente
   const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
-  const gpmMes = (m,nat) => mcMes(m,nat) - soma(admContas,m,nat);
+  const gpmMes = (m,nat) => mcMes(m,nat) - moApoioMes(m,nat) - soma(admContas,m,nat);
 
   const fmtN = (v,cor) => {
     const c = cor||(v<0?'var(--red)':v===0?'var(--muted)':'inherit');
@@ -2002,9 +2002,10 @@ async function carregarDREResultado() {
     // Linhas calculadas
     const getVals = (nat) => {
       if (conta.id==='total_receita') return Array(12).fill(0).map((_,m)=>recMes(m,nat));
-      if (conta.id==='pis')    return Array(12).fill(0).map((_,m)=>pisMes(m,nat));
-      if (conta.id==='cofins') return Array(12).fill(0).map((_,m)=>cofinsMes(m,nat));
-      if (conta.id==='iss')    return Array(12).fill(0).map((_,m)=>issMes(m,nat));
+      if (conta.id==='pis')       return Array(12).fill(0).map((_,m)=>pisMes(m,nat));
+      if (conta.id==='cofins')    return Array(12).fill(0).map((_,m)=>cofinsMes(m,nat));
+      if (conta.id==='iss')       return Array(12).fill(0).map((_,m)=>issMes(m,nat));
+      if (conta.id==='mo_apoio')  return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
       if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
       if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
