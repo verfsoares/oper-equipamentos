@@ -198,13 +198,13 @@ textarea.form-input{resize:vertical;min-height:70px}
         <span style="font-size:12px;color:var(--muted);font-weight:600">LEGENDA:</span>
         <div style="display:flex;align-items:center;gap:6px">
           <div style="width:14px;height:14px;border-radius:3px;background:rgba(16,185,129,0.25);border:1px solid var(--green)"></div>
-          <span style="font-size:12px;color:var(--green);font-weight:600">REC</span>
-          <span style="font-size:12px;color:var(--muted)">= Recorrente (contratos em andamento)</span>
+          <span style="font-size:12px;color:var(--green);font-weight:600">REA</span>
+          <span style="font-size:12px;color:var(--muted)">= Realizado (contratos em andamento)</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <div style="width:14px;height:14px;border-radius:3px;background:rgba(139,92,246,0.25);border:1px solid var(--purple)"></div>
-          <span style="font-size:12px;color:var(--purple);font-weight:600">PRJ</span>
-          <span style="font-size:12px;color:var(--muted)">= Projetado (novos negócios futuros)</span>
+          <span style="font-size:12px;color:var(--purple);font-weight:600">PRV</span>
+          <span style="font-size:12px;color:var(--muted)">= Previsto (novos negócios futuros)</span>
         </div>
       </div>
 
@@ -221,24 +221,24 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
-    <!-- DRE RECORRENTE -->
-    <div class="view" id="v-dre-recorrente">
+    <!-- DRE REAORRENTE -->
+    <div class="view" id="v-dre-realizado">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:200px" id="drec-filter-equip" onchange="carregarDRETipo('recorrente')"><option value="">Todos os equipamentos</option></select>
-        <select class="form-select" style="width:180px" id="drec-filter-cliente" onchange="carregarDRETipo('recorrente')"><option value="">Todos os clientes</option></select>
-        <select class="form-select" style="width:140px" id="drec-filter-mes" onchange="carregarDRETipo('recorrente')">
+        <select class="form-select" style="width:200px" id="drec-filter-equip" onchange="carregarDRETipo('realizado')"><option value="">Todos os equipamentos</option></select>
+        <select class="form-select" style="width:180px" id="drec-filter-cliente" onchange="carregarDRETipo('realizado')"><option value="">Todos os clientes</option></select>
+        <select class="form-select" style="width:140px" id="drec-filter-mes" onchange="carregarDRETipo('realizado')">
           <option value="">Todos os meses</option>
           <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Marco</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
         </select>
-        <select class="form-select" style="width:120px" id="drec-filter-ano" onchange="carregarDRETipo('recorrente')">
+        <select class="form-select" style="width:120px" id="drec-filter-ano" onchange="carregarDRETipo('realizado')">
           <option value="">Todos os anos</option>
           <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
         </select>
-        <button class="btn btn-primary" onclick="abrirModalDRETipo('recorrente')">+ Lancar DRE Recorrente</button>
+        <button class="btn btn-primary" onclick="abrirModalDRETipo('realizado')">+ Lancar DRE Realizado</button>
       </div>
       <div id="drec-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
       <div class="table-wrap" style="margin-top:16px">
-        <div class="table-header"><div class="table-title">Lancamentos Recorrentes <span class="table-count" id="drec-count"></span></div></div>
+        <div class="table-header"><div class="table-title">Lancamentos Realizados <span class="table-count" id="drec-count"></span></div></div>
         <div id="drec-table-body"><div class="loading">Carregando...</div></div>
       </div>
     </div>
@@ -263,7 +263,7 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
       <div id="drep-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
       <div class="table-wrap" style="margin-top:16px">
-        <div class="table-header"><div class="table-title">Lancamentos Projetados <span class="table-count" id="drep-count"></span></div></div>
+        <div class="table-header"><div class="table-title">Lancamentos Previstos <span class="table-count" id="drep-count"></span></div></div>
         <div id="drep-table-body"><div class="loading">Carregando...</div></div>
       </div>
     </div>
@@ -594,16 +594,16 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="modal" style="max-width:540px">
     <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
 
-    <!-- SELECTOR REC / PRJ -->
+    <!-- SELECTOR REA / PRV -->
     <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border2);border-radius:10px;overflow:hidden">
-      <button id="btn-nat-rec" onclick="selecionarNatureza('recorrente')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(16,185,129,0.2);color:var(--green);border-right:1px solid var(--border2)">
-        &#9679; RECORRENTE
+      <button id="btn-nat-rec" onclick="selecionarNatureza('realizado')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(16,185,129,0.2);color:var(--green);border-right:1px solid var(--border2)">
+        &#9679; REAORRENTE
       </button>
-      <button id="btn-nat-prj" onclick="selecionarNatureza('projetado')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted)">
+      <button id="btn-nat-prj" onclick="selecionarNatureza('previsto')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted)">
         &#9711; PROJETADO
       </button>
     </div>
-    <input type="hidden" id="drei-natureza" value="recorrente" />
+    <input type="hidden" id="drei-natureza" value="realizado" />
 
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Mês de Referência *</div><input class="form-input" type="month" id="drei-mes" /></div>
@@ -679,7 +679,7 @@ textarea.form-input{resize:vertical;min-height:70px}
 
     <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">RECEITAS</div>
     <div class="form-grid">
-      <div class="form-group"><div class="form-label">Receita Recorrente (R$)</div><input class="form-input" type="number" id="dre-rec-rec" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Receita Realizado (R$)</div><input class="form-input" type="number" id="dre-rec-rec" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Receita Novos Negocios (R$)</div><input class="form-input" type="number" id="dre-rec-nov" placeholder="0" oninput="calcDRE()" /></div>
     </div>
 
@@ -949,7 +949,7 @@ async function initApp() {
 
 const pageMap = {
   dre:              { title: 'DRE', loader: carregarDRE },
-  'dre-recorrente': { title: 'DRE Recorrente', loader: () => carregarDRETipo('recorrente') },
+  'dre-realizado': { title: 'DRE Realizado', loader: () => carregarDRETipo('realizado') },
   'dre-resultado': { title: 'DRE', loader: carregarDREResultado },
   'dre-projetada':  { title: 'DRE Projetada', loader: () => carregarDRETipo('projetada') },
   dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
@@ -1848,7 +1848,7 @@ function selecionarNatureza(nat) {
   document.getElementById('drei-natureza').value = nat;
   const btnRec = document.getElementById('btn-nat-rec');
   const btnPrj = document.getElementById('btn-nat-prj');
-  if (nat === 'recorrente') {
+  if (nat === 'realizado') {
     btnRec.style.background = 'rgba(16,185,129,0.2)'; btnRec.style.color = 'var(--green)';
     btnPrj.style.background = 'var(--surface2)'; btnPrj.style.color = 'var(--muted)';
   } else {
@@ -1890,7 +1890,7 @@ async function abrirModalDRE() {
   if (se) se.innerHTML = '<option value="">- Nenhum -</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
   const sct = document.getElementById('drei-contrato-sel');
   if (sct) sct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
-  selecionarNatureza('recorrente');
+  selecionarNatureza('realizado');
   atualizarContasDRE();
   openModal('modal-drei');
 }
@@ -1915,11 +1915,11 @@ async function carregarDREResultado() {
 
   rowsFiltrados.forEach(r => {
     const m = new Date(r.mes_referencia+'T12:00:00').getMonth();
-    const nat = r.natureza || 'recorrente';
-    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(null).map(()=>({recorrente:0,projetado:0}));
+    const nat = r.natureza || 'realizado';
+    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(null).map(()=>({realizado:0,previsto:0}));
     dados[r.conta][m][nat] = (dados[r.conta][m][nat]||0) + (r.valor||0);
     if (r.conta === 'receita' && r.cliente_id) {
-      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(null).map(()=>({recorrente:0,projetado:0})) };
+      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(null).map(()=>({realizado:0,previsto:0})) };
       dadosCliente[r.cliente_id].vals[m][nat] = (dadosCliente[r.cliente_id].vals[m][nat]||0) + (r.valor||0);
     }
   });
@@ -1955,8 +1955,8 @@ async function carregarDREResultado() {
     const c = v >= 0 ? 'var(--green)' : 'var(--red)';
     return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;border-left:1px solid var(--border)">'+p+'</td>';
   };
-  const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'recorrente')).reduce((s,v)=>s+v,0);
-  const totPrj = fn => Array(12).fill(0).map((_,m)=>fn(m,'projetado')).reduce((s,v)=>s+v,0);
+  const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'realizado')).reduce((s,v)=>s+v,0);
+  const totPrj = fn => Array(12).fill(0).map((_,m)=>fn(m,'previsto')).reduce((s,v)=>s+v,0);
 
   // Cabeçalho com 2 sub-colunas por mês
   const thMes = MESES_LABELS.map(l =>
@@ -1964,8 +1964,8 @@ async function carregarDREResultado() {
   ).join('') + '<th colspan="2" style="text-align:center;font-size:11px;color:var(--accent2);padding:6px 4px;border-left:2px solid var(--border2)">TOTAL</th>';
 
   const thSub = Array(13).fill(0).map(()=>
-    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">REC</th>'+
-    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">PRJ</th>'
+    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">REA</th>'+
+    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:500">PRV</th>'
   ).join('');
 
   let rowsHtml = '';
@@ -1979,8 +1979,8 @@ async function carregarDREResultado() {
     const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total','subtotal_adm'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
 
     if (conta.tipo === 'subtotal_operacao') {
-      const vR = Array(12).fill(0).map((_,m)=>totalOpMes(m,'recorrente'));
-      const vP = Array(12).fill(0).map((_,m)=>totalOpMes(m,'projetado'));
+      const vR = Array(12).fill(0).map((_,m)=>totalOpMes(m,'realizado'));
+      const vP = Array(12).fill(0).map((_,m)=>totalOpMes(m,'previsto'));
       const cells = Array(12).fill(0).map((_,m)=>fmtN(vR[m],'var(--amber)')+fmtN(vP[m],'var(--amber)')).join('');
       const tR = vR.reduce((s,v)=>s+v,0), tP = vP.reduce((s,v)=>s+v,0);
       rowsHtml += '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)"><td style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--amber);position:sticky;left:0;background:var(--surface2)">'+conta.label+'</td>'+cells+fmtN(tR,'var(--amber)')+fmtN(tP,'var(--amber)')+'</tr>';
@@ -1994,9 +1994,9 @@ async function carregarDREResultado() {
 
     if (conta.tipo === 'clientes') {
       Object.entries(dadosCliente).forEach(([cid,cdata]) => {
-        const cells = Array(12).fill(0).map((_,m)=>fmtN(cdata.vals[m].recorrente,'var(--green)')+fmtN(cdata.vals[m].projetado,'var(--purple)')).join('');
-        const totR = Array(12).fill(0).map((_,m)=>cdata.vals[m].recorrente).reduce((s,v)=>s+v,0);
-        const totP = Array(12).fill(0).map((_,m)=>cdata.vals[m].projetado).reduce((s,v)=>s+v,0);
+        const cells = Array(12).fill(0).map((_,m)=>fmtN(cdata.vals[m].realizado,'var(--green)')+fmtN(cdata.vals[m].previsto,'var(--purple)')).join('');
+        const totR = Array(12).fill(0).map((_,m)=>cdata.vals[m].realizado).reduce((s,v)=>s+v,0);
+        const totP = Array(12).fill(0).map((_,m)=>cdata.vals[m].previsto).reduce((s,v)=>s+v,0);
         rowsHtml += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 12px 5px 28px;font-size:11px;color:var(--muted);position:sticky;left:0;background:var(--surface)">'+cdata.nome+'</td>'+cells+fmtN(totR,'var(--green)')+fmtN(totP,'var(--purple)')+'</tr>';
       });
       if (!Object.keys(dadosCliente).length) rowsHtml += '<tr><td colspan="27" style="padding:5px 28px;font-size:11px;color:var(--muted)">Nenhuma receita lançada</td></tr>';
@@ -2022,32 +2022,32 @@ async function carregarDREResultado() {
     if (conta.id==='mc_pct') {
       // % = Margem Contribuicao / Receita Bruta
       const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(mcMes(m,'recorrente'),recMes(m,'recorrente')) +
-        fmtP(mcMes(m,'projetado'),recMes(m,'projetado'))
+        fmtP(mcMes(m,'realizado'),recMes(m,'realizado')) +
+        fmtP(mcMes(m,'previsto'),recMes(m,'previsto'))
       ).join('');
-      const totMcR  = totRec(m=>mcMes(m,'recorrente'));
-      const totRecR = totRec(m=>recMes(m,'recorrente'));
-      const totMcP  = totPrj(m=>mcMes(m,'projetado'));
-      const totRecP = totPrj(m=>recMes(m,'projetado'));
+      const totMcR  = totRec(m=>mcMes(m,'realizado'));
+      const totRecR = totRec(m=>recMes(m,'realizado'));
+      const totMcP  = totPrj(m=>mcMes(m,'previsto'));
+      const totRecP = totPrj(m=>recMes(m,'previsto'));
       rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,totRecR)+fmtP(totMcP,totRecP)+'</tr>';
       return;
     }
     if (conta.id==='gpm_pct') {
       // % = Resultado GPM / Receita Bruta
       const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(gpmMes(m,'recorrente'),recMes(m,'recorrente')) +
-        fmtP(gpmMes(m,'projetado'),recMes(m,'projetado'))
+        fmtP(gpmMes(m,'realizado'),recMes(m,'realizado')) +
+        fmtP(gpmMes(m,'previsto'),recMes(m,'previsto'))
       ).join('');
-      const totGR   = totRec(m=>gpmMes(m,'recorrente'));
-      const totRecR = totRec(m=>recMes(m,'recorrente'));
-      const totGP   = totPrj(m=>gpmMes(m,'projetado'));
-      const totRecP = totPrj(m=>recMes(m,'projetado'));
+      const totGR   = totRec(m=>gpmMes(m,'realizado'));
+      const totRecR = totRec(m=>recMes(m,'realizado'));
+      const totGP   = totPrj(m=>gpmMes(m,'previsto'));
+      const totRecP = totPrj(m=>recMes(m,'previsto'));
       rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,totRecR)+fmtP(totGP,totRecP)+'</tr>';
       return;
     }
 
-    const valsR = getVals('recorrente');
-    const valsP = getVals('projetado');
+    const valsR = getVals('realizado');
+    const valsP = getVals('previsto');
     const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao','total_adm'].includes(conta.id);
     // Para linhas de resultado calculado, sempre mostrar mesmo negativo
     const cellsFn = isRes
@@ -2089,7 +2089,7 @@ async function carregarDREResultado() {
       '<table><thead><tr><th>Mês</th><th>Natureza</th><th>Conta</th><th>Cliente</th><th>Valor</th><th>Descrição</th><th>Usuário</th><th></th></tr></thead><tbody>' +
       [...rowsFiltrados].sort((a,b) => b.mes_referencia?.localeCompare(a.mes_referencia)).map(r =>
         '<tr><td>'+r.mes_referencia?.substring(0,7)+'</td>'+
-        '<td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+(r.natureza==='recorrente'?'rgba(16,185,129,0.15)':'rgba(139,92,246,0.15)')+';color:'+(r.natureza==='recorrente'?'var(--green)':'var(--purple)')+'">'+( r.natureza==='recorrente'?'REC':'PRJ')+'</span></td>'+
+        '<td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+(r.natureza==='realizado'?'rgba(16,185,129,0.15)':'rgba(139,92,246,0.15)')+';color:'+(r.natureza==='realizado'?'var(--green)':'var(--purple)')+'">'+( r.natureza==='realizado'?'REA':'PRV')+'</span></td>'+
         '<td style="font-size:12px">'+(contaLabels[r.conta]||r.conta||'-')+'</td>'+
         '<td style="font-size:12px;color:var(--muted)">'+(r.clientes?.razao_social||'-')+'</td>'+
         '<td style="color:var(--green);font-weight:600">R$ '+(r.valor||0).toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>'+
@@ -2132,7 +2132,7 @@ async function salvarDRELancamento() {
   document.getElementById('drei-valor').value = '';
   document.getElementById('drei-obs').value = '';
   document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
-  selecionarNatureza('recorrente');
+  selecionarNatureza('realizado');
   showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
   await carregarDREResultado();
 }
@@ -2156,7 +2156,7 @@ async function replicarDRELancamento(id) {
     const mesStr = anoRef + '-' + String(m).padStart(2,'0') + '-01';
     const { error } = await db.from('dre_lancamentos').insert({
       conta: r.conta,
-      natureza: r.natureza || 'recorrente',
+      natureza: r.natureza || 'realizado',
       cliente_id: r.cliente_id || null,
       equipamento_id: r.equipamento_id || null,
       contrato_id: r.contrato_id || null,
@@ -2178,13 +2178,13 @@ async function editarDRELancamento(id) {
   document.getElementById('drei-id').value = r.id;
   document.getElementById('drei-mes').value = r.mes_referencia?.substring(0,7) || '';
   document.getElementById('drei-tipo').value = r.conta || '';
-  document.getElementById('drei-natureza').value = r.natureza || 'recorrente';
+  document.getElementById('drei-natureza').value = r.natureza || 'realizado';
   document.getElementById('drei-valor').value = r.valor || '';
   document.getElementById('drei-obs').value = r.observacoes || '';
   document.getElementById('drei-cliente').value = r.cliente_id || '';
   document.getElementById('drei-equip-sel').value = r.equipamento_id || '';
   document.getElementById('drei-contrato-sel').value = r.contrato_id || '';
-  selecionarNatureza(r.natureza || 'recorrente');
+  selecionarNatureza(r.natureza || 'realizado');
   atualizarContasDRE();
   document.getElementById('modal-drei-title').textContent = 'Editar Lançamento';
   openModal('modal-drei');
@@ -2200,15 +2200,15 @@ async function deletarDRELancamento(id) {
 
 
 // ============================================================
-// DRE RECORRENTE E PROJETADA
+// DRE REAORRENTE E PROJETADA
 // ============================================================
-function prefixo(tipo) { return tipo === 'recorrente' ? 'drec' : 'drep'; }
-function tabela(tipo) { return tipo === 'recorrente' ? 'resultado_recorrente' : 'resultado_projetado'; }
+function prefixo(tipo) { return tipo === 'realizado' ? 'drec' : 'drep'; }
+function tabela(tipo) { return tipo === 'realizado' ? 'resultado_realizado' : 'resultado_previsto'; }
 
 function abrirModalDRETipo(tipo) {
   document.getElementById('dre-id').value = '';
   document.getElementById('dre-tipo-hidden').value = tipo;
-  document.getElementById('modal-dre-title').textContent = tipo === 'recorrente' ? 'Lancar DRE Recorrente' : 'Lancar DRE Projetada';
+  document.getElementById('modal-dre-title').textContent = tipo === 'realizado' ? 'Lancar DRE Realizado' : 'Lancar DRE Projetada';
   // Limpa campos
   ['dre-rec-rec','dre-rec-nov','dre-pis','dre-cofins','dre-iss','dre-sal','dre-peric','dre-bonus','dre-enc','dre-alim','dre-transp','dre-moradia','dre-pj','dre-manut','dre-borra','dre-comb','dre-insumos','dre-alug','dre-prov','dre-depr','dre-epis','dre-serv3','dre-frete','dre-adm-mob','dre-adm-cons','dre-adm-pass','dre-adm-hotel','dre-adm-curso','dre-adm-brindes','dre-obs'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
   calcDRE();
@@ -2246,7 +2246,7 @@ async function carregarDRETipo(tipo) {
   }
   // Reutiliza logica de totais da DRE
   const tot = r => ({
-    recBruta: (r.receita_recorrente||0)+(r.receita_novos_negocios||0),
+    recBruta: (r.receita_realizado||0)+(r.receita_novos_negocios||0),
     impostos: (r.pis||0)+(r.cofins||0)+(r.iss||0),
     maoObra: (r.salarios||0)+(r.periculosidade||0)+(r.bonus||0)+(r.encargos_sociais||0)+(r.alimentacao||0)+(r.transporte||0)+(r.auxilio_moradia||0)+(r.pj_alocado||0),
     custOp: (r.manutencao||0)+(r.borracharia||0)+(r.combustiveis||0)+(r.outros_insumos||0)+(r.aluguel_maquinas||0)+(r.provisionamento_preventivas||0)+(r.depreciacao||0)+(r.uniformes_epis||0)+(r.servicos_terceiros||0)+(r.fretes||0),
@@ -2256,7 +2256,7 @@ async function carregarDRETipo(tipo) {
   rows.forEach(r => { const t=tot(r); totRec+=t.recBruta; totImp+=t.impostos; totMO+=t.maoObra; totCO+=t.custOp; totCA+=t.custAdm; });
   const totLiq=totRec-totImp, totMC=totLiq-totMO-totCO, totGMP=totMC-totCA;
   const corMC=totMC>=0?'var(--green)':'var(--red)', corGMP=totGMP>=0?'var(--green)':'var(--red)';
-  const corLabel = tipo === 'recorrente' ? 'var(--teal)' : 'var(--purple)';
+  const corLabel = tipo === 'realizado' ? 'var(--teal)' : 'var(--purple)';
 
   // KPIs resumo
   document.getElementById(px+'-content').innerHTML =
@@ -2282,13 +2282,13 @@ async function editarDRETipo(id, tipo) {
   if (!r) return;
   document.getElementById('dre-id').value = r.id;
   document.getElementById('dre-tipo-hidden').value = tipo;
-  document.getElementById('modal-dre-title').textContent = tipo === 'recorrente' ? 'Editar DRE Recorrente' : 'Editar DRE Projetada';
+  document.getElementById('modal-dre-title').textContent = tipo === 'realizado' ? 'Editar DRE Realizado' : 'Editar DRE Projetada';
   document.getElementById('dre-mes-ref').value = r.mes_referencia?.substring(0,7)||'';
   document.getElementById('dre-equip').value = r.equipamento_id||'';
   document.getElementById('dre-cliente').value = r.cliente_id||'';
   document.getElementById('dre-contrato').value = r.contrato_id||'';
   const set = (id, val) => { const e=document.getElementById(id); if(e) e.value=val||0; };
-  set('dre-rec-rec',r.receita_recorrente); set('dre-rec-nov',r.receita_novos_negocios);
+  set('dre-rec-rec',r.receita_realizado); set('dre-rec-nov',r.receita_novos_negocios);
   set('dre-pis',r.pis); set('dre-cofins',r.cofins); set('dre-iss',r.iss);
   set('dre-sal',r.salarios); set('dre-peric',r.periculosidade); set('dre-bonus',r.bonus);
   set('dre-enc',r.encargos_sociais); set('dre-alim',r.alimentacao); set('dre-transp',r.transporte);
@@ -2320,13 +2320,13 @@ async function salvarDRE() {
   if (!equipId || !mes) return showToast('Preencha equipamento e mes de referencia', true);
   const id = document.getElementById('dre-id').value;
   const tipo = document.getElementById('dre-tipo-hidden').value || 'dre';
-  const tb = tipo === 'recorrente' ? 'resultado_recorrente' : tipo === 'projetada' ? 'resultado_projetado' : 'resultado';
+  const tb = tipo === 'realizado' ? 'resultado_realizado' : tipo === 'projetada' ? 'resultado_previsto' : 'resultado';
   const dados = {
     equipamento_id: equipId,
     cliente_id: document.getElementById('dre-cliente').value || null,
     contrato_id: document.getElementById('dre-contrato').value || null,
     mes_referencia: mes + '-01',
-    receita_recorrente: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
+    receita_realizado: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
     pis: v('dre-pis'), cofins: v('dre-cofins'), iss: v('dre-iss'),
     salarios: v('dre-sal'), periculosidade: v('dre-peric'), bonus: v('dre-bonus'),
     encargos_sociais: v('dre-enc'), alimentacao: v('dre-alim'), transporte: v('dre-transp'),
@@ -2347,7 +2347,7 @@ async function salvarDRE() {
   if (error) return showToast('Erro: ' + error.message, true);
   fecharDRE();
   showToast('Salvo com sucesso!');
-  if (tipo === 'recorrente') await carregarDRETipo('recorrente');
+  if (tipo === 'realizado') await carregarDRETipo('realizado');
   else if (tipo === 'projetada') await carregarDRETipo('projetada');
   else await carregarDRE();
 }
@@ -2420,7 +2420,7 @@ async function carregarDRE() {
 
   // Consolida totais
   const tot = r => ({
-    recBruta: (r.receita_recorrente||0)+(r.receita_novos_negocios||0),
+    recBruta: (r.receita_realizado||0)+(r.receita_novos_negocios||0),
     impostos: (r.pis||0)+(r.cofins||0)+(r.iss||0),
     maoObra: (r.salarios||0)+(r.periculosidade||0)+(r.bonus||0)+(r.encargos_sociais||0)+(r.alimentacao||0)+(r.transporte||0)+(r.auxilio_moradia||0)+(r.pj_alocado||0),
     custOp: (r.manutencao||0)+(r.borracharia||0)+(r.combustiveis||0)+(r.outros_insumos||0)+(r.aluguel_maquinas||0)+(r.provisionamento_preventivas||0)+(r.depreciacao||0)+(r.uniformes_epis||0)+(r.servicos_terceiros||0)+(r.fretes||0),
@@ -2449,7 +2449,7 @@ async function carregarDRE() {
     '<div class="form-card">' +
     '<div class="form-card-title">DRE Consolidada</div>' +
     secao('Receita Bruta', 'green') +
-    linha('Receita Recorrente', rows.reduce((s,r)=>s+(r.receita_recorrente||0),0), null, false, true) +
+    linha('Receita Realizado', rows.reduce((s,r)=>s+(r.receita_realizado||0),0), null, false, true) +
     linha('Receita Novos Negocios', rows.reduce((s,r)=>s+(r.receita_novos_negocios||0),0), null, false, true) +
     linha('TOTAL RECEITA BRUTA', totRec, 'var(--green)', true) +
     secao('(-) Impostos s/ Receita', 'red') +
@@ -2529,7 +2529,7 @@ async function salvarDRE() {
     cliente_id: document.getElementById('dre-cliente').value || null,
     contrato_id: document.getElementById('dre-contrato').value || null,
     mes_referencia: mes + '-01',
-    receita_recorrente: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
+    receita_realizado: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
     pis: v('dre-pis'), cofins: v('dre-cofins'), iss: v('dre-iss'),
     salarios: v('dre-sal'), periculosidade: v('dre-peric'), bonus: v('dre-bonus'),
     encargos_sociais: v('dre-enc'), alimentacao: v('dre-alim'), transporte: v('dre-transp'),
@@ -2562,7 +2562,7 @@ async function editarDRE(id) {
   document.getElementById('dre-cliente').value = r.cliente_id || '';
   document.getElementById('dre-contrato').value = r.contrato_id || '';
   const set = (id, val) => { const e = document.getElementById(id); if(e) e.value = val||0; };
-  set('dre-rec-rec', r.receita_recorrente); set('dre-rec-nov', r.receita_novos_negocios);
+  set('dre-rec-rec', r.receita_realizado); set('dre-rec-nov', r.receita_novos_negocios);
   set('dre-pis', r.pis); set('dre-cofins', r.cofins); set('dre-iss', r.iss);
   set('dre-sal', r.salarios); set('dre-peric', r.periculosidade); set('dre-bonus', r.bonus);
   set('dre-enc', r.encargos_sociais); set('dre-alim', r.alimentacao); set('dre-transp', r.transporte);
