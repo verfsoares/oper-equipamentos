@@ -2077,6 +2077,7 @@ async function carregarDREResultado() {
   }
 }
 
+
 async function salvarDRELancamento() {
   const mes = document.getElementById('drei-mes').value;
   const conta = document.getElementById('drei-tipo').value;
@@ -2084,27 +2085,40 @@ async function salvarDRELancamento() {
   const valor = parseFloat(document.getElementById('drei-valor').value) || 0;
   if (!mes || !conta || !valor) return showToast('Preencha mês, conta e valor', true);
   const id = document.getElementById('drei-id').value;
+  const cliente_id = document.getElementById('drei-cliente').value || null;
+  const equipamento_id = document.getElementById('drei-equip-sel').value || null;
+  const contrato_id = document.getElementById('drei-contrato-sel').value || null;
+  const observacoes = document.getElementById('drei-obs').value;
+  const usuario = currentUser?.nome || '-';
   const dados = {
-    conta, natureza,
-    cliente_id: document.getElementById('drei-cliente').value || null,
-    equipamento_id: document.getElementById('drei-equip-sel').value || null,
-    contrato_id: document.getElementById('drei-contrato-sel').value || null,
-    mes_referencia: mes + '-01',
-    valor,
-    observacoes: document.getElementById('drei-obs').value,
-    usuario: currentUser?.nome || '-'
+    conta, natureza, cliente_id, equipamento_id, contrato_id,
+    mes_referencia: mes + '-01', valor, observacoes, usuario
   };
   let error;
   if (id) { ({ error } = await db.from('dre_lancamentos').update(dados).eq('id', id)); }
   else { ({ error } = await db.from('dre_lancamentos').insert(dados)); }
   if (error) return showToast('Erro: ' + error.message, true);
+
+  // Se for receita nova, calcula impostos automaticamente
+  if (conta === 'receita' && !id) {
+    const pis    = parseFloat((valor * 0.0165).toFixed(2));
+    const cofins = parseFloat((valor * 0.076).toFixed(2));
+    const iss    = parseFloat((valor * 0.05).toFixed(2));
+    const base = { natureza, cliente_id, contrato_id, mes_referencia: mes+'-01', usuario };
+    await db.from('dre_lancamentos').insert({ ...base, conta:'pis',    valor:pis,    observacoes:'PIS 1,65% auto s/ receita' });
+    await db.from('dre_lancamentos').insert({ ...base, conta:'cofins', valor:cofins, observacoes:'COFINS 7,6% auto s/ receita' });
+    await db.from('dre_lancamentos').insert({ ...base, conta:'iss',    valor:iss,    observacoes:'ISS 5% auto s/ receita' });
+    showToast('Receita salva! Impostos calculados automaticamente ✓');
+  } else {
+    showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
+  }
+
   closeModal('modal-drei');
   document.getElementById('drei-id').value = '';
   document.getElementById('drei-valor').value = '';
   document.getElementById('drei-obs').value = '';
   document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
   selecionarNatureza('recorrente');
-  showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
   await carregarDREResultado();
 }
 
