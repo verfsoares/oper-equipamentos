@@ -144,8 +144,7 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div><div class="brand-name">OPER</div><div class="brand-sub">Gestao Operacional</div></div>
   </div>
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="nav('dre',this)"><span class="nav-icon">&#128200;</span><span>DRE</span></div>
-  <div class="nav-item" onclick="nav('dre-recorrente',this)"><span class="nav-icon">&#128199;</span><span>DRE Recorrente</span></div>
+  <div class="nav-item active" onclick="nav('dre-resultado',this)"><span class="nav-icon">&#128200;</span><span>DRE</span></div>
   <div class="nav-item" onclick="nav('dre-projetada',this)"><span class="nav-icon">&#128201;</span><span>DRE Projetada</span></div>
   <div class="nav-item" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
@@ -172,6 +171,24 @@ textarea.form-input{resize:vertical;min-height:70px}
     <button class="btn btn-primary" id="mainBtn" onclick="mainAction()" style="display:none">+ Novo</button>
   </div>
   <div id="content">
+
+    <!-- DRE RESULTADO -->
+    <div class="view active" id="v-dre-resultado">
+      <!-- FILTROS -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select class="form-select" style="width:120px" id="drei-ano" onchange="carregarDREResultado()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('modal-drei')">+ Lançar</button>
+        <button class="btn" onclick="carregarDREResultado()">&#8635; Atualizar</button>
+      </div>
+      <!-- TABELA DRE -->
+      <div style="overflow-x:auto">
+        <div id="dre-resultado-content"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
 
     <!-- DRE RECORRENTE -->
     <div class="view" id="v-dre-recorrente">
@@ -541,6 +558,56 @@ textarea.form-input{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- MODAL LANCAMENTO DRE -->
+<div class="modal-overlay" id="modal-drei">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Mes de Referencia *</div><input class="form-input" type="month" id="drei-mes" /></div>
+      <div class="form-group"><div class="form-label">Tipo *</div>
+        <select class="form-select" id="drei-tipo" onchange="atualizarContasDRE()">
+          <option value="receita">Receita Bruta</option>
+          <option value="pis">PIS 1,65%</option>
+          <option value="cofins">COFINS 7,6%</option>
+          <option value="iss">ISS 5%</option>
+          <option value="salarios">Salários</option>
+          <option value="periculosidade">Periculosidade</option>
+          <option value="bonus">Bônus</option>
+          <option value="encargos">Encargos Sociais</option>
+          <option value="alimentacao">Alimentação</option>
+          <option value="transporte">Transporte</option>
+          <option value="aux_moradia">Auxílio Moradia</option>
+          <option value="pj_alocado">PJ Alocado</option>
+          <option value="manutencao">Manutenção (Peças + Serviços)</option>
+          <option value="borracharia">Material de Borracharia</option>
+          <option value="combustiveis">Combustíveis/Lubrificantes</option>
+          <option value="outros_insumos">Outros Insumos Diretos</option>
+          <option value="alugueis">Aluguéis Máqs/Equiptos/Veics</option>
+          <option value="provisionamento">Provisionamento Preventivas</option>
+          <option value="depreciacao">Depreciação Equipamentos</option>
+          <option value="uniformes">Uniformes/EPIs</option>
+          <option value="servicos_terc">Serviços Terceiros</option>
+          <option value="fretes">Fretes</option>
+          <option value="mo_apoio">MO Apoio GPM 3%</option>
+          <option value="consultoria">Consultoria/Serv.Terc</option>
+          <option value="passagens">Passagens Aéreas</option>
+          <option value="hoteis">Hotéis/Diárias/Transl.</option>
+          <option value="cursos">Cursos/Seminários/Mentorias</option>
+          <option value="brindes">Brindes/Marketing</option>
+        </select>
+      </div>
+      <div class="form-group" id="drei-cliente-group"><div class="form-label">Unidade de Negócio (Cliente)</div><select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select></div>
+      <div class="form-group"><div class="form-label">Valor (R$) *</div><input class="form-input" type="number" id="drei-valor" placeholder="0,00" /></div>
+      <div class="form-group full"><div class="form-label">Observação</div><input class="form-input" id="drei-obs" placeholder="Descrição..." /></div>
+    </div>
+    <input type="hidden" id="drei-id" value="" />
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-drei')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarDRELancamento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL DRE -->
 <div class="modal-overlay" id="modal-dre">
   <div class="modal" style="max-width:680px">
@@ -817,12 +884,13 @@ function doLogout() {
 async function initApp() {
   await Promise.all([carregarClientes(), carregarContratos()]);
   await carregarEquipamentos();
-  await carregarDRE();
+  await carregarDREResultado();
 }
 
 const pageMap = {
   dre:              { title: 'DRE', loader: carregarDRE },
   'dre-recorrente': { title: 'DRE Recorrente', loader: () => carregarDRETipo('recorrente') },
+  'dre-resultado': { title: 'DRE', loader: carregarDREResultado },
   'dre-projetada':  { title: 'DRE Projetada', loader: () => carregarDRETipo('projetada') },
   dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
@@ -1611,6 +1679,157 @@ async function deletarInspecao(id) {
   await carregarInspecoes();
 }
 
+// ============================================================
+// DRE RESULTADO — PLANILHA MENSAL
+// ============================================================
+const MESES_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+const PLANO_CONTAS = [
+  { id:'receita_bruta', label:'RECEITA BRUTA', nivel:1, tipo:'header', cor:'var(--green)' },
+  { id:'receita', label:'Unidades de Negócio', nivel:3, tipo:'clientes', cor:null },
+  { id:'total_receita', label:'= TOTAL RECEITA BRUTA', nivel:1, tipo:'total', cor:'var(--green)' },
+  { id:'pis', label:'(-) PIS 1,65%', nivel:2, tipo:'conta', cor:'var(--red)' },
+  { id:'cofins', label:'(-) COFINS 7,6%', nivel:2, tipo:'conta', cor:'var(--red)' },
+  { id:'iss', label:'(-) ISS 5%', nivel:2, tipo:'conta', cor:'var(--red)' },
+  { id:'receita_liq', label:'= RECEITA LÍQUIDA', nivel:1, tipo:'total', cor:'var(--accent2)' },
+  { id:'operacao', label:'OPERAÇÃO', nivel:1, tipo:'header', cor:'var(--amber)' },
+  { id:'mao_obra', label:'MÃO DE OBRA', nivel:2, tipo:'subheader', cor:'var(--amber)' },
+  { id:'salarios', label:'Salários', nivel:3, tipo:'conta', cor:null },
+  { id:'periculosidade', label:'Periculosidade', nivel:3, tipo:'conta', cor:null },
+  { id:'bonus', label:'Bônus', nivel:3, tipo:'conta', cor:null },
+  { id:'encargos', label:'Encargos Sociais', nivel:3, tipo:'conta', cor:null },
+  { id:'alimentacao', label:'Alimentação', nivel:3, tipo:'conta', cor:null },
+  { id:'transporte', label:'Transporte', nivel:3, tipo:'conta', cor:null },
+  { id:'aux_moradia', label:'Auxílio Moradia', nivel:3, tipo:'conta', cor:null },
+  { id:'pj_alocado', label:'PJ Alocado', nivel:3, tipo:'conta', cor:null },
+  { id:'custos_op', label:'CUSTOS OPERACIONAIS', nivel:2, tipo:'subheader', cor:'var(--purple)' },
+  { id:'manutencao', label:'Manutenção (Peças + Serviços)', nivel:3, tipo:'conta', cor:null },
+  { id:'borracharia', label:'Material de Borracharia', nivel:3, tipo:'conta', cor:null },
+  { id:'combustiveis', label:'Combustíveis/Lubrificantes', nivel:3, tipo:'conta', cor:null },
+  { id:'outros_insumos', label:'Outros Insumos Diretos', nivel:3, tipo:'conta', cor:null },
+  { id:'alugueis', label:'Aluguéis Máqs/Equiptos/Veics', nivel:3, tipo:'conta', cor:null },
+  { id:'provisionamento', label:'Provisionamento Preventivas', nivel:3, tipo:'conta', cor:null },
+  { id:'depreciacao', label:'Depreciação Equipamentos', nivel:3, tipo:'conta', cor:null },
+  { id:'uniformes', label:'Uniformes/EPIs', nivel:3, tipo:'conta', cor:null },
+  { id:'servicos_terc', label:'Serviços Terceiros', nivel:3, tipo:'conta', cor:null },
+  { id:'fretes', label:'Fretes', nivel:3, tipo:'conta', cor:null },
+  { id:'mc_valor', label:'= MARGEM CONTRIBUIÇÃO (R$)', nivel:1, tipo:'resultado', cor:null },
+  { id:'mc_pct', label:'= MARGEM CONTRIBUIÇÃO (%)', nivel:1, tipo:'pct', cor:null },
+  { id:'custos_adm', label:'CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'header', cor:'var(--teal)' },
+  { id:'mo_apoio', label:'MO Apoio GPM 3%', nivel:2, tipo:'conta', cor:null },
+  { id:'consultoria', label:'Consultoria/Serv.Terc', nivel:2, tipo:'conta', cor:null },
+  { id:'passagens', label:'Passagens Aéreas', nivel:2, tipo:'conta', cor:null },
+  { id:'hoteis', label:'Hotéis/Diárias/Transl.', nivel:2, tipo:'conta', cor:null },
+  { id:'cursos', label:'Cursos/Seminários/Mentorias', nivel:2, tipo:'conta', cor:null },
+  { id:'brindes', label:'Brindes/Marketing', nivel:2, tipo:'conta', cor:null },
+  { id:'gpm_valor', label:'= RESULTADO GPM (R$)', nivel:1, tipo:'resultado', cor:null },
+  { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
+];
+
+function atualizarContasDRE() {
+  const tipo = document.getElementById('drei-tipo').value;
+  const clienteGroup = document.getElementById('drei-cliente-group');
+  if (clienteGroup) clienteGroup.style.display = tipo === 'receita' ? 'flex' : 'none';
+}
+
+async function carregarDREResultado() {
+  const ano = document.getElementById('drei-ano')?.value || new Date().getFullYear();
+  const sc = document.getElementById('drei-cliente');
+  if (sc) sc.innerHTML = '<option value="">- Geral -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+  const { data: rows } = await db.from('dre_lancamentos').select('*, clientes(razao_social)').gte('mes_referencia', ano+'-01-01').lte('mes_referencia', ano+'-12-31');
+  if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
+
+  const dados = {};
+  const dadosCliente = {};
+  rows.forEach(r => {
+    const m = new Date(r.mes_referencia+'T12:00:00').getMonth();
+    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(0);
+    dados[r.conta][m] += r.valor || 0;
+    if (r.conta === 'receita' && r.cliente_id) {
+      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(0) };
+      dadosCliente[r.cliente_id].vals[m] += r.valor || 0;
+    }
+  });
+
+  const g = (conta, m) => dados[conta]?.[m] || 0;
+  const soma = (contas, m) => contas.reduce((s,c) => s+g(c,m), 0);
+  const fmtN = (v, cor) => { const c = cor||(v<0?'var(--red)':v>0?'inherit':'var(--muted)'); return '<td style="text-align:right;font-size:12px;color:'+c+';padding:6px 10px;white-space:nowrap">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>'; };
+  const fmtP = (v, base) => { const p=base!==0?(v/base*100).toFixed(1)+'%':'-'; const c=v>=0?'var(--green)':'var(--red)'; return '<td style="text-align:right;font-size:12px;color:'+c+';padding:6px 10px">'+p+'</td>'; };
+  const moContas = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado'];
+  const coContas = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
+  const admContas = ['mo_apoio','consultoria','passagens','hoteis','cursos','brindes'];
+  const recMes = m => Object.values(dadosCliente).reduce((s,c)=>s+c.vals[m],0);
+  const liqMes = m => recMes(m)-g('pis',m)-g('cofins',m)-g('iss',m);
+  const mcMes = m => liqMes(m)-soma(moContas,m)-soma(coContas,m);
+  const gpmMes = m => mcMes(m)-soma(admContas,m);
+
+  const mesesCols = MESES_LABELS.map((l,i)=>'<th style="text-align:right;min-width:90px;font-size:11px;color:var(--muted);padding:8px 10px">'+l+'/'+String(ano).slice(2)+'</th>').join('')+'<th style="text-align:right;min-width:100px;font-size:11px;color:var(--accent2);padding:8px 10px">TOTAL</th>';
+
+  let rowsHtml = '';
+  PLANO_CONTAS.forEach(conta => {
+    const indent = conta.nivel===2?'padding-left:20px':conta.nivel===3?'padding-left:36px':'';
+    const bg = ['header'].includes(conta.tipo)?'background:rgba(255,255,255,0.05)':['subheader'].includes(conta.tipo)?'background:rgba(255,255,255,0.02)':['total','resultado','pct'].includes(conta.tipo)?'background:rgba(255,255,255,0.03)':'';
+    const bold = ['header','subheader','total','resultado','pct'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
+
+    if (['header','subheader'].includes(conta.tipo)) {
+      rowsHtml += '<tr style="'+bg+'"><td colspan="14" style="padding:8px 12px;'+indent+';font-size:12px;'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td></tr>';
+      return;
+    }
+    if (conta.tipo === 'clientes') {
+      Object.entries(dadosCliente).forEach(([cid,cdata]) => {
+        const tot = cdata.vals.reduce((s,v)=>s+v,0);
+        rowsHtml += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 12px 6px 28px;font-size:12px;color:var(--muted)">'+cdata.nome+'</td>'+cdata.vals.map(v=>fmtN(v,'var(--green)')).join('')+fmtN(tot,'var(--green)')+'</tr>';
+      });
+      if (!Object.keys(dadosCliente).length) rowsHtml += '<tr><td colspan="14" style="padding:6px 28px;font-size:12px;color:var(--muted)">Nenhuma receita lançada — clique em + Lançar</td></tr>';
+      return;
+    }
+
+    let vals = Array(12).fill(0);
+    if (conta.id==='total_receita') vals = Array(12).fill(0).map((_,m)=>recMes(m));
+    else if (conta.id==='receita_liq') vals = Array(12).fill(0).map((_,m)=>liqMes(m));
+    else if (conta.id==='mc_valor') vals = Array(12).fill(0).map((_,m)=>mcMes(m));
+    else if (conta.id==='mc_pct') { const cells=Array(12).fill(0).map((_,m)=>fmtP(mcMes(m),liqMes(m))).join('')+fmtP(Array(12).fill(0).map((_,m)=>mcMes(m)).reduce((s,v)=>s+v,0),Array(12).fill(0).map((_,m)=>liqMes(m)).reduce((s,v)=>s+v,0)); const tot=Array(12).fill(0).map((_,m)=>mcMes(m)).reduce((s,v)=>s+v,0); const cor=tot>=0?'var(--green)':'var(--red)'; rowsHtml+='<tr style="'+bg+';border-bottom:2px solid var(--border)"><td style="padding:8px 12px;'+indent+';font-size:13px;'+bold+';color:'+cor+'">'+conta.label+'</td>'+cells+'</tr>'; return; }
+    else if (conta.id==='gpm_valor') vals = Array(12).fill(0).map((_,m)=>gpmMes(m));
+    else if (conta.id==='gpm_pct') { const cells=Array(12).fill(0).map((_,m)=>fmtP(gpmMes(m),liqMes(m))).join('')+fmtP(Array(12).fill(0).map((_,m)=>gpmMes(m)).reduce((s,v)=>s+v,0),Array(12).fill(0).map((_,m)=>liqMes(m)).reduce((s,v)=>s+v,0)); const tot=Array(12).fill(0).map((_,m)=>gpmMes(m)).reduce((s,v)=>s+v,0); const cor=tot>=0?'var(--green)':'var(--red)'; rowsHtml+='<tr style="'+bg+';border-bottom:2px solid var(--border)"><td style="padding:8px 12px;'+indent+';font-size:13px;'+bold+';color:'+cor+'">'+conta.label+'</td>'+cells+'</tr>'; return; }
+    else vals = Array(12).fill(0).map((_,m)=>g(conta.id,m));
+
+    const tot = vals.reduce((s,v)=>s+v,0);
+    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor'].includes(conta.id);
+    const corVal = isRes ? (tot>=0?'var(--green)':'var(--red)') : (conta.cor||null);
+    const borderB = isRes ? 'border-bottom:2px solid var(--border)' : 'border-bottom:1px solid var(--border)';
+    const paddingV = isRes ? 'padding:8px 12px' : 'padding:6px 12px';
+    const fSize = isRes ? 'font-size:13px' : 'font-size:12px';
+    rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="'+paddingV+';'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td>'+vals.map(v=>fmtN(v,corVal)).join('')+fmtN(tot,corVal)+'</tr>';
+  });
+
+  document.getElementById('dre-resultado-content').innerHTML =
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">'+
+    '<thead><tr style="background:rgba(255,255,255,0.05);border-bottom:2px solid var(--border)">'+
+    '<th style="text-align:left;padding:10px 12px;font-size:12px;color:var(--muted);min-width:220px;position:sticky;left:0;background:var(--surface2)">CONTA</th>'+
+    mesesCols+'</tr></thead><tbody>'+rowsHtml+'</tbody></table></div>';
+}
+
+async function salvarDRELancamento() {
+  const mes = document.getElementById('drei-mes').value;
+  const tipo = document.getElementById('drei-tipo').value;
+  const valor = parseFloat(document.getElementById('drei-valor').value) || 0;
+  if (!mes || !tipo || !valor) return showToast('Preencha mês, tipo e valor', true);
+  const { error } = await db.from('dre_lancamentos').insert({
+    conta: tipo,
+    cliente_id: document.getElementById('drei-cliente').value || null,
+    mes_referencia: mes + '-01',
+    valor,
+    usuario: currentUser?.nome || '-'
+  });
+  if (error) return showToast('Erro: ' + error.message, true);
+  closeModal('modal-drei');
+  document.getElementById('drei-valor').value = '';
+  document.getElementById('drei-obs').value = '';
+  showToast('Lançamento salvo!');
+  await carregarDREResultado();
+}
+
+// ============================================================
 // DRE RECORRENTE E PROJETADA
 function prefixo(tipo) { return tipo === 'recorrente' ? 'drec' : 'drep'; }
 function tabela(tipo) { return tipo === 'recorrente' ? 'resultado_recorrente' : 'resultado_projetado'; }
