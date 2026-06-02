@@ -183,6 +183,19 @@ textarea.form-input{resize:vertical;min-height:70px}
         <button class="btn btn-primary" onclick="abrirModalDRE()">+ Lançar</button>
         <button class="btn" onclick="carregarDREResultado()">&#8635; Atualizar</button>
       </div>
+
+      <!-- FILTRO POR GRUPO DE UNIDADE -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button id="grp-btn-todas" onclick="selecionarGrupo('todas')" class="btn" style="font-size:12px;font-weight:600;background:rgba(59,130,246,0.2);color:var(--accent2);border-color:var(--accent2)">&#127759; TODAS AS UNIDADES</button>
+        <button id="grp-btn-anglo" onclick="selecionarGrupo('anglo')" class="btn" style="font-size:12px">&#128205; ANGLO AMERICAN</button>
+        <button id="grp-btn-csnmg" onclick="selecionarGrupo('csnmg')" class="btn" style="font-size:12px">&#128205; CSN MG</button>
+        <button id="grp-btn-csnsp" onclick="selecionarGrupo('csnsp')" class="btn" style="font-size:12px">&#128205; CSN SP</button>
+        <select class="form-select" style="width:220px;font-size:12px" id="drei-filter-cliente" onchange="selecionarGrupo('custom')">
+          <option value="">— Por unidade específica —</option>
+        </select>
+      </div>
+      <input type="hidden" id="drei-grupo-ativo" value="todas" />
+
       <!-- LEGENDA -->
       <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--muted);font-weight:600">LEGENDA:</span>
@@ -197,6 +210,7 @@ textarea.form-input{resize:vertical;min-height:70px}
           <span style="font-size:12px;color:var(--muted)">= Projetado (novos negócios futuros)</span>
         </div>
       </div>
+
       <!-- TABELA DRE -->
       <div style="overflow-x:auto;margin-bottom:20px">
         <div id="dre-resultado-content"><div class="loading">Carregando...</div></div>
@@ -1775,6 +1789,49 @@ const PLANO_CONTAS = [
   { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
 ];
 
+// Grupos de unidades de negocio
+const GRUPOS_DRE = {
+  todas:  null, // sem filtro
+  anglo:  ['anglo'], // clientes cujo nome contém "anglo"
+  csnmg:  ['pires','fernandinho','almox','entreposto','casa de pedra'],
+  csnsp:  ['taubate','taubaté','santo amaro']
+};
+
+function selecionarGrupo(grupo) {
+  document.getElementById('drei-grupo-ativo').value = grupo;
+  // Reseta visual dos botoes
+  ['todas','anglo','csnmg','csnsp'].forEach(g => {
+    const btn = document.getElementById('grp-btn-'+g);
+    if (btn) { btn.style.background='var(--surface2)'; btn.style.color='var(--muted)'; btn.style.borderColor='var(--border2)'; }
+  });
+  // Destaca botao ativo
+  if (grupo !== 'custom') {
+    const btn = document.getElementById('grp-btn-'+grupo);
+    const cores = { todas:'var(--accent2)', anglo:'var(--amber)', csnmg:'var(--green)', csnsp:'var(--teal)' };
+    const bgs = { todas:'rgba(59,130,246,0.2)', anglo:'rgba(245,158,11,0.2)', csnmg:'rgba(16,185,129,0.2)', csnsp:'rgba(20,184,166,0.2)' };
+    if (btn) { btn.style.background=bgs[grupo]; btn.style.color=cores[grupo]; btn.style.borderColor=cores[grupo]; }
+    // Limpa select de cliente especifico
+    document.getElementById('drei-filter-cliente').value = '';
+  }
+  carregarDREResultado();
+}
+
+function obterClientesFiltrados(rows) {
+  const grupo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
+  const clienteEspecifico = document.getElementById('drei-filter-cliente')?.value;
+
+  if (grupo === 'custom' && clienteEspecifico) {
+    return rows.filter(r => r.cliente_id === clienteEspecifico);
+  }
+  if (grupo === 'todas' || !GRUPOS_DRE[grupo]) return rows;
+
+  const palavras = GRUPOS_DRE[grupo];
+  return rows.filter(r => {
+    const nome = (r.clientes?.razao_social || '').toLowerCase();
+    return palavras.some(p => nome.includes(p));
+  });
+}
+
 function selecionarNatureza(nat) {
   document.getElementById('drei-natureza').value = nat;
   const btnRec = document.getElementById('btn-nat-rec');
@@ -1801,13 +1858,17 @@ async function abrirModalDRE() {
   document.getElementById('drei-id').value = '';
   document.getElementById('drei-valor').value = '';
   document.getElementById('drei-obs').value = '';
+  document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
   // Popular selects
   const sc = document.getElementById('drei-cliente');
   if (sc) sc.innerHTML = '<option value="">- Geral -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+  const sf = document.getElementById('drei-filter-cliente');
+  if (sf) sf.innerHTML = '<option value="">— Por unidade específica —</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
   const se = document.getElementById('drei-equip-sel');
   if (se) se.innerHTML = '<option value="">- Nenhum -</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
   const sct = document.getElementById('drei-contrato-sel');
   if (sct) sct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
+  selecionarNatureza('recorrente');
   atualizarContasDRE();
   openModal('modal-drei');
 }
@@ -1823,11 +1884,21 @@ async function carregarDREResultado() {
 
   if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
 
-  // Organiza: dados[conta][mes][natureza] = valor
+  // Aplica filtro de grupo
+  const rowsFiltrados = obterClientesFiltrados(rows);
+  const grupoNome = { todas:'Todas as Unidades', anglo:'Anglo American', csnmg:'CSN MG (Pires + Fernandinho + Almoxarifado + Entreposto)', csnsp:'CSN SP (Taubaté + Santo Amaro)', custom:'Unidade específica' };
+  const grupoAtivo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
+
+  // Popular select de cliente especifico se ainda não populado
+  const sf = document.getElementById('drei-filter-cliente');
+  if (sf && sf.options.length <= 1) {
+    sf.innerHTML = '<option value="">— Por unidade específica —</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+  }
+
   const dados = {};
   const dadosCliente = {}; // [cliente_id][mes][natureza]
 
-  rows.forEach(r => {
+  rowsFiltrados.forEach(r => {
     const m = new Date(r.mes_referencia+'T12:00:00').getMonth();
     const nat = r.natureza || 'recorrente';
     if (!dados[r.conta]) dados[r.conta] = Array(12).fill(null).map(()=>({recorrente:0,projetado:0}));
