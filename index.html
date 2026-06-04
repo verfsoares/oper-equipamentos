@@ -150,6 +150,7 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
   <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Inspecao de Equipamento</span></div>
+  <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Relatorio de Visitas</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
@@ -435,6 +436,23 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
+    <!-- VISITAS -->
+    <div class="view" id="v-visitas">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Relatorio de Visitas</div>
+          <button class="btn btn-primary" onclick="openModal('modal-visita')">+ Nova Visita</button>
+        </div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" style="width:200px" id="filter-visita-cliente" onchange="carregarVisitas()"><option value="">Todos os clientes</option></select>
+          <input class="form-input" type="date" id="filter-visita-ini" onchange="carregarVisitas()" style="width:150px" placeholder="De" />
+          <input class="form-input" type="date" id="filter-visita-fim" onchange="carregarVisitas()" style="width:150px" placeholder="Ate" />
+          <button class="btn" onclick="limparFiltrosVisita()">Limpar</button>
+        </div>
+        <div id="visita-table-body"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
     <!-- HISTORICO -->
     <div class="view" id="v-historico">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -527,6 +545,54 @@ textarea.form-input{resize:vertical;min-height:70px}
 
   </div>
 </div>
+</div>
+
+<!-- MODAL VISITA -->
+<div class="modal-overlay" id="modal-visita">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><div class="modal-title" id="modal-visita-title">Nova Visita</div><button class="modal-close" onclick="closeModal('modal-visita')">x</button></div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Data da Visita *</div><input class="form-input" type="date" id="visita-data" /></div>
+      <div class="form-group"><div class="form-label">Cliente / Unidade de Negócio *</div><select class="form-select" id="visita-cliente"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Responsável pela Visita</div><input class="form-input" id="visita-responsavel" placeholder="Nome do responsável..." /></div>
+      <div class="form-group"><div class="form-label">Tipo de Visita</div>
+        <select class="form-select" id="visita-tipo">
+          <option>Visita Comercial</option>
+          <option>Visita Técnica</option>
+          <option>Visita Operacional</option>
+          <option>Reunião de Alinhamento</option>
+          <option>Visita de Inspeção</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group full"><div class="form-label">Pauta / Descrição</div><textarea class="form-input" id="visita-descricao" placeholder="Descreva os pontos abordados na visita..."></textarea></div>
+      <div class="form-group full"><div class="form-label">Conclusão / Próximos Passos</div><textarea class="form-input" id="visita-conclusao" placeholder="Conclusões e ações a serem tomadas..."></textarea></div>
+      <div class="form-group full">
+        <div class="form-label">Anexar Arquivos (Fotos, PDF, Word)</div>
+        <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2)" onclick="document.getElementById('visita-files').click()">
+          <div style="font-size:24px;margin-bottom:8px">&#128206;</div>
+          <div style="font-size:13px;color:var(--muted)">Clique para selecionar arquivos</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Fotos, PDF, Word — múltiplos arquivos</div>
+        </div>
+        <input type="file" id="visita-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mostrarArquivosVisita()" />
+        <div id="visita-files-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+    <input type="hidden" id="visita-id" value="" />
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-visita')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarVisita()">Salvar Visita</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER VISITA -->
+<div class="modal-overlay" id="modal-ver-visita">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header"><div class="modal-title">Detalhes da Visita</div><button class="modal-close" onclick="closeModal('modal-ver-visita')">x</button></div>
+    <div id="ver-visita-content"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modal-ver-visita')">Fechar</button></div>
+  </div>
 </div>
 
 <!-- MODAL INSPECAO -->
@@ -954,6 +1020,7 @@ const pageMap = {
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:     { title: 'Inspecao de Equipamento', loader: carregarInspecoes },
+  visitas:      { title: 'Relatorio de Visitas', loader: carregarVisitas },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   contratos:    { title: 'Contratos', loader: carregarContratos },
@@ -2362,6 +2429,130 @@ async function salvarDRE() {
   if (tipo === 'realizado') await carregarDRETipo('realizado');
   else if (tipo === 'projetada') await carregarDRETipo('projetada');
   else await carregarDRE();
+}
+
+// ============================================================
+// RELATORIO DE VISITAS
+// ============================================================
+async function carregarVisitas() {
+  const sf = document.getElementById('filter-visita-cliente');
+  if (sf && sf.options.length === 1) {
+    allClientes.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=c.razao_social; sf.appendChild(o); });
+  }
+  const sc = document.getElementById('visita-cliente');
+  if (sc) sc.innerHTML = '<option value="">Selecione...</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+  const fCli = document.getElementById('filter-visita-cliente')?.value;
+  const fIni = document.getElementById('filter-visita-ini')?.value;
+  const fFim = document.getElementById('filter-visita-fim')?.value;
+  let q = db.from('visitas').select('*, clientes(razao_social), visita_arquivos(id)').order('data_visita', { ascending: false });
+  if (fCli) q = q.eq('cliente_id', fCli);
+  if (fIni) q = q.gte('data_visita', fIni);
+  if (fFim) q = q.lte('data_visita', fFim);
+  const { data: visitas } = await q.limit(50);
+  const tipoIcon = { 'Visita Comercial':'&#128188;','Visita Técnica':'&#128295;','Visita Operacional':'&#128260;','Reunião de Alinhamento':'&#128101;','Visita de Inspeção':'&#128269;','Outro':'&#128196;' };
+  document.getElementById('visita-table-body').innerHTML = visitas && visitas.length ?
+    '<table><thead><tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Responsável</th><th>Pauta</th><th>Arquivos</th><th>Usuário</th><th></th></tr></thead><tbody>' +
+    visitas.map(v => {
+      const nArq = v.visita_arquivos ? v.visita_arquivos.length : 0;
+      return '<tr><td>'+v.data_visita+'</td><td><strong>'+(v.clientes?.razao_social||'-')+'</strong></td><td style="font-size:12px">'+(tipoIcon[v.tipo_visita]||'&#128196;')+' '+(v.tipo_visita||'-')+'</td><td style="font-size:12px;color:var(--muted)">'+(v.responsavel||'-')+'</td><td style="font-size:12px;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(v.descricao||'-')+'</td><td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">&#128206; '+nArq+'</span></td><td style="color:var(--muted);font-size:12px">'+(v.usuario||'-')+'</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verVisita(\''+v.id+'\')">&#128065; Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarVisita(\''+v.id+'\')">&#128465;&#65039;</button></td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="loading">Nenhuma visita registrada</div>';
+}
+
+function limparFiltrosVisita() {
+  ['filter-visita-cliente','filter-visita-ini','filter-visita-fim'].forEach(id => { const el = document.getElementById(id); if (el) el.value=''; });
+  carregarVisitas();
+}
+
+function mostrarArquivosVisita() {
+  const files = document.getElementById('visita-files').files;
+  const preview = document.getElementById('visita-files-preview');
+  preview.innerHTML = '';
+  Array.from(files).forEach(f => {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:6px';
+    div.textContent = f.name;
+    preview.appendChild(div);
+  });
+}
+
+async function salvarVisita() {
+  const clienteId = document.getElementById('visita-cliente').value;
+  const data = document.getElementById('visita-data').value;
+  if (!clienteId || !data) return showToast('Preencha data e cliente', true);
+  const { data: visita, error } = await db.from('visitas').insert({
+    cliente_id: clienteId,
+    data_visita: data,
+    tipo_visita: document.getElementById('visita-tipo').value,
+    responsavel: document.getElementById('visita-responsavel').value,
+    descricao: document.getElementById('visita-descricao').value,
+    conclusao: document.getElementById('visita-conclusao').value,
+    usuario: currentUser?.nome || '-'
+  }).select().single();
+  if (error) return showToast('Erro: ' + error.message, true);
+  const files = document.getElementById('visita-files').files;
+  let uploadOk = 0;
+  for (const file of Array.from(files)) {
+    try {
+      const nomeSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = 'visitas/' + visita.id + '/' + Date.now() + '_' + nomeSeguro;
+      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+      if (!upErr) {
+        const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+        await db.from('visita_arquivos').insert({ visita_id: visita.id, nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type });
+        uploadOk++;
+      }
+    } catch(e) {}
+  }
+  closeModal('modal-visita');
+  document.getElementById('visita-files-preview').innerHTML = '';
+  document.getElementById('visita-files').value = '';
+  document.getElementById('visita-descricao').value = '';
+  document.getElementById('visita-conclusao').value = '';
+  showToast('Visita salva' + (uploadOk > 0 ? ' com ' + uploadOk + ' arquivo(s)!' : '!'));
+  await carregarVisitas();
+}
+
+async function verVisita(id) {
+  const { data: v } = await db.from('visitas').select('*, clientes(razao_social)').eq('id', id).single();
+  const { data: arqs } = await db.from('visita_arquivos').select('*').eq('visita_id', id);
+  if (!v) return;
+  const isImg = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  document.getElementById('ver-visita-content').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CLIENTE</div><div style="font-weight:600">'+(v.clientes?.razao_social||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">'+v.data_visita+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">'+(v.tipo_visita||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">RESPONSÁVEL</div><div style="font-weight:600">'+(v.responsavel||'-')+'</div></div>' +
+    (v.descricao?'<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">PAUTA / DESCRIÇÃO</div><div style="font-size:13px">'+v.descricao+'</div></div>':'') +
+    (v.conclusao?'<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CONCLUSÃO / PRÓXIMOS PASSOS</div><div style="font-size:13px">'+v.conclusao+'</div></div>':'') +
+    '</div>' +
+    '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos ('+(arqs?.length||0)+')</div>' +
+    ((arqs && arqs.length) ?
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
+      arqs.map(a => '<a href="'+a.url_arquivo+'" target="_blank" style="text-decoration:none">' +
+        (isImg(a.url_arquivo) ?
+          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="'+a.url_arquivo+'" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.nome_arquivo+'</div></div>' :
+          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">'+a.nome_arquivo+'</div></div>'
+        ) + '</a>'
+      ).join('') + '</div>' :
+      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>'
+    );
+  openModal('modal-ver-visita');
+}
+
+async function deletarVisita(id) {
+  if (!confirm('Deseja excluir esta visita e todos os arquivos?')) return;
+  const { data: arqs } = await db.from('visita_arquivos').select('url_arquivo').eq('visita_id', id);
+  if (arqs) {
+    for (const a of arqs) {
+      const parts = a.url_arquivo.split('/inspecoes/');
+      if (parts[1]) await db.storage.from('inspecoes').remove([decodeURIComponent(parts[1])]);
+    }
+  }
+  await db.from('visitas').delete().eq('id', id);
+  showToast('Visita excluída!');
+  await carregarVisitas();
 }
 
 // ============================================================
