@@ -2026,6 +2026,7 @@ async function carregarDREResultado() {
       if (conta.id==='iss')       return Array(12).fill(0).map((_,m)=>issMes(m,nat));
       if (conta.id==='mo_apoio')  return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
+      if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
       if (conta.id==='total_adm')   return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat)+soma(admContas,m,nat));
       if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
       if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>totalOpMes(m,nat));
