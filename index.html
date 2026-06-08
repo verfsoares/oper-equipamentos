@@ -780,15 +780,6 @@ textarea.form-input{resize:vertical;min-height:70px}
       <div class="form-group"><div class="form-label">Fretes (R$)</div><input class="form-input" type="number" id="dre-frete" placeholder="0" oninput="calcDRE()" /></div>
     </div>
 
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">CUSTOS ADMINISTRATIVOS</div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Mao de Obra Apoio GMP 3% (R$)</div><input class="form-input" type="number" id="dre-adm-mob" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Consultoria / Serv.Terc (R$)</div><input class="form-input" type="number" id="dre-adm-cons" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Passagens Aereas (R$)</div><input class="form-input" type="number" id="dre-adm-pass" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Hoteis / Diarias / Translados (R$)</div><input class="form-input" type="number" id="dre-adm-hotel" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Cursos / Seminarios / Mentorias (R$)</div><input class="form-input" type="number" id="dre-adm-curso" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Brindes / Marketing (R$)</div><input class="form-input" type="number" id="dre-adm-brindes" placeholder="0" oninput="calcDRE()" /></div>
-    </div>
 
     <!-- PREVIEW RESULTADO -->
     <div style="margin-top:20px;background:var(--surface2);border-radius:12px;padding:16px" id="dre-preview">
@@ -1859,7 +1850,6 @@ const PLANO_CONTAS = [
   { id:'mc_valor', label:'= MARGEM CONTRIBUIÇÃO (R$)', nivel:1, tipo:'resultado', cor:null },
   { id:'mc_pct', label:'= MARGEM CONTRIBUIÇÃO (%)', nivel:1, tipo:'pct', cor:null },
   { id:'custos_adm', label:'CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'header', cor:'var(--teal)' },
-  { id:'mo_apoio', label:'MO Apoio GPM 3%', nivel:2, tipo:'conta', cor:null },
   { id:'consultoria', label:'Consultoria/Serv.Terc', nivel:2, tipo:'conta', cor:null },
   { id:'passagens', label:'Passagens Aéreas', nivel:2, tipo:'conta', cor:null },
   { id:'hoteis', label:'Hotéis/Diárias/Transl.', nivel:2, tipo:'conta', cor:null },
@@ -2006,9 +1996,9 @@ async function carregarDREResultado() {
   const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado','seguro_vida'];
   const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
-  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes']; // mo_apoio calculado automaticamente
+  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes'];
   const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
-  const gpmMes = (m,nat) => mcMes(m,nat) - moApoioMes(m,nat) - soma(admContas,m,nat);
+  const gpmMes = (m,nat) => mcMes(m,nat) - soma(admContas,m,nat);
 
   const fmtN = (v, nat, corOverride) => {
     const bg = nat==='previsto' ? 'rgba(139,92,246,0.04)' : '';
@@ -2094,7 +2084,7 @@ async function carregarDREResultado() {
       if (conta.id==='mo_apoio')  return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat));
       if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
       if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
-      if (conta.id==='total_adm')   return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat)+soma(admContas,m,nat));
+      if (conta.id==='total_adm')   return Array(12).fill(0).map((_,m)=>soma(admContas,m,nat));
       if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
       if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>totalOpMes(m,nat));
       if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
