@@ -958,7 +958,8 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const USERS = {
   'veronica@oper.com.br': { senha: '123456', nome: 'Veronica Soares', perfil: 'GERENTE', initials: 'VS' },
-  'eduardo@oper.com.br':  { senha: '123456', nome: 'Eduardo Pitombo', perfil: 'CEO', initials: 'EP' }
+  'eduardo@oper.com.br':  { senha: '123456', nome: 'Eduardo Pitombo', perfil: 'CEO', initials: 'EP' },
+  'vitor@oper.com.br':    { senha: 'kwaysousa', nome: 'Vitor Sousa', perfil: 'HEAD DE FINANCAS', initials: 'VS2' }
 };
 
 let currentUser = null;
@@ -1521,7 +1522,7 @@ async function deletarContrato(id, numero) {
 }
 
 function carregarUsuarios() {
-  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(59,130,246,0.15);color:#60a5fa', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24' };
+  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(59,130,246,0.15);color:#60a5fa', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24', 'HEAD DE FINANCAS':'background:rgba(16,185,129,0.15);color:#34d399' };
   document.getElementById('usuario-table-body').innerHTML =
     '<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th></tr></thead><tbody>' +
     Object.entries(USERS).map(([email, u]) =>
