@@ -704,6 +704,7 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="hoteis">Hotéis/Diárias/Transl.</option>
             <option value="cursos">Cursos/Seminários/Mentorias</option>
             <option value="brindes">Brindes/Marketing</option>
+            <option value="deslocamento">Deslocamento</option>
           </optgroup>
         </select>
       </div>
@@ -1855,6 +1856,7 @@ const PLANO_CONTAS = [
   { id:'hoteis', label:'Hotéis/Diárias/Transl.', nivel:2, tipo:'conta', cor:null },
   { id:'cursos', label:'Cursos/Seminários/Mentorias', nivel:2, tipo:'conta', cor:null },
   { id:'brindes', label:'Brindes/Marketing', nivel:2, tipo:'conta', cor:null },
+  { id:'deslocamento', label:'Deslocamento', nivel:2, tipo:'conta', cor:null },
   { id:'total_adm', label:'= TOTAL CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'subtotal_adm', cor:'var(--teal)' },
   { id:'gpm_valor', label:'= RESULTADO GPM (R$)', nivel:1, tipo:'resultado', cor:null },
   { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
@@ -1996,7 +1998,7 @@ async function carregarDREResultado() {
   const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado','seguro_vida'];
   const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
   const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
-  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes'];
+  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes','deslocamento'];
   const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
   const gpmMes = (m,nat) => mcMes(m,nat) - soma(admContas,m,nat);
 
@@ -2146,7 +2148,7 @@ async function carregarDREResultado() {
     alugueis:'Aluguéis', provisionamento:'Provisionamento', depreciacao:'Depreciação',
     uniformes:'Uniformes/EPIs', servicos_terc:'Serviços Terceiros', fretes:'Fretes',
     mo_apoio:'MO Apoio GPM 3%', consultoria:'Consultoria', passagens:'Passagens Aéreas',
-    hoteis:'Hotéis/Diárias', cursos:'Cursos/Seminários', brindes:'Brindes/Marketing'
+    hoteis:'Hotéis/Diárias', cursos:'Cursos/Seminários', brindes:'Brindes/Marketing', deslocamento:'Deslocamento'
   };
 
   const countEl = document.getElementById('drei-count');
