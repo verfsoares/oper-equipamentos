@@ -149,8 +149,9 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
-  <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Inspecao de Equipamento</span></div>
+  <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Visitas de Inspecao</span></div>
   <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Relatorio de Visitas</span></div>
+  <div class="nav-item" onclick="nav('manutencao-equip',this)"><span class="nav-icon">&#128295;</span><span>Manutencao de Equipamentos</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
@@ -453,6 +454,24 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
+    <!-- MANUTENCAO EQUIPAMENTOS -->
+    <div class="view" id="v-manutencao-equip">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Manutencao de Equipamentos</div>
+          <button class="btn btn-primary" onclick="openModal('modal-manut-equip')">+ Nova Manutencao</button>
+        </div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" style="width:200px" id="filter-manut-equip" onchange="carregarManutencaoEquip()"><option value="">Todos os equipamentos</option></select>
+          <select class="form-select" style="width:180px" id="filter-manut-cliente" onchange="carregarManutencaoEquip()"><option value="">Todos os clientes</option></select>
+          <input class="form-input" type="date" id="filter-manut-ini" onchange="carregarManutencaoEquip()" style="width:150px" />
+          <input class="form-input" type="date" id="filter-manut-fim" onchange="carregarManutencaoEquip()" style="width:150px" />
+          <button class="btn" onclick="limparFiltrosManut()">Limpar</button>
+        </div>
+        <div id="manut-equip-table-body"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
     <!-- HISTORICO -->
     <div class="view" id="v-historico">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -545,6 +564,64 @@ textarea.form-input{resize:vertical;min-height:70px}
 
   </div>
 </div>
+</div>
+
+<!-- MODAL MANUTENCAO EQUIPAMENTO -->
+<div class="modal-overlay" id="modal-manut-equip">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header"><div class="modal-title" id="modal-manut-title">Nova Manutencao</div><button class="modal-close" onclick="closeModal('modal-manut-equip')">x</button></div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Data *</div><input class="form-input" type="date" id="manut-data" /></div>
+      <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="manut-equip-sel"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Cliente / Operacao</div><select class="form-select" id="manut-cliente-sel"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">Tipo de Manutencao</div>
+        <select class="form-select" id="manut-tipo">
+          <option>Manutencao Preventiva</option>
+          <option>Manutencao Corretiva</option>
+          <option>Troca de Pecas</option>
+          <option>Revisao Geral</option>
+          <option>Borracharia</option>
+          <option>Eletrica</option>
+          <option>Hidraulica</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Status apos manutencao</div>
+        <select class="form-select" id="manut-status">
+          <option>Operacional</option>
+          <option>Em aguardo de pecas</option>
+          <option>Aguardando aprovacao</option>
+          <option>Inoperante</option>
+        </select>
+      </div>
+      <div class="form-group"><div class="form-label">Custo (R$)</div><input class="form-input" type="number" id="manut-custo" placeholder="0,00" /></div>
+      <div class="form-group full"><div class="form-label">O que foi feito *</div><textarea class="form-input" id="manut-descricao" placeholder="Descreva os servicos realizados, pecas substituidas..."></textarea></div>
+      <div class="form-group full">
+        <div class="form-label">Anexar Arquivos (Fotos, NF, Laudos)</div>
+        <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2)" onclick="document.getElementById('manut-files').click()">
+          <div style="font-size:24px;margin-bottom:8px">&#128206;</div>
+          <div style="font-size:13px;color:var(--muted)">Clique para selecionar arquivos</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Fotos, PDF, Word, NF — multiplos arquivos</div>
+        </div>
+        <input type="file" id="manut-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mostrarArquivosManut()" />
+        <div id="manut-files-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+    <input type="hidden" id="manut-id" value="" />
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-manut-equip')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarManutencaoEquip()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER MANUTENCAO -->
+<div class="modal-overlay" id="modal-ver-manut">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header"><div class="modal-title">Detalhes da Manutencao</div><button class="modal-close" onclick="closeModal('modal-ver-manut')">x</button></div>
+    <div id="ver-manut-content"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('modal-ver-manut')">Fechar</button></div>
+  </div>
 </div>
 
 <!-- MODAL VISITA -->
@@ -1012,8 +1089,9 @@ const pageMap = {
   dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
-  inspecao:     { title: 'Inspecao de Equipamento', loader: carregarInspecoes },
-  visitas:      { title: 'Relatorio de Visitas', loader: carregarVisitas },
+  inspecao:         { title: 'Visitas de Inspecao', loader: carregarInspecoes },
+  visitas:          { title: 'Relatorio de Visitas', loader: carregarVisitas },
+  'manutencao-equip': { title: 'Manutencao de Equipamentos', loader: carregarManutencaoEquip },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   contratos:    { title: 'Contratos', loader: carregarContratos },
@@ -2422,6 +2500,164 @@ async function salvarDRE() {
   if (tipo === 'realizado') await carregarDRETipo('realizado');
   else if (tipo === 'projetada') await carregarDRETipo('projetada');
   else await carregarDRE();
+}
+
+// ============================================================
+// MANUTENCAO DE EQUIPAMENTOS
+// ============================================================
+async function carregarManutencaoEquip() {
+  // Popular filtros
+  const sfE = document.getElementById('filter-manut-equip');
+  if (sfE && sfE.options.length === 1) {
+    allEquipamentos.forEach(e => { const o = document.createElement('option'); o.value=e.id; o.textContent=e.frota+' · '+e.equipamento; sfE.appendChild(o); });
+  }
+  const sfC = document.getElementById('filter-manut-cliente');
+  if (sfC && sfC.options.length === 1) {
+    allClientes.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=c.razao_social; sfC.appendChild(o); });
+  }
+  // Popular selects do modal
+  const se = document.getElementById('manut-equip-sel');
+  if (se) se.innerHTML = '<option value="">Selecione...</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
+  const sc = document.getElementById('manut-cliente-sel');
+  if (sc) sc.innerHTML = '<option value="">- Nenhum -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
+
+  const fEquip = document.getElementById('filter-manut-equip')?.value;
+  const fCli   = document.getElementById('filter-manut-cliente')?.value;
+  const fIni   = document.getElementById('filter-manut-ini')?.value;
+  const fFim   = document.getElementById('filter-manut-fim')?.value;
+
+  let q = db.from('manutencao_equipamentos').select('*, equipamentos(frota,equipamento), clientes(razao_social), manut_arquivos(id)').order('data_manutencao', { ascending: false });
+  if (fEquip) q = q.eq('equipamento_id', fEquip);
+  if (fCli)   q = q.eq('cliente_id', fCli);
+  if (fIni)   q = q.gte('data_manutencao', fIni);
+  if (fFim)   q = q.lte('data_manutencao', fFim);
+  const { data: manuts } = await q.limit(50);
+
+  const tipoColor = { 'Manutencao Preventiva':'var(--amber)', 'Manutencao Corretiva':'var(--red)', 'Troca de Pecas':'var(--purple)', 'Revisao Geral':'var(--teal)', 'Borracharia':'var(--green)', 'Eletrica':'var(--accent2)', 'Hidraulica':'var(--blue)', 'Outro':'var(--muted)' };
+
+  document.getElementById('manut-equip-table-body').innerHTML = manuts && manuts.length ?
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Cliente/Operacao</th><th>Tipo</th><th>Status</th><th>Custo</th><th>O que foi feito</th><th>Arquivos</th><th>Usuario</th><th></th></tr></thead><tbody>' +
+    manuts.map(m => {
+      const nArq = m.manut_arquivos ? m.manut_arquivos.length : 0;
+      const cor = tipoColor[m.tipo_manutencao] || 'var(--muted)';
+      return '<tr>' +
+        '<td>'+m.data_manutencao+'</td>' +
+        '<td><strong>'+(m.equipamentos?.frota||'-')+'</strong> · '+(m.equipamentos?.equipamento||'-')+'</td>' +
+        '<td style="font-size:12px;color:var(--muted)">'+(m.clientes?.razao_social||'-')+'</td>' +
+        '<td><span style="color:'+cor+';font-size:12px;font-weight:500">'+(m.tipo_manutencao||'-')+'</span></td>' +
+        '<td style="font-size:12px">'+(m.status_manutencao||'-')+'</td>' +
+        '<td style="color:var(--green);font-weight:600">'+(m.custo>0?'R$ '+m.custo.toLocaleString('pt-BR'):'-')+'</td>' +
+        '<td style="font-size:12px;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(m.descricao||'-')+'</td>' +
+        '<td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">&#128206; '+nArq+'</span></td>' +
+        '<td style="color:var(--muted);font-size:12px">'+(m.usuario||'-')+'</td>' +
+        '<td style="white-space:nowrap">' +
+        '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="verManutencao(\''+m.id+'\')">&#128065; Ver</button> ' +
+        '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarManutencao(\''+m.id+'\')">&#128465;&#65039;</button>' +
+        '</td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<div class="loading">Nenhuma manutencao registrada</div>';
+}
+
+function limparFiltrosManut() {
+  ['filter-manut-equip','filter-manut-cliente','filter-manut-ini','filter-manut-fim'].forEach(id => { const el = document.getElementById(id); if (el) el.value=''; });
+  carregarManutencaoEquip();
+}
+
+function mostrarArquivosManut() {
+  const files = document.getElementById('manut-files').files;
+  const preview = document.getElementById('manut-files-preview');
+  preview.innerHTML = '';
+  Array.from(files).forEach(f => {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:6px';
+    div.textContent = f.name;
+    preview.appendChild(div);
+  });
+}
+
+async function salvarManutencaoEquip() {
+  const equipId = document.getElementById('manut-equip-sel').value;
+  const data    = document.getElementById('manut-data').value;
+  if (!equipId || !data) return showToast('Preencha data e equipamento', true);
+
+  const { data: manut, error } = await db.from('manutencao_equipamentos').insert({
+    equipamento_id:   equipId,
+    cliente_id:       document.getElementById('manut-cliente-sel').value || null,
+    data_manutencao:  data,
+    tipo_manutencao:  document.getElementById('manut-tipo').value,
+    status_manutencao: document.getElementById('manut-status').value,
+    custo:            parseFloat(document.getElementById('manut-custo').value) || 0,
+    descricao:        document.getElementById('manut-descricao').value,
+    usuario:          currentUser?.nome || '-'
+  }).select().single();
+
+  if (error) return showToast('Erro: ' + error.message, true);
+
+  const files = document.getElementById('manut-files').files;
+  let uploadOk = 0;
+  for (const file of Array.from(files)) {
+    try {
+      const nomeSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = 'manutencao/' + manut.id + '/' + Date.now() + '_' + nomeSeguro;
+      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+      if (!upErr) {
+        const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+        await db.from('manut_arquivos').insert({ manut_id: manut.id, nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type });
+        uploadOk++;
+      }
+    } catch(e) {}
+  }
+
+  closeModal('modal-manut-equip');
+  document.getElementById('manut-files-preview').innerHTML = '';
+  document.getElementById('manut-files').value = '';
+  document.getElementById('manut-descricao').value = '';
+  document.getElementById('manut-custo').value = '';
+  showToast('Manutencao salva' + (uploadOk > 0 ? ' com ' + uploadOk + ' arquivo(s)!' : '!'));
+  await carregarManutencaoEquip();
+}
+
+async function verManutencao(id) {
+  const { data: m } = await db.from('manutencao_equipamentos').select('*, equipamentos(frota,equipamento), clientes(razao_social)').eq('id', id).single();
+  const { data: arqs } = await db.from('manut_arquivos').select('*').eq('manut_id', id);
+  if (!m) return;
+  const isImg = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  document.getElementById('ver-manut-content').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">EQUIPAMENTO</div><div style="font-weight:600">'+(m.equipamentos?.frota||'-')+' · '+(m.equipamentos?.equipamento||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">'+m.data_manutencao+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">'+(m.tipo_manutencao||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">STATUS</div><div style="font-weight:600">'+(m.status_manutencao||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CLIENTE/OPERACAO</div><div style="font-weight:600">'+(m.clientes?.razao_social||'-')+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CUSTO</div><div style="font-weight:600;color:var(--green)">'+(m.custo>0?'R$ '+m.custo.toLocaleString('pt-BR'):'-')+'</div></div>' +
+    (m.descricao?'<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">O QUE FOI FEITO</div><div style="font-size:13px">'+m.descricao+'</div></div>':'') +
+    '</div>' +
+    '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos ('+(arqs?.length||0)+')</div>' +
+    ((arqs && arqs.length) ?
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
+      arqs.map(a => '<a href="'+a.url_arquivo+'" target="_blank" style="text-decoration:none">' +
+        (isImg(a.url_arquivo) ?
+          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="'+a.url_arquivo+'" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.nome_arquivo+'</div></div>' :
+          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">'+a.nome_arquivo+'</div></div>'
+        ) + '</a>'
+      ).join('') + '</div>' :
+      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>'
+    );
+  openModal('modal-ver-manut');
+}
+
+async function deletarManutencao(id) {
+  if (!confirm('Deseja excluir este registro de manutencao?')) return;
+  const { data: arqs } = await db.from('manut_arquivos').select('url_arquivo').eq('manut_id', id);
+  if (arqs) {
+    for (const a of arqs) {
+      const parts = a.url_arquivo.split('/inspecoes/');
+      if (parts[1]) await db.storage.from('inspecoes').remove([decodeURIComponent(parts[1])]);
+    }
+  }
+  await db.from('manutencao_equipamentos').delete().eq('id', id);
+  showToast('Registro excluido!');
+  await carregarManutencaoEquip();
 }
 
 // ============================================================
