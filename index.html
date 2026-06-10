@@ -798,7 +798,7 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="outros_insumos">Outros Insumos Diretos</option>
             <option value="alugueis">Aluguéis Máqs/Equiptos/Veics</option>
             <option value="provisionamento">Provisionamento Preventivas</option>
-            <option value="depreciacao">Depreciação Equipamentos</option>
+            <option value="depreciacao">Depreciação/Amortização</option>
             <option value="uniformes">Uniformes/EPIs</option>
             <option value="servicos_terc">Serviços Terceiros</option>
             <option value="fretes">Fretes</option>
@@ -882,7 +882,7 @@ textarea.form-input{resize:vertical;min-height:70px}
       <div class="form-group"><div class="form-label">Outros Insumos Diretos (R$)</div><input class="form-input" type="number" id="dre-insumos" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Alugueis Maq/Equip/Veics (R$)</div><input class="form-input" type="number" id="dre-alug" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Provisionamento Preventivas (R$)</div><input class="form-input" type="number" id="dre-prov" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Depreciacao Equipamentos (R$)</div><input class="form-input" type="number" id="dre-depr" placeholder="0" oninput="calcDRE()" /></div>
+      <div class="form-group"><div class="form-label">Depreciacao/Amortizacao (R$)</div><input class="form-input" type="number" id="dre-depr" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Uniformes / EPIs (R$)</div><input class="form-input" type="number" id="dre-epis" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Servicos Terceiros (R$)</div><input class="form-input" type="number" id="dre-serv3" placeholder="0" oninput="calcDRE()" /></div>
       <div class="form-group"><div class="form-label">Fretes (R$)</div><input class="form-input" type="number" id="dre-frete" placeholder="0" oninput="calcDRE()" /></div>
@@ -1952,7 +1952,7 @@ const PLANO_CONTAS = [
   { id:'outros_insumos', label:'Outros Insumos Diretos', nivel:3, tipo:'conta', cor:null },
   { id:'alugueis', label:'Aluguéis Máqs/Equiptos/Veics', nivel:3, tipo:'conta', cor:null },
   { id:'provisionamento', label:'Provisionamento Preventivas', nivel:3, tipo:'conta', cor:null },
-  { id:'depreciacao', label:'Depreciação Equipamentos', nivel:3, tipo:'conta', cor:null },
+  { id:'depreciacao', label:'Depreciação/Amortização', nivel:3, tipo:'conta', cor:null },
   { id:'uniformes', label:'Uniformes/EPIs', nivel:3, tipo:'conta', cor:null },
   { id:'servicos_terc', label:'Serviços Terceiros', nivel:3, tipo:'conta', cor:null },
   { id:'fretes', label:'Fretes', nivel:3, tipo:'conta', cor:null },
