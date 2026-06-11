@@ -1159,7 +1159,7 @@ async function carregarDashboard() {
   }
 
   // Busca apontamentos do periodo
-  let qm = db.from('movimentacoes').select('equipamento_id, status, data, clientes(razao_social), equipamentos(cliente_id)').order('data', { ascending: false });
+  let qm = db.from('movimentacoes').select('equipamento_id, status, data').order('data', { ascending: false });
   const temFiltro = ini || fim || mes || ano;
   if (ini && fim) { qm = qm.gte('data', ini).lte('data', fim); }
   else if (ini) { qm = qm.gte('data', ini); }
@@ -1170,17 +1170,68 @@ async function carregarDashboard() {
 
   const { data: movs } = await qm;
 
-  // Pega o ultimo status de cada equipamento no periodo
+  // Pega o status de cada equipamento
   const ultimoStatus = {};
-  if (movs) {
+  if (temFiltro && movs) {
+    // Com filtro de periodo: conta quantos dias cada equipamento ficou em cada status
+    // Para KPI, usa o status PREDOMINANTE no período (mais dias)
+    const diasPorEquipStatus = {}; // { equip_id: { status: count } }
     movs.forEach(m => {
-      if (!ultimoStatus[m.equipamento_id]) ultimoStatus[m.equipamento_id] = m.status;
+      if (!diasPorEquipStatus[m.equipamento_id]) diasPorEquipStatus[m.equipamento_id] = {};
+      diasPorEquipStatus[m.equipamento_id][m.status] = (diasPorEquipStatus[m.equipamento_id][m.status]||0) + 1;
+    });
+    // Para cada equipamento, usa o status com mais dias no período
+    Object.entries(diasPorEquipStatus).forEach(([equipId, statusCount]) => {
+      const predominante = Object.entries(statusCount).sort((a,b)=>b[1]-a[1])[0][0];
+      ultimoStatus[equipId] = predominante;
+    });
+  } else {
+    // Sem filtro: usa status_atual do cadastro (fonte de verdade)
+    allEquipamentos.forEach(e => {
+      if (e.status_atual) ultimoStatus[e.id] = e.status_atual;
     });
   }
 
   const statusList = Object.values(ultimoStatus);
   const nTotal = statusList.length || 1;
-  const atuando = statusList.filter(s => s === 'A').length;
+
+  // Se tem filtro, calcula KPIs baseado em DIAS acumulados no período
+  let atuando, corret, prevent, inativo, parCli, dispon, mob;
+  if (temFiltro && movs && movs.length) {
+    const totalDias = movs.length; // total de registros no período
+    atuando = movs.filter(m => m.status === 'A').length;
+    corret   = movs.filter(m => m.status === 'C').length;
+    prevent  = movs.filter(m => m.status === 'P').length;
+    inativo  = movs.filter(m => m.status === 'IN').length;
+    parCli   = movs.filter(m => m.status === 'PC').length;
+    dispon   = movs.filter(m => m.status === 'D').length;
+    mob      = movs.filter(m => m.status === 'MOB' || m.status === 'T' || m.status === 'DESMOB').length;
+
+    const ociosos = corret + inativo + parCli;
+    const nEquip = Object.keys(ultimoStatus).length || 1;
+
+    document.getElementById('kpi-total').textContent = nEquip;
+    document.getElementById('kpi-util').textContent = totalDias > 0 ? Math.round((atuando/totalDias)*100) + '%' : '0%';
+    document.getElementById('kpi-ocio').textContent = totalDias > 0 ? Math.round((ociosos/totalDias)*100) + '%' : '0%';
+    document.getElementById('kpi-disp').textContent = totalDias > 0 ? Math.round((dispon/totalDias)*100) + '%' : '0%';
+    document.getElementById('kpi-prev').textContent = prevent;
+
+    // Pills e chart por total de dias
+    const counts = {};
+    movs.forEach(m => { counts[m.status] = (counts[m.status]||0) + 1; });
+    const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Par. Cliente' };
+    const statusColors = { A:'var(--green)', D:'var(--accent)', C:'var(--red)', P:'var(--amber)', T:'var(--purple)', MOB:'var(--teal)', DESMOB:'#94a3b8', IN:'#64748b', PC:'#facc15' };
+    document.getElementById('dash-status-pills').innerHTML =
+      Object.entries(counts).map(([s,n]) =>
+        '<div class="status-pill"><div class="sdot" style="background:'+(statusColors[s]||'#888')+'"></div>'+n+' dias '+(statusMap[s]||s)+'</div>'
+      ).join('');
+    const maxS = Math.max(...Object.values(counts), 1);
+    document.getElementById('chart-status').innerHTML =
+      Object.entries(counts).map(([s,n]) =>
+        '<div class="bar-row"><div class="bar-label">'+(statusMap[s]||s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(n/maxS*100)+'%;background:'+(statusColors[s]||'var(--accent)')+'">'+n+' dias</div></div></div>'
+      ).join('');
+  } else {
+  const atuando2 = statusList.filter(s => s === 'A').length;
   const corret = statusList.filter(s => s === 'C').length;
   const prevent = statusList.filter(s => s === 'P').length;
   const inativo = statusList.filter(s => s === 'IN').length;
@@ -1189,9 +1240,8 @@ async function carregarDashboard() {
   const mob = statusList.filter(s => s === 'MOB' || s === 'T' || s === 'DESMOB').length;
   const ociosos = corret + inativo + parCli;
 
-  // KPIs
-  document.getElementById('kpi-total').textContent = nTotal === 1 && statusList.length === 0 ? '0' : statusList.length;
-  document.getElementById('kpi-util').textContent = statusList.length > 0 ? Math.round((atuando/nTotal)*100) + '%' : '0%';
+  document.getElementById('kpi-total').textContent = statusList.length || '0';
+  document.getElementById('kpi-util').textContent = statusList.length > 0 ? Math.round((atuando2/nTotal)*100) + '%' : '0%';
   document.getElementById('kpi-ocio').textContent = statusList.length > 0 ? Math.round((ociosos/nTotal)*100) + '%' : '0%';
   document.getElementById('kpi-disp').textContent = statusList.length > 0 ? Math.round((dispon/nTotal)*100) + '%' : '0%';
   document.getElementById('kpi-prev').textContent = prevent;
@@ -1257,6 +1307,7 @@ async function carregarDashboard() {
       '<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>'+(m.equipamentos?.frota||'-')+'</strong> . '+(m.equipamentos?.equipamento||'-')+'</td><td style="padding:10px 14px"><span class="badge '+bc(m.status)+'">'+m.status+'</span></td><td style="padding:10px 14px;color:var(--muted)">'+(m.usuario||'-')+'</td><td style="padding:10px 14px;color:var(--muted)">'+(m.data||'-')+'</td></tr>'
     ).join('') + '</table>' :
     '<div class="loading">Nenhuma movimentacao registrada</div>';
+  } // fecha else (sem filtro)
 }
 
 function limparFiltrosDash() {
