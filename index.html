@@ -1225,12 +1225,12 @@ async function carregarDashboard() {
 
     // KPIs em linguagem natural
     document.getElementById('kpi-total').textContent = nEquip;
-    document.getElementById('kpi-util').textContent = maqAtuando + ' máq.';
-    document.getElementById('kpi-util-sub').textContent = 'atuando em ' + nDias + ' dia(s)';
-    document.getElementById('kpi-ocio').textContent = maqOciosas + ' máq.';
-    document.getElementById('kpi-ocio-sub').textContent = 'ociosas em ' + nDias + ' dia(s)';
-    document.getElementById('kpi-disp').textContent = maqDispon + ' máq.';
-    document.getElementById('kpi-disp-sub').textContent = 'disponíveis';
+    document.getElementById('kpi-util').textContent = totalRegistros > 0 ? Math.round((diasAtuando/totalRegistros)*100) + '%' : '0%';
+    document.getElementById('kpi-util-sub').textContent = maqAtuando + ' máq. atuando em ' + nDias + ' dia(s)';
+    document.getElementById('kpi-ocio').textContent = totalRegistros > 0 ? Math.round((ociosos/totalRegistros)*100) + '%' : '0%';
+    document.getElementById('kpi-ocio-sub').textContent = maqOciosas + ' máq. ociosa(s) em ' + nDias + ' dia(s)';
+    document.getElementById('kpi-disp').textContent = totalRegistros > 0 ? Math.round((diasDispon/totalRegistros)*100) + '%' : '0%';
+    document.getElementById('kpi-disp-sub').textContent = maqDispon + ' máq. disponível(is)';
     document.getElementById('kpi-prev').textContent = diasPrevent;
 
     // Pills por status
