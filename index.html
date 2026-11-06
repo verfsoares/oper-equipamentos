@@ -57,6 +57,7 @@ body{font-family:'Helvetica Neue','Inter',Helvetica,Arial,sans-serif;background:
 .kpi-card.amber::before{background:var(--amber)}
 .kpi-card.purple::before{background:var(--purple)}
 .kpi-card.teal::before{background:var(--teal)}
+.kpi-card[style*="--cor-pc"]::before{background:#facc15}
 .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .kpi-value{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
 .kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
@@ -108,8 +109,8 @@ textarea.form-input{resize:vertical;min-height:70px}
 .chart-title{font-size:11px;font-weight:600;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px}
 .bar-chart{display:flex;flex-direction:column;gap:8px}
 .bar-row{display:flex;align-items:center;gap:8px;font-size:12px}
-.bar-label{width:90px;color:var(--muted);text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{flex:1;height:18px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-label{width:130px;color:var(--muted);text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;max-width:340px;height:18px;background:var(--surface2);border-radius:4px;overflow:hidden}
 .bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.8)}
 .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .filters .form-input,.filters .form-select{flex:1;min-width:140px}
@@ -225,9 +226,9 @@ textarea.form-input{resize:vertical;min-height:70px}
 
       <div class="kpi-grid">
         <div class="kpi-card green"><div class="kpi-label">Taxa de Ocupacao</div><div class="kpi-value" style="color:var(--green)" id="kpi-util">-%</div><div class="kpi-sub" id="kpi-util-sub">Equipamentos atuando</div></div>
-        <div class="kpi-card red"><div class="kpi-label">Ociosidade</div><div class="kpi-value" style="color:var(--red)" id="kpi-ocio">-%</div><div class="kpi-sub" id="kpi-ocio-sub">Inativo + Par.Cliente + Corretiva</div></div>
-        <div class="kpi-card amber"><div class="kpi-label">Em Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="kpi-prev">-</div><div class="kpi-sub" id="kpi-prev-sub">Equipamentos</div></div>
-        <div class="kpi-card red"><div class="kpi-label">Em Corretiva</div><div class="kpi-value" style="color:var(--red)" id="kpi-corr">-</div><div class="kpi-sub" id="kpi-corr-sub">Equipamentos</div></div>
+        <div class="kpi-card" style="--cor-pc:#facc15"><div class="kpi-label">Parada no Cliente</div><div class="kpi-value" style="color:#facc15" id="kpi-pc">-</div><div class="kpi-sub" id="kpi-pc-sub">Equipamentos</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="kpi-prev">-</div><div class="kpi-sub" id="kpi-prev-sub">Equipamentos</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Corretiva</div><div class="kpi-value" style="color:var(--red)" id="kpi-corr">-</div><div class="kpi-sub" id="kpi-corr-sub">Equipamentos</div></div>
         <div class="kpi-card teal"><div class="kpi-label">Total Apontados</div><div class="kpi-value" style="color:var(--teal)" id="kpi-total">-</div><div class="kpi-sub" id="kpi-total-sub">No periodo selecionado</div></div>
       </div>
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Status da Frota</div>
@@ -1020,20 +1021,21 @@ async function carregarDashboard() {
     // KPIs em linguagem natural
     document.getElementById('kpi-total').textContent = nEquip;
     document.getElementById('kpi-util').textContent = totalRegistros > 0 ? Math.round((diasAtuando/totalRegistros)*100) + '%' : '0%';
-    document.getElementById('kpi-util-sub').textContent = maqAtuando + ' máq. atuando em ' + nDias + ' dia(s)';
-    document.getElementById('kpi-ocio').textContent = totalRegistros > 0 ? Math.round((ociosos/totalRegistros)*100) + '%' : '0%';
-    document.getElementById('kpi-ocio-sub').textContent = maqOciosas + ' máq. ociosa(s) em ' + nDias + ' dia(s)';
-    // Preventiva / Corretiva: maquinas distintas no periodo e quantos dias parados
+    document.getElementById('kpi-util-sub').textContent = maqAtuando + (maqAtuando === 1 ? ' máquina atuando' : ' máquinas atuando') + (nDias > 1 ? ' em ' + nDias + ' dias' : '');
+    // Parado no cliente / Preventiva / Corretiva: maquinas distintas no periodo (e, se for mais de 1 dia, quantos dias)
     const maqCom = st => new Set(movs.filter(m => m.status === st).map(m => m.equipamento_id)).size;
+    const rotulo = (n, situacao, dias) => (n === 1 ? 'máquina ' + situacao.um : 'máquinas ' + situacao.varias) + (nDias > 1 ? ' · ' + dias + ' dia' + (dias === 1 ? '' : 's') : '');
+    document.getElementById('kpi-pc').textContent = maqCom('PC');
+    document.getElementById('kpi-pc-sub').textContent = rotulo(maqCom('PC'), { um: 'parada no cliente', varias: 'paradas no cliente' }, diasParCli);
     document.getElementById('kpi-prev').textContent = maqCom('P');
-    document.getElementById('kpi-prev-sub').textContent = 'máq. · ' + diasPrevent + ' dia(s) em preventiva';
+    document.getElementById('kpi-prev-sub').textContent = rotulo(maqCom('P'), { um: 'em preventiva', varias: 'em preventiva' }, diasPrevent);
     document.getElementById('kpi-corr').textContent = maqCom('C');
-    document.getElementById('kpi-corr-sub').textContent = 'máq. · ' + diasCorret + ' dia(s) em corretiva';
+    document.getElementById('kpi-corr-sub').textContent = rotulo(maqCom('C'), { um: 'em corretiva', varias: 'em corretiva' }, diasCorret);
 
     // Pills por status
     const counts = {};
     movs.forEach(m => { counts[m.status] = (counts[m.status]||0) + 1; });
-    const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Par. Cliente' };
+    const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Parada no Cliente' };
     const statusColors = { A:'var(--green)', D:'var(--accent)', C:'var(--red)', P:'var(--amber)', T:'var(--purple)', MOB:'var(--teal)', DESMOB:'#94a3b8', IN:'#64748b', PC:'#facc15' };
     document.getElementById('dash-status-pills').innerHTML =
       Object.entries(counts).map(([s,n]) =>
@@ -1056,14 +1058,15 @@ async function carregarDashboard() {
 
   document.getElementById('kpi-total').textContent = statusList.length || '0';
   document.getElementById('kpi-util').textContent = statusList.length > 0 ? Math.round((atuando2/nTotal)*100) + '%' : '0%';
-  document.getElementById('kpi-ocio').textContent = statusList.length > 0 ? Math.round((ociosos/nTotal)*100) + '%' : '0%';
+  document.getElementById('kpi-pc').textContent = parCli;
+  document.getElementById('kpi-pc-sub').textContent = parCli === 1 ? 'máquina parada no cliente' : 'máquinas paradas no cliente';
   document.getElementById('kpi-prev').textContent = prevent;
-  document.getElementById('kpi-prev-sub').textContent = 'Equipamentos parados em preventiva';
+  document.getElementById('kpi-prev-sub').textContent = prevent === 1 ? 'máquina em preventiva' : 'máquinas em preventiva';
   document.getElementById('kpi-corr').textContent = corret;
-  document.getElementById('kpi-corr-sub').textContent = 'Equipamentos parados em corretiva';
+  document.getElementById('kpi-corr-sub').textContent = corret === 1 ? 'máquina em corretiva' : 'máquinas em corretiva';
 
   // Status pills
-  const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Par. Cliente' };
+  const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Parada no Cliente' };
   const statusColors = { A:'var(--green)', D:'var(--accent)', C:'var(--red)', P:'var(--amber)', T:'var(--purple)', MOB:'var(--teal)', DESMOB:'#94a3b8', IN:'#64748b', PC:'#facc15' };
   const counts = {};
   statusList.forEach(s => { counts[s] = (counts[s]||0) + 1; });
