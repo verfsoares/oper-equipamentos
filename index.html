@@ -148,10 +148,16 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
-  <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Visitas de Inspecao</span></div>
-  <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Relatorio de Visitas</span></div>
+  <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Treinamento e Inspeção</span></div>
+  <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Visitas Comerciais</span></div>
   <div class="nav-item" onclick="nav('manutencao-equip',this)"><span class="nav-icon">&#128295;</span><span>Manutencao de Equipamentos</span></div>
+  <div class="nav-item" onclick="nav('laudos',this)"><span class="nav-icon">&#128221;</span><span>Laudos de Manutenção</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
+  <div class="nav-section">Pessoas</div>
+  <div class="nav-item" onclick="nav('colaboradores',this)"><span class="nav-icon">&#128119;</span><span>Colaboradores</span></div>
+  <div class="nav-item" onclick="nav('ferias',this)"><span class="nav-icon">&#127958;&#65039;</span><span>Férias</span></div>
+  <div class="nav-item" onclick="nav('epi',this)"><span class="nav-icon">&#129466;</span><span>Fichas de EPI</span></div>
+  <div class="nav-item" onclick="nav('crachas',this)"><span class="nav-icon">&#129706;</span><span>Crachás / Selos</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
   <div class="nav-item" onclick="nav('contratos',this)"><span class="nav-icon">&#128196;</span><span>Contratos</span></div>
@@ -331,8 +337,8 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="view" id="v-inspecao">
       <div class="table-wrap">
         <div class="table-header">
-          <div class="table-title">Inspecoes de Equipamentos</div>
-          <button class="btn btn-primary" onclick="openModal('modal-inspecao')">+ Nova Inspecao</button>
+          <div class="table-title">Treinamentos e Inspeções</div>
+          <button class="btn btn-primary" onclick="openModal('modal-inspecao')">+ Novo Treinamento / Inspeção</button>
         </div>
         <div class="filters" style="padding:12px 16px;border-bottom:1px solid var(--border)">
           <select class="form-select" id="filter-insp-equip" onchange="carregarInspecoes()"><option value="">Todos os equipamentos</option></select>
@@ -346,7 +352,7 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="view" id="v-visitas">
       <div class="table-wrap">
         <div class="table-header">
-          <div class="table-title">Relatorio de Visitas</div>
+          <div class="table-title">Visitas Comerciais</div>
           <button class="btn btn-primary" onclick="openModal('modal-visita')">+ Nova Visita</button>
         </div>
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -553,13 +559,16 @@ textarea.form-input{resize:vertical;min-height:70px}
 <!-- MODAL INSPECAO -->
 <div class="modal-overlay" id="modal-inspecao">
   <div class="modal" style="max-width:600px">
-    <div class="modal-header"><div class="modal-title" id="modal-inspecao-title">Nova Inspecao</div><button class="modal-close" onclick="closeModal('modal-inspecao')">x</button></div>
+    <div class="modal-header"><div class="modal-title" id="modal-inspecao-title">Novo Treinamento / Inspeção</div><button class="modal-close" onclick="closeModal('modal-inspecao')">x</button></div>
     <div class="form-grid">
-      <div class="form-group"><div class="form-label">Data da Inspecao *</div><input class="form-input" type="date" id="insp-data" /></div>
-      <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="insp-equip"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Data *</div><input class="form-input" type="date" id="insp-data" /></div>
+      <div class="form-group"><div class="form-label">Equipamento (obrigatório na inspeção)</div><select class="form-select" id="insp-equip"><option value="">Selecione...</option></select></div>
       <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="insp-cliente"><option value="">- Nenhum -</option></select></div>
-      <div class="form-group"><div class="form-label">Tipo de Inspecao</div>
+      <div class="form-group"><div class="form-label">Tipo</div>
         <select class="form-select" id="insp-tipo">
+          <option>Treinamento Operacional</option>
+          <option>Treinamento de Segurança</option>
+          <option>Integração</option>
           <option>Checklist Operacional</option>
           <option>Inspecao de Seguranca</option>
           <option>Manutencao Preventiva</option>
@@ -645,6 +654,11 @@ textarea.form-input{resize:vertical;min-height:70px}
           <option>MILLS</option><option>GILTEC</option>
         </select>
       </div>
+      <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="eq-cliente"><option value="">- Nenhum -</option></select></div>
+      <div class="form-group"><div class="form-label">UF</div><input class="form-input" id="eq-uf" maxlength="2" placeholder="MG" /></div>
+      <div class="form-group"><div class="form-label">Operador</div><input class="form-input" id="eq-operador" placeholder="Nome do operador" /></div>
+      <div class="form-group"><div class="form-label">Nº de Série</div><input class="form-input" id="eq-serie" /></div>
+      <div class="form-group"><div class="form-label">Nº de Série Correto</div><input class="form-input" id="eq-serie-correto" /></div>
     </div>
     <input type="hidden" id="eq-id" value="" />
     <input type="hidden" id="eq-status" value="D" />
@@ -828,8 +842,13 @@ const pageMap = {
   dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
-  inspecao:         { title: 'Visitas de Inspecao', loader: carregarInspecoes },
-  visitas:          { title: 'Relatorio de Visitas', loader: carregarVisitas },
+  inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
+  visitas:          { title: 'Visitas Comerciais', loader: carregarVisitas },
+  laudos:           { title: 'Laudos de Manutenção', loader: () => carregarModulo('laudos') },
+  colaboradores:    { title: 'Colaboradores', loader: () => carregarModulo('colaboradores') },
+  ferias:           { title: 'Férias', loader: () => carregarModulo('ferias') },
+  epi:              { title: 'Fichas de EPI', loader: () => carregarModulo('epi') },
+  crachas:          { title: 'Crachás / Selos', loader: () => carregarModulo('crachas') },
   'manutencao-equip': { title: 'Manutencao de Equipamentos', loader: carregarManutencaoEquip },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
@@ -1050,14 +1069,15 @@ async function carregarEquipamentos() {
 function renderEquipamentos(list) {
   document.getElementById('equip-count').textContent = list.length + ' registros';
   document.getElementById('equip-table-body').innerHTML = list.length ?
-    '<table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Capacidade</th><th>Origem</th><th>Fornecedor</th><th>Combustivel</th><th>Ano</th><th></th></tr></thead><tbody>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Cliente</th><th>UF</th><th>Operador</th><th>Nº Série</th><th>Nº Série Correto</th><th>Origem</th><th>Fornecedor</th><th></th></tr></thead><tbody>' +
     list.map(e => {
       const obs = (e.observacoes || '').split(' . ').map(p => p.trim());
-      const cap = obs[0] || '-';
-      const ano = obs[1] || '-';
-      const forn = obs[2] || '-';
-      return '<tr><td class="frota">' + e.frota + '</td><td><strong>' + e.equipamento + '</strong></td><td>' + (e.tipo||'-') + '</td><td>' + cap + '</td><td>' + (e.origem||'-') + '</td><td>' + (e.origem === 'Terceiro' ? '<span style="color:var(--amber);font-weight:500">' + forn + '</span>' : '-') + '</td><td>' + (e.combustivel||'-') + '</td><td>' + ano + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarEquipamento(\'' + e.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarEquipamento(\'' + e.id + '\',\'' + e.frota + '\')">&#128465;&#65039;</button></td></tr>';
-    }).join('') + '</tbody></table>' :
+      const cap = e.capacidade || obs[0] || '-';
+      const ano = e.ano || obs[1] || '-';
+      const forn = e.fornecedor || obs[2] || '-';
+      const serieDiferente = e.numero_serie && e.numero_serie_correto && e.numero_serie.trim() !== e.numero_serie_correto.trim();
+      return '<tr><td class="frota">' + e.frota + '</td><td><strong>' + e.equipamento + '</strong></td><td>' + (e.tipo||'-') + '</td><td>' + (e.combustivel||'-') + '</td><td>' + cap + '</td><td>' + ano + '</td><td>' + (e.clientes?.razao_social||'-') + '</td><td>' + (e.uf||'-') + '</td><td>' + (e.operador||'-') + '</td><td>' + (e.numero_serie||'-') + '</td><td' + (serieDiferente ? ' style="color:var(--amber);font-weight:600" title="Diferente do Nº de Série"' : '') + '>' + (e.numero_serie_correto||'-') + '</td><td>' + (e.origem||'-') + '</td><td>' + (e.origem === 'Terceiro' ? '<span style="color:var(--amber);font-weight:500">' + forn + '</span>' : '-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarEquipamento(\'' + e.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarEquipamento(\'' + e.id + '\',\'' + e.frota + '\')">&#128465;&#65039;</button></td></tr>';
+    }).join('') + '</tbody></table></div>' :
     '<div class="loading">Nenhum equipamento cadastrado</div>';
 }
 
@@ -1065,7 +1085,7 @@ function filtrarEquipamentos() {
   const search = document.getElementById('filter-equip-search').value.toLowerCase();
   const status = document.getElementById('filter-equip-status').value;
   const filtered = allEquipamentos.filter(e =>
-    (!search || e.frota.toLowerCase().includes(search) || e.equipamento.toLowerCase().includes(search)) &&
+    (!search || [e.frota, e.equipamento, e.clientes?.razao_social, e.operador, e.numero_serie, e.numero_serie_correto, e.uf].some(t => (t || '').toLowerCase().includes(search))) &&
     (!status || e.status_atual === status)
   );
   renderEquipamentos(filtered);
@@ -1081,6 +1101,8 @@ function abrirNovoEquipamento() {
   document.getElementById('eq-ano').value = '';
   document.getElementById('eq-origem').value = 'Proprio';
   document.getElementById('eq-fornecedor').value = '';
+  preencherClientesEquip('');
+  ['eq-uf','eq-operador','eq-serie','eq-serie-correto'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('modal-equip-title').textContent = 'Novo Equipamento';
   openModal('modal-equip');
 }
@@ -1100,10 +1122,17 @@ async function salvarEquipamento() {
     combustivel: document.getElementById('eq-comb').value,
     origem: document.getElementById('eq-origem').value,
     observacoes: obs,
-    status_atual: document.getElementById('eq-status').value || 'D',
-    horimetro_inicial: 0, horimetro_atual: 0
+    capacidade: cap || null,
+    ano: ano ? parseInt(ano, 10) : null,
+    fornecedor: forn || null,
+    cliente_id: document.getElementById('eq-cliente').value || null,
+    uf: document.getElementById('eq-uf').value.trim().toUpperCase() || null,
+    operador: document.getElementById('eq-operador').value.trim() || null,
+    numero_serie: document.getElementById('eq-serie').value.trim() || null,
+    numero_serie_correto: document.getElementById('eq-serie-correto').value.trim() || null
   };
   let error;
+  if (!id) Object.assign(dados, { status_atual: document.getElementById('eq-status').value || 'D', horimetro_inicial: 0, horimetro_atual: 0 });
   if (id) {
     ({ error } = await db.from('equipamentos').update(dados).eq('id', id));
   } else {
@@ -1124,12 +1153,22 @@ async function editarEquipamento(id) {
   document.getElementById('eq-desc').value = e.equipamento || '';
   document.getElementById('eq-tipo').value = e.tipo || '';
   document.getElementById('eq-comb').value = e.combustivel || 'Diesel';
-  document.getElementById('eq-cap').value = obs[0] || '';
-  document.getElementById('eq-ano').value = obs[1] || '';
+  document.getElementById('eq-cap').value = e.capacidade || obs[0] || '';
+  document.getElementById('eq-ano').value = e.ano || obs[1] || '';
   document.getElementById('eq-origem').value = e.origem || 'Proprio';
-  document.getElementById('eq-fornecedor').value = obs[2] || '';
+  document.getElementById('eq-fornecedor').value = e.fornecedor || obs[2] || '';
+  preencherClientesEquip(e.cliente_id || '');
+  document.getElementById('eq-uf').value = e.uf || '';
+  document.getElementById('eq-operador').value = e.operador || '';
+  document.getElementById('eq-serie').value = e.numero_serie || '';
+  document.getElementById('eq-serie-correto').value = e.numero_serie_correto || '';
   document.getElementById('modal-equip-title').textContent = 'Editar Equipamento';
   openModal('modal-equip');
+}
+
+function preencherClientesEquip(selecionado) {
+  document.getElementById('eq-cliente').innerHTML = '<option value="">- Nenhum -</option>' +
+    allClientes.map(c => '<option value="' + c.id + '"' + (c.id === selecionado ? ' selected' : '') + '>' + c.razao_social + '</option>').join('');
 }
 
 // Executa as etapas em ordem e para na primeira que der erro, mostrando qual foi
@@ -1159,7 +1198,11 @@ async function deletarEquipamento(id, frota) {
   if (manutIds.length) etapas.push(['excluir arquivos das manutenções', () => db.from('manut_arquivos').delete().in('manut_id', manutIds)]);
   etapas.push(['excluir manutenções', () => db.from('manutencao_equipamentos').delete().eq('equipamento_id', id)]);
   if (currentUser?.acessoDRE) etapas.push(['excluir lançamentos de DRE', () => db.from('dre_lancamentos').delete().eq('equipamento_id', id)]);
-  etapas.push(['excluir o equipamento', () => db.from('equipamentos').delete().eq('id', id)]);
+  etapas.push(['excluir o equipamento', async () => {
+    const r = await db.from('equipamentos').delete().eq('id', id).select('id');
+    if (!r.error && !(r.data || []).length) r.error = { message: 'o banco não permitiu a exclusão (regra de acesso do Supabase)' };
+    return r;
+  }]);
   if (!await executarEtapas(etapas)) return;
   showToast('Equipamento ' + frota + ' excluído!');
   await carregarEquipamentos();
@@ -1177,7 +1220,11 @@ async function deletarCliente(id, nome) {
     ['desvincular manutenções', () => db.from('manutencao_equipamentos').update(semCliente).eq('cliente_id', id)],
   ];
   if (currentUser?.acessoDRE) etapas.push(['desvincular lançamentos de DRE', () => db.from('dre_lancamentos').update(semCliente).eq('cliente_id', id)]);
-  etapas.push(['excluir o cliente', () => db.from('clientes').delete().eq('id', id)]);
+  etapas.push(['excluir o cliente', async () => {
+    const r = await db.from('clientes').delete().eq('id', id).select('id');
+    if (!r.error && !(r.data || []).length) r.error = { message: 'o banco não permitiu a exclusão (regra de acesso do Supabase)' };
+    return r;
+  }]);
   if (!await executarEtapas(etapas)) return;
   showToast('Cliente ' + nome + ' excluído!');
   await carregarClientes();
@@ -1634,9 +1681,12 @@ function mostrarArquivosSelecionados() {
 async function salvarInspecao() {
   const equipId = document.getElementById('insp-equip').value;
   const data = document.getElementById('insp-data').value;
-  if (!equipId || !data) return showToast('Preencha os campos obrigatorios', true);
+  const tipo = document.getElementById('insp-tipo').value;
+  const ehTreinamento = tipo.startsWith('Treinamento') || tipo === 'Integração';
+  if (!data) return showToast('Preencha a data', true);
+  if (!equipId && !ehTreinamento) return showToast('Selecione o equipamento da inspeção', true);
   const { data: insp, error } = await db.from('inspecoes').insert({
-    equipamento_id: equipId,
+    equipamento_id: equipId || null,
     cliente_id: document.getElementById('insp-cliente').value || null,
     data_inspecao: data,
     tipo_inspecao: document.getElementById('insp-tipo').value,
@@ -2013,6 +2063,256 @@ function popularSelectEquipamentos() {
   const opts = '<option value="">Selecione...</option>' + allEquipamentos.map(e => '<option value="' + e.id + '">' + e.frota + ' . ' + e.equipamento + '</option>').join('');
   ['mv-equip','ct-equip'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
 }
+
+// ============================================================
+// MODULOS DE CADASTRO: Laudos, Colaboradores, Ferias, Fichas de EPI, Crachas/Selos
+// Cada modulo e descrito em MODULOS (tabela + campos); a tela, o formulario,
+// a lista, a busca, os anexos e a exclusao sao montados a partir disso.
+// ============================================================
+let allColaboradores = [];
+const OPC_EQUIP = () => allEquipamentos.map(e => [e.id, e.frota + ' . ' + e.equipamento]);
+const OPC_CLI   = () => allClientes.map(c => [c.id, c.razao_social]);
+const OPC_COLAB = () => allColaboradores.map(c => [c.id, c.nome]);
+const VERDE = 'var(--green)', AMARELO = 'var(--amber)', VERMELHO = 'var(--red)', CINZA = '#64748b', AZUL = 'var(--accent2)';
+
+const MODULOS = {
+  laudos: {
+    tabela: 'laudos_manutencao', titulo: 'Laudos de Manutenção', botao: '+ Novo Laudo', ordem: 'data_laudo', arquivos: true,
+    campos: [
+      { id:'data_laudo', label:'Data do Laudo', tipo:'date', obrig:true },
+      { id:'tipo_manutencao', label:'Tipo', tipo:'select', opcoes:['Preventiva','Corretiva'], obrig:true, cor:{ Preventiva:AMARELO, Corretiva:VERMELHO } },
+      { id:'equipamento_id', label:'Equipamento', tipo:'ref', ref:OPC_EQUIP, obrig:true, negrito:true },
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
+      { id:'numero_laudo', label:'Nº do Laudo', tipo:'text' },
+      { id:'responsavel_tecnico', label:'Responsável Técnico', tipo:'text' },
+      { id:'descricao', label:'Descrição / Conclusão', tipo:'textarea', full:true, naTabela:false }
+    ]
+  },
+  colaboradores: {
+    tabela: 'colaboradores', titulo: 'Colaboradores', botao: '+ Novo Colaborador', ordem: 'nome', crescente: true,
+    confirmaExclusao: 'Deseja excluir este colaborador?\n\nATENÇÃO: as férias, fichas de EPI e crachás dele também serão excluídos.',
+    campos: [
+      { id:'nome', label:'Nome', tipo:'text', obrig:true, negrito:true },
+      { id:'cpf', label:'CPF', tipo:'text' },
+      { id:'funcao', label:'Função / Cargo', tipo:'text' },
+      { id:'telefone', label:'Telefone', tipo:'text' },
+      { id:'cliente_id', label:'Cliente / Local de Trabalho', tipo:'ref', ref:OPC_CLI },
+      { id:'data_admissao', label:'Data de Admissão', tipo:'date', obrig:true },
+      { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Afastado','Desligado'], obrig:true, cor:{ Ativo:VERDE, Afastado:AMARELO, Desligado:CINZA } },
+      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
+    ]
+  },
+  ferias: {
+    tabela: 'ferias', titulo: 'Férias', botao: '+ Programar Férias', ordem: 'data_inicio',
+    campos: [
+      { id:'colaborador_id', label:'Colaborador', tipo:'ref', ref:OPC_COLAB, obrig:true, negrito:true },
+      { id:'periodo_aquisitivo_inicio', label:'Período Aquisitivo - Início', tipo:'date' },
+      { id:'periodo_aquisitivo_fim', label:'Período Aquisitivo - Fim', tipo:'date' },
+      { id:'data_inicio', label:'Início das Férias', tipo:'date', obrig:true },
+      { id:'data_fim', label:'Fim das Férias', tipo:'date', obrig:true },
+      { id:'dias', label:'Dias', tipo:'number' },
+      { id:'status', label:'Situação', tipo:'select', opcoes:['Programada','Em gozo','Concluída'], obrig:true, cor:{ Programada:AZUL, 'Em gozo':AMARELO, 'Concluída':VERDE } },
+      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
+    ],
+    validar: d => d.data_fim < d.data_inicio ? 'O fim das férias não pode ser antes do início' : null,
+    antesDeSalvar: d => {
+      if (d.dias === null && d.data_inicio && d.data_fim)
+        d.dias = Math.round((new Date(d.data_fim) - new Date(d.data_inicio)) / 864e5) + 1;
+    }
+  },
+  epi: {
+    tabela: 'fichas_epi', titulo: 'Fichas de EPI', botao: '+ Nova Ficha de EPI', ordem: 'data_entrega', arquivos: true,
+    campos: [
+      { id:'colaborador_id', label:'Colaborador', tipo:'ref', ref:OPC_COLAB, obrig:true, negrito:true },
+      { id:'data_entrega', label:'Data de Entrega', tipo:'date', obrig:true },
+      { id:'epi', label:'EPI Entregue', tipo:'text', obrig:true },
+      { id:'ca', label:'Nº do CA', tipo:'text' },
+      { id:'quantidade', label:'Quantidade', tipo:'number', padrao:1 },
+      { id:'data_troca', label:'Próxima Troca / Validade', tipo:'date', alertaVencimento:true },
+      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
+    ]
+  },
+  crachas: {
+    tabela: 'crachas_selos', titulo: 'Crachás / Selos', botao: '+ Novo Crachá / Selo', ordem: 'data_emissao', arquivos: true,
+    campos: [
+      { id:'tipo', label:'Tipo', tipo:'select', opcoes:['Crachá','Selo'], obrig:true, negrito:true },
+      { id:'numero', label:'Número', tipo:'text' },
+      { id:'colaborador_id', label:'Colaborador (crachá)', tipo:'ref', ref:OPC_COLAB },
+      { id:'equipamento_id', label:'Equipamento (selo)', tipo:'ref', ref:OPC_EQUIP },
+      { id:'cliente_id', label:'Cliente / Unidade', tipo:'ref', ref:OPC_CLI },
+      { id:'data_emissao', label:'Emissão', tipo:'date', obrig:true },
+      { id:'data_validade', label:'Validade', tipo:'date', alertaVencimento:true },
+      { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Devolvido','Cancelado'], obrig:true, cor:{ Ativo:VERDE, Devolvido:CINZA, Cancelado:VERMELHO } },
+      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
+    ],
+    validar: d => {
+      if (d.tipo === 'Crachá' && !d.colaborador_id) return 'Crachá: selecione o colaborador';
+      if (d.tipo === 'Selo' && !d.equipamento_id) return 'Selo: selecione o equipamento';
+      return null;
+    }
+  }
+};
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+const fmtData = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '-';
+let moduloAtual = null;
+
+function montarTelasModulos() {
+  const content = document.getElementById('content');
+  for (const [chave, m] of Object.entries(MODULOS)) {
+    const v = document.createElement('div');
+    v.className = 'view'; v.id = 'v-' + chave;
+    v.innerHTML =
+      '<div class="table-wrap"><div class="table-header"><div class="table-title">' + m.titulo + ' <span class="table-count" id="mod-count-' + chave + '"></span></div>' +
+      '<button class="btn btn-primary" onclick="abrirFormModulo(\'' + chave + '\')">' + m.botao + '</button></div>' +
+      '<div style="padding:12px 16px;border-bottom:1px solid var(--border)"><input class="form-input" style="max-width:320px" id="mod-busca-' + chave + '" placeholder="Buscar..." oninput="renderModulo(\'' + chave + '\')" /></div>' +
+      '<div id="mod-body-' + chave + '"><div class="loading">Carregando...</div></div></div>';
+    content.appendChild(v);
+  }
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay'; ov.id = 'modal-mod';
+  ov.innerHTML =
+    '<div class="modal" style="max-width:640px"><div class="modal-header"><div class="modal-title" id="modal-mod-title"></div><button class="modal-close" onclick="closeModal(\'modal-mod\')">x</button></div>' +
+    '<div class="form-grid" id="modal-mod-form"></div><input type="hidden" id="mod-id" />' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal(\'modal-mod\')">Cancelar</button><button class="btn btn-primary" id="mod-btn-salvar" onclick="salvarModulo()">Salvar</button></div></div>';
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+  document.body.appendChild(ov);
+}
+
+async function carregarColaboradores() {
+  const { data } = await db.from('colaboradores').select('id,nome').order('nome');
+  allColaboradores = data || [];
+}
+
+async function carregarModulo(chave) {
+  const m = MODULOS[chave];
+  const body = document.getElementById('mod-body-' + chave);
+  if (m.campos.some(c => c.ref === OPC_COLAB)) await carregarColaboradores();
+  const { data, error } = await db.from(m.tabela).select('*').order(m.ordem, { ascending: !!m.crescente });
+  if (error) { body.innerHTML = '<div class="loading">Erro ao carregar: ' + esc(error.message) + '</div>'; return; }
+  m.registros = data || [];
+  if (chave === 'colaboradores') allColaboradores = m.registros.map(r => ({ id: r.id, nome: r.nome }));
+  renderModulo(chave);
+}
+
+function valorExibicao(c, r) {
+  const v = r[c.id];
+  if (c.tipo === 'ref') { const o = c.ref().find(([id]) => id === v); return o ? o[1] : '-'; }
+  if (c.tipo === 'date') return fmtData(v);
+  return (v === null || v === undefined || v === '') ? '-' : String(v);
+}
+
+function celulaModulo(c, r) {
+  const txt = esc(valorExibicao(c, r));
+  const v = r[c.id];
+  if (c.cor && c.cor[v]) return '<span style="color:' + c.cor[v] + ';font-weight:600">' + txt + '</span>';
+  if (c.alertaVencimento && v) {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const em30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+    if (v < hoje) return '<span style="color:var(--red);font-weight:600">' + txt + ' (vencido)</span>';
+    if (v <= em30) return '<span style="color:var(--amber);font-weight:600">' + txt + ' (vence em breve)</span>';
+  }
+  return c.negrito ? '<strong>' + txt + '</strong>' : txt;
+}
+
+function renderModulo(chave) {
+  const m = MODULOS[chave];
+  const cols = m.campos.filter(c => c.naTabela !== false);
+  const termo = (document.getElementById('mod-busca-' + chave)?.value || '').toLowerCase().trim();
+  const lista = (m.registros || []).filter(r => !termo || cols.map(c => valorExibicao(c, r)).join(' ').toLowerCase().includes(termo));
+  document.getElementById('mod-count-' + chave).textContent = lista.length + ' registro(s)';
+  const body = document.getElementById('mod-body-' + chave);
+  if (!lista.length) { body.innerHTML = '<div class="loading">Nenhum registro</div>'; return; }
+  body.innerHTML = '<div style="overflow-x:auto"><table><thead><tr>' +
+    cols.map(c => '<th>' + esc(c.label) + '</th>').join('') + (m.arquivos ? '<th>Arquivos</th>' : '') + '<th></th></tr></thead><tbody>' +
+    lista.map(r => '<tr>' +
+      cols.map(c => '<td>' + celulaModulo(c, r) + '</td>').join('') +
+      (m.arquivos ? '<td>' + ((r.arquivos || []).map(a => '<a href="' + esc(a.url) + '" target="_blank" style="color:var(--accent2);font-size:12px;display:block">&#128206; ' + esc(a.nome) + '</a>').join('') || '-') + '</td>' : '') +
+      '<td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="abrirFormModulo(\'' + chave + '\',\'' + r.id + '\')">&#9999;&#65039;</button> ' +
+      '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarModulo(\'' + chave + '\',\'' + r.id + '\')">&#128465;&#65039;</button></td></tr>'
+    ).join('') + '</tbody></table></div>';
+}
+
+async function abrirFormModulo(chave, id) {
+  const m = MODULOS[chave];
+  moduloAtual = chave;
+  if (m.campos.some(c => c.ref === OPC_COLAB)) await carregarColaboradores();
+  const r = id ? ((m.registros || []).find(x => x.id === id) || {}) : {};
+  document.getElementById('mod-id').value = id || '';
+  document.getElementById('modal-mod-title').textContent = (id ? 'Editar - ' : 'Novo - ') + m.titulo;
+  document.getElementById('modal-mod-form').innerHTML = m.campos.map(c => {
+    const v = r[c.id] ?? (id ? '' : (c.padrao ?? ''));
+    const label = '<div class="form-label">' + esc(c.label) + (c.obrig ? ' *' : '') + '</div>';
+    let campo;
+    if (c.tipo === 'select') {
+      campo = '<select class="form-select" id="mod-f-' + c.id + '">' + (c.obrig ? '' : '<option value="">- Nenhum -</option>') +
+        c.opcoes.map(o => '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+    } else if (c.tipo === 'ref') {
+      campo = '<select class="form-select" id="mod-f-' + c.id + '"><option value="">' + (c.obrig ? 'Selecione...' : '- Nenhum -') + '</option>' +
+        c.ref().map(([oid, ol]) => '<option value="' + oid + '"' + (oid === v ? ' selected' : '') + '>' + esc(ol) + '</option>').join('') + '</select>';
+    } else if (c.tipo === 'textarea') {
+      campo = '<textarea class="form-input" id="mod-f-' + c.id + '">' + esc(v) + '</textarea>';
+    } else {
+      const t = c.tipo === 'number' ? 'number' : c.tipo === 'date' ? 'date' : 'text';
+      campo = '<input class="form-input" type="' + t + '" id="mod-f-' + c.id + '" value="' + esc(c.tipo === 'date' ? String(v).slice(0, 10) : v) + '" />';
+    }
+    return '<div class="form-group' + (c.full ? ' full' : '') + '">' + label + campo + '</div>';
+  }).join('') +
+  (m.arquivos ? '<div class="form-group full"><div class="form-label">Anexar arquivos (fotos, PDF, Word)</div>' +
+    '<input class="form-input" type="file" id="mod-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" />' +
+    ((r.arquivos || []).length ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">Já anexados: ' + r.arquivos.map(a => esc(a.nome)).join(', ') + '</div>' : '') + '</div>' : '');
+  openModal('modal-mod');
+}
+
+async function salvarModulo() {
+  const chave = moduloAtual, m = MODULOS[chave];
+  const id = document.getElementById('mod-id').value;
+  const dados = {};
+  for (const c of m.campos) {
+    let v = document.getElementById('mod-f-' + c.id).value.trim();
+    if (v === '') v = null;
+    else if (c.tipo === 'number') v = Number(v);
+    if (c.obrig && v === null) return showToast('Preencha: ' + c.label, true);
+    dados[c.id] = v;
+  }
+  if (m.validar) { const msg = m.validar(dados); if (msg) return showToast(msg, true); }
+  if (m.antesDeSalvar) m.antesDeSalvar(dados);
+  const btn = document.getElementById('mod-btn-salvar');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try {
+    if (m.arquivos) {
+      const anterior = id ? (m.registros || []).find(x => x.id === id) : null;
+      const lista = [...(anterior?.arquivos || [])];
+      for (const file of Array.from(document.getElementById('mod-files').files || [])) {
+        const path = m.tabela + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+        if (upErr) { showToast('Erro no arquivo ' + file.name + ': ' + upErr.message, true); continue; }
+        lista.push({ nome: file.name, url: db.storage.from('inspecoes').getPublicUrl(path).data.publicUrl, tipo: file.type || '' });
+      }
+      dados.arquivos = lista;
+    }
+    if (!id) dados.usuario = currentUser?.nome || '-';
+    const { error } = id ? await db.from(m.tabela).update(dados).eq('id', id) : await db.from(m.tabela).insert(dados);
+    if (error) return showToast('Erro ao salvar: ' + error.message, true);
+    closeModal('modal-mod');
+    showToast(m.titulo + ': registro salvo!');
+    await carregarModulo(chave);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salvar';
+  }
+}
+
+async function deletarModulo(chave, id) {
+  const m = MODULOS[chave];
+  if (!confirm(m.confirmaExclusao || 'Deseja excluir este registro?')) return;
+  const { data, error } = await db.from(m.tabela).delete().eq('id', id).select('id');
+  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  if (!(data || []).length) return showToast('O banco não permitiu a exclusão (regra de acesso do Supabase)', true);
+  showToast('Registro excluído!');
+  await carregarModulo(chave);
+}
+
+montarTelasModulos();
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
