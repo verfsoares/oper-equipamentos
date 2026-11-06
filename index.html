@@ -298,6 +298,13 @@ textarea.form-input{resize:vertical;min-height:70px}
             <option value="">Todos os anos</option>
             <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
           </select>
+          <select class="form-select" style="width:200px" id="filter-mov-equip" onchange="carregarMovimentacoes()"><option value="">Todos os equipamentos</option></select>
+          <select class="form-select" style="width:200px" id="filter-mov-cliente" onchange="carregarMovimentacoes()"><option value="">Todos os clientes</option></select>
+          <select class="form-select" style="width:160px" id="filter-mov-status" onchange="carregarMovimentacoes()">
+            <option value="">Todos os status</option>
+            <option value="A">A - Atuando</option><option value="P">P - Preventiva</option><option value="C">C - Corretiva</option>
+            <option value="D">D - Disponível</option><option value="IN">IN - Inativo</option><option value="PC">PC - Parado Cliente</option>
+          </select>
           <button class="btn" onclick="limparFiltrosMov()">Limpar</button>
           <div id="mov-resumo" style="font-size:13px;color:var(--muted);margin-left:8px"></div>
         </div>
@@ -1537,23 +1544,43 @@ async function carregarMovimentacoes() {
   const fim = document.getElementById('filter-mov-fim')?.value;
   const mes = document.getElementById('filter-mov-mes')?.value;
   const ano = document.getElementById('filter-mov-ano')?.value;
-  let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('criado_em', { ascending: false });
-  if (ini && fim) { q = q.gte('data', ini).lte('data', fim); }
-  else if (ini) { q = q.gte('data', ini); }
-  else if (fim) { q = q.lte('data', fim); }
-  else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
-  else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
-  else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
-  const { data: movs } = await q.limit(500);
+  // listas dos filtros de equipamento e cliente
+  const selEq = document.getElementById('filter-mov-equip');
+  if (selEq && selEq.options.length === 1) allEquipamentos.forEach(e => selEq.add(new Option(e.frota + ' . ' + e.equipamento, e.id)));
+  const selCli = document.getElementById('filter-mov-cliente');
+  if (selCli && selCli.options.length === 1) allClientes.forEach(c => selCli.add(new Option(c.razao_social, c.id)));
+  const fEquip = selEq?.value, fCli = selCli?.value, fStatus = document.getElementById('filter-mov-status')?.value;
+  const montar = () => {
+    let q = db.from('movimentacoes').select('*, equipamentos(frota,equipamento,tipo,combustivel,observacoes), clientes(razao_social)').order('data', { ascending: false }).order('criado_em', { ascending: false });
+    if (ini && fim) { q = q.gte('data', ini).lte('data', fim); }
+    else if (ini) { q = q.gte('data', ini); }
+    else if (fim) { q = q.lte('data', fim); }
+    else if (ano && mes) { q = q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
+    else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
+    else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
+    if (fEquip) q = q.eq('equipamento_id', fEquip);
+    if (fCli) q = q.eq('cliente_id', fCli);
+    if (fStatus) q = q.eq('status', fStatus);
+    return q;
+  };
+  // busca em paginas de 1000 (limite do Supabase), ate 5000 apontamentos na tela
+  const movs = [];
+  for (let p = 0; p < 5; p++) {
+    const { data: lote, error } = await montar().range(p * 1000, p * 1000 + 999);
+    if (error || !lote) break;
+    movs.push(...lote);
+    if (lote.length < 1000) break;
+  }
   const bc = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
   const total = movs ? movs.length : 0;
   const countEl = document.getElementById('mov-count');
   if (countEl) countEl.textContent = total + ' registros';
   const resumoEl = document.getElementById('mov-resumo');
   if (resumoEl) {
-    const totalEquip = allEquipamentos.length;
+    const totalEquip = fEquip ? 1 : (fCli ? allEquipamentos.filter(e => e.cliente_id === fCli).length : allEquipamentos.length);
+    const lancados = new Set(movs.map(m => m.equipamento_id)).size;
     if (total === 0) { resumoEl.innerHTML = '<span style="color:var(--red)">Nenhum lancamento encontrado</span>'; }
-    else { const cor = total >= totalEquip ? 'var(--green)' : 'var(--amber)'; resumoEl.innerHTML = '<span style="color:' + cor + ';font-weight:600">' + total + ' de ' + totalEquip + ' equipamentos lancados</span>'; }
+    else { const cor = lancados >= totalEquip ? 'var(--green)' : 'var(--amber)'; resumoEl.innerHTML = '<span style="color:' + cor + ';font-weight:600">' + lancados + ' de ' + totalEquip + ' equipamentos lancados</span>'; }
   }
   document.getElementById('mov-table-body').innerHTML = movs && movs.length ?
     '<table><thead><tr><th>Data</th><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Status</th><th>Cliente</th><th>Usuario</th><th></th></tr></thead><tbody>' +
@@ -1565,7 +1592,7 @@ async function carregarMovimentacoes() {
 }
 
 function limparFiltrosMov() {
-  ['filter-mov-ini','filter-mov-fim','filter-mov-mes','filter-mov-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['filter-mov-ini','filter-mov-fim','filter-mov-mes','filter-mov-ano','filter-mov-equip','filter-mov-cliente','filter-mov-status'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   carregarMovimentacoes();
 }
 
