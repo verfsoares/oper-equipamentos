@@ -146,7 +146,7 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div><div class="brand-name">OPER</div><div class="brand-sub">UN - Movimentação de Carga</div></div>
   </div>
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>Região e KPIs</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
@@ -175,7 +175,7 @@ textarea.form-input{resize:vertical;min-height:70px}
 
 <div id="main">
   <div id="topbar">
-    <div class="page-title" id="pageTitle">KPIs Equipamentos</div>
+    <div class="page-title" id="pageTitle">Região e KPIs</div>
     <div style="font-size:12px;color:var(--muted)" id="topDate"></div>
     <button class="btn btn-primary" id="mainBtn" onclick="mainAction()" style="display:none">+ Novo</button>
   </div>
@@ -802,7 +802,7 @@ async function initApp() {
 }
 
 const pageMap = {
-  dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
+  dashboard:        { title: 'Região e KPIs', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
@@ -2089,17 +2089,6 @@ const OPC_COLAB = () => allColaboradores.map(c => [c.id, c.nome]);
 const VERDE = 'var(--green)', AMARELO = 'var(--amber)', VERMELHO = 'var(--red)', CINZA = '#64748b', AZUL = 'var(--accent2)';
 
 const MODULOS = {
-  laudos: {
-    tabela: 'laudos_manutencao', titulo: 'Laudos de Manutenção', botao: '+ Novo Laudo', ordem: 'data_laudo', arquivos: true,
-    campos: [
-      { id:'data_laudo', label:'Data da Manutenção', tipo:'date', obrig:true },
-      { id:'tipo_manutencao', label:'Tipo', tipo:'select', opcoes:['Preventiva','Corretiva'], obrig:true, cor:{ Preventiva:AMARELO, Corretiva:VERMELHO } },
-      { id:'equipamento_id', label:'Equipamento', tipo:'ref', ref:OPC_EQUIP, obrig:true, negrito:true },
-      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
-      { id:'responsavel_tecnico', label:'Fornecedor', tipo:'text' },  // coluna do banco mantida; so o rotulo mudou
-      { id:'descricao', label:'Descrição / Conclusão', tipo:'textarea', full:true, naTabela:false }
-    ]
-  },
   colaboradores: {
     tabela: 'colaboradores', titulo: 'Colaboradores', botao: '+ Novo Colaborador', ordem: 'nome', crescente: true,
     confirmaExclusao: 'Deseja excluir este colaborador?\n\nATENÇÃO: as férias, fichas de EPI e crachás dele também serão excluídos.',
