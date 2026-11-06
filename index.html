@@ -462,7 +462,8 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Data *</div><input class="form-input" type="date" id="manut-data" /></div>
       <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="manut-equip-sel"><option value="">Selecione...</option></select></div>
-      <div class="form-group full"><div class="form-label">Tipo de Manutenção *</div>
+      <div class="form-group"><div class="form-label">Horímetro (horas) *</div><input class="form-input" type="number" step="0.1" min="0" id="manut-horimetro" placeholder="Ex: 4520" /></div>
+      <div class="form-group"><div class="form-label">Tipo de Manutenção *</div>
         <select class="form-select" id="manut-tipo">
           <option value="Manutencao Preventiva">Preventiva</option>
           <option value="Manutencao Corretiva">Corretiva</option>
@@ -1835,7 +1836,7 @@ async function carregarManutencaoEquip() {
   const tipoColor = { 'Manutencao Preventiva':'var(--amber)', 'Manutencao Corretiva':'var(--red)', 'Troca de Pecas':'var(--purple)', 'Revisao Geral':'var(--teal)', 'Borracharia':'var(--green)', 'Eletrica':'var(--accent2)', 'Hidraulica':'var(--blue)', 'Outro':'var(--muted)' };
 
   document.getElementById('manut-equip-table-body').innerHTML = manuts && manuts.length ?
-    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Tipo</th><th>Laudo</th><th>Usuario</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Horímetro</th><th>Tipo</th><th>Laudo</th><th>Usuario</th><th></th></tr></thead><tbody>' +
     manuts.map(m => {
       const arqs = m.manut_arquivos || [];
       const cor = tipoColor[m.tipo_manutencao] || 'var(--muted)';
@@ -1843,6 +1844,7 @@ async function carregarManutencaoEquip() {
       return '<tr>' +
         '<td>'+fmtData(m.data_manutencao)+'</td>' +
         '<td><strong>'+(m.equipamentos?.frota||'-')+'</strong> · '+(m.equipamentos?.equipamento||'-')+'</td>' +
+        '<td>'+(m.horimetro != null ? Number(m.horimetro).toLocaleString('pt-BR') + ' h' : '-')+'</td>' +
         '<td><span style="color:'+cor+';font-weight:600">'+tipoTxt+'</span></td>' +
         '<td>'+(arqs.length ? arqs.map(a => '<a href="'+esc(a.url_arquivo)+'" target="_blank" style="color:var(--accent2);font-size:12px;display:block">&#128206; '+esc(a.nome_arquivo)+'</a>').join('') : '<span style="color:var(--muted);font-size:12px">sem laudo</span>')+'</td>' +
         '<td style="color:var(--muted);font-size:12px">'+(m.usuario||'-')+'</td>' +
@@ -1875,11 +1877,15 @@ async function salvarManutencaoEquip() {
   const equipId = document.getElementById('manut-equip-sel').value;
   const data    = document.getElementById('manut-data').value;
   if (!equipId || !data) return showToast('Preencha data e equipamento', true);
+  const horimetroTxt = document.getElementById('manut-horimetro').value;
+  if (horimetroTxt === '') return showToast('Preencha o horímetro', true);
+  const horimetro = parseFloat(horimetroTxt);
 
   const { data: manut, error } = await db.from('manutencao_equipamentos').insert({
     equipamento_id:   equipId,
     cliente_id:       allEquipamentos.find(e => e.id === equipId)?.cliente_id || null,
     data_manutencao:  data,
+    horimetro:        horimetro,
     tipo_manutencao:  document.getElementById('manut-tipo').value,
     status_manutencao: '',
     custo:            0,
@@ -1907,6 +1913,9 @@ async function salvarManutencaoEquip() {
   closeModal('modal-manut-equip');
   document.getElementById('manut-files-preview').innerHTML = '';
   document.getElementById('manut-files').value = '';
+  document.getElementById('manut-horimetro').value = '';
+  // horimetro atual da maquina acompanha a maior leitura registrada
+  await db.from('equipamentos').update({ horimetro_atual: horimetro }).eq('id', equipId).or('horimetro_atual.is.null,horimetro_atual.lt.' + horimetro);
   const falharam = files.length - uploadOk;
   if (falharam > 0) showToast('Manutencao salva, mas ' + falharam + ' arquivo(s) nao foram enviados', true);
   else showToast('Manutencao salva' + (uploadOk > 0 ? ' com ' + uploadOk + ' laudo(s)!' : ' sem laudo!'));
@@ -1922,6 +1931,7 @@ async function verManutencao(id) {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">EQUIPAMENTO</div><div style="font-weight:600">'+(m.equipamentos?.frota||'-')+' · '+(m.equipamentos?.equipamento||'-')+'</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">'+fmtData(m.data_manutencao)+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">HORÍMETRO</div><div style="font-weight:600">'+(m.horimetro != null ? Number(m.horimetro).toLocaleString('pt-BR') + ' h' : '-')+'</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">'+(m.tipo_manutencao||'-').replace(/^Manutencao /, '')+'</div></div>' +
     '</div>' +
     '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Laudos ('+(arqs?.length||0)+')</div>' +
