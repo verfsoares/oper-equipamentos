@@ -157,6 +157,7 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Visitas Comerciais</span></div>
   <div class="nav-item" onclick="nav('manutencao-equip',this)"><span class="nav-icon">&#128295;</span><span>Manutencao de Equipamentos</span></div>
   <div class="nav-item" onclick="nav('laudos',this)"><span class="nav-icon">&#128221;</span><span>Laudos de Manutenção</span></div>
+  <div class="nav-item" onclick="nav('plaquetas',this)"><span class="nav-icon">&#127991;&#65039;</span><span>Plaquetas dos Equipamentos</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
   <div class="nav-section">Pessoas</div>
   <div class="nav-item" onclick="nav('colaboradores',this)"><span class="nav-icon">&#128119;</span><span>Colaboradores</span></div>
@@ -664,8 +665,6 @@ textarea.form-input{resize:vertical;min-height:70px}
           <option value="">-</option><option>RJ</option><option>MG</option><option>GO</option><option>ES</option><option>SP</option><option>DF</option>
         </select>
       </div>
-      <div class="form-group"><div class="form-label">Horimetro Inicial</div><input class="form-input" type="number" id="mv-hini" placeholder="0" /></div>
-      <div class="form-group"><div class="form-label">Horimetro Final</div><input class="form-input" type="number" id="mv-hfim" placeholder="0" /></div>
       <div class="form-group full"><div class="form-label">Comentarios</div><textarea class="form-input" id="mv-coment" placeholder="Descricao da movimentacao..."></textarea></div>
     </div>
     <div class="modal-footer">
@@ -800,6 +799,7 @@ const pageMap = {
   colaboradores:    { title: 'Colaboradores', loader: () => carregarModulo('colaboradores') },
   ferias:           { title: 'Férias', loader: () => carregarModulo('ferias') },
   epi:              { title: 'Fichas de EPI', loader: () => carregarModulo('epi') },
+  plaquetas:        { title: 'Plaquetas dos Equipamentos', loader: () => carregarModulo('plaquetas') },
   crachas:          { title: 'Crachás', loader: () => carregarModulo('crachas') },
   'manutencao-equip': { title: 'Manutencao de Equipamentos', loader: carregarManutencaoEquip },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
@@ -1299,7 +1299,7 @@ async function carregarHistorico() {
       '</div>' +
       '<div style="flex:1;padding-bottom:4px">' +
       '<div style="font-size:13px;font-weight:500">Status: <span class="badge '+bc(m.status)+'">'+m.status+'</span></div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:2px">'+m.data+' · Hor: '+(m.horimetro_final||m.horimetro_inicial||'-')+' h · '+(m.usuario||'-')+'</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:2px">'+m.data+' · '+(m.usuario||'-')+'</div>' +
       (m.comentarios ? '<div style="font-size:12px;color:var(--muted);margin-top:3px">'+m.comentarios+'</div>' : '') +
       '</div></div>'
     ).join('') + '</div>' :
@@ -1464,28 +1464,22 @@ async function editarMovimentacao(id) {
   document.getElementById('mv-status').value = m.status || 'A';
   document.getElementById('mv-cliente').value = m.cliente_id || '';
   document.getElementById('mv-regiao').value = m.regiao || '';
-  document.getElementById('mv-hini').value = m.horimetro_inicial || '';
-  document.getElementById('mv-hfim').value = m.horimetro_final || '';
   document.getElementById('mv-coment').value = m.comentarios || '';
   openModal('modal-mov');
   document.querySelector('#modal-mov .modal-title').textContent = 'Editar Movimentacao';
   document.querySelector('#modal-mov .btn-primary').onclick = async () => {
     const status = document.getElementById('mv-status').value;
-    const hfim = parseFloat(document.getElementById('mv-hfim').value) || null;
     const { error } = await db.from('movimentacoes').update({
       data: document.getElementById('mv-data').value,
       equipamento_id: document.getElementById('mv-equip').value,
       status,
       cliente_id: document.getElementById('mv-cliente').value || null,
       regiao: document.getElementById('mv-regiao').value || null,
-      horimetro_inicial: parseFloat(document.getElementById('mv-hini').value) || null,
-      horimetro_final: hfim,
       comentarios: document.getElementById('mv-coment').value,
       usuario: currentUser?.nome || '-'
     }).eq('id', id);
     if (error) return showToast('Erro: ' + error.message, true);
-    if (hfim) await db.from('equipamentos').update({ horimetro_atual: hfim, status_atual: status }).eq('id', m.equipamento_id);
-    else await db.from('equipamentos').update({ status_atual: status }).eq('id', m.equipamento_id);
+    await db.from('equipamentos').update({ status_atual: status }).eq('id', m.equipamento_id);
     closeModal('modal-mov');
     document.querySelector('#modal-mov .modal-title').textContent = 'Registrar Movimentacao';
     document.querySelector('#modal-mov .btn-primary').onclick = salvarMovimentacao;
@@ -1507,19 +1501,15 @@ async function salvarMovimentacao() {
   const status = document.getElementById('mv-status').value;
   const data = document.getElementById('mv-data').value;
   if (!equipId || !status || !data) return showToast('Preencha os campos obrigatorios', true);
-  const hfim = parseFloat(document.getElementById('mv-hfim').value) || null;
   const { error } = await db.from('movimentacoes').insert({
     data, equipamento_id: equipId, status,
     cliente_id: document.getElementById('mv-cliente').value || null,
     regiao: document.getElementById('mv-regiao').value || null,
-    horimetro_inicial: parseFloat(document.getElementById('mv-hini').value) || null,
-    horimetro_final: hfim,
     comentarios: document.getElementById('mv-coment').value,
     usuario: currentUser?.nome || '-'
   });
   if (error) return showToast('Erro: ' + error.message, true);
-  if (hfim) await db.from('equipamentos').update({ horimetro_atual: hfim, status_atual: status }).eq('id', equipId);
-  else await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
+  await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
   closeModal('modal-mov');
   showToast('Movimentacao registrada!');
   await carregarMovimentacoes();
@@ -2061,11 +2051,22 @@ const MODULOS = {
       if (!id) d.data_emissao = new Date().toISOString().slice(0, 10);
     }
   },
+  plaquetas: {
+    tabela: 'plaquetas_equipamentos', titulo: 'Plaquetas dos Equipamentos', botao: '+ Nova Plaqueta', ordem: 'criado_em',
+    arquivos: true, rotuloArquivos: 'Foto da plaqueta', aceitaArquivos: '.jpg,.jpeg,.png,.webp,.pdf', miniaturas: true,
+    campos: [
+      { id:'equipamento_id', label:'Equipamento', tipo:'ref', ref:OPC_EQUIP, obrig:true, negrito:true },
+      { id:'_serie', label:'Nº Série', tipo:'calc', calc: r => { const e = allEquipamentos.find(x => x.id === r.equipamento_id); return e ? (e.numero_serie_correto || e.numero_serie || '-') : '-'; } },
+      { id:'_cliente', label:'Cliente', tipo:'calc', calc: r => allEquipamentos.find(x => x.id === r.equipamento_id)?.clientes?.razao_social || '-' },
+      { id:'observacoes', label:'Observações', tipo:'textarea', full:true }
+    ]
+  },
   vencimentos: {
     tabela: 'contratos', titulo: 'Vencimento de Contratos', botao: '+ Novo Contrato', ordem: 'data_fim', crescente: true, semUsuario: true,
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
       { id:'numero', label:'Nº do Contrato', tipo:'text', obrig:true },
+      { id:'numero_pedido', label:'Nº do Pedido', tipo:'text' },
       { id:'data_inicio', label:'Início', tipo:'date' },
       { id:'data_fim', label:'Vencimento', tipo:'date', obrig:true, alertaVencimento:true, mostrarDias:true },
       { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Renovacao','Encerrado'], obrig:true, cor:{ Ativo:VERDE, Renovacao:AMARELO, Encerrado:CINZA } }
@@ -2116,6 +2117,7 @@ async function carregarModulo(chave) {
 }
 
 function valorExibicao(c, r) {
+  if (c.tipo === 'calc') return c.calc(r);   // coluna calculada (so aparece na lista)
   const v = r[c.id];
   if (c.tipo === 'ref') { const o = c.ref().find(([id]) => id === v); return o ? o[1] : '-'; }
   if (c.tipo === 'date') return fmtData(v);
@@ -2169,7 +2171,7 @@ async function abrirFormModulo(chave, id) {
   const r = id ? ((m.registros || []).find(x => x.id === id) || {}) : {};
   document.getElementById('mod-id').value = id || '';
   document.getElementById('modal-mod-title').textContent = (id ? 'Editar - ' : 'Novo - ') + m.titulo;
-  document.getElementById('modal-mod-form').innerHTML = m.campos.map(c => {
+  document.getElementById('modal-mod-form').innerHTML = m.campos.filter(c => c.tipo !== 'calc').map(c => {
     const v = r[c.id] ?? (id ? '' : (c.padrao ?? ''));
     const label = '<div class="form-label">' + esc(c.label) + (c.obrig ? ' *' : '') + '</div>';
     let campo;
@@ -2197,7 +2199,7 @@ async function salvarModulo() {
   const chave = moduloAtual, m = MODULOS[chave];
   const id = document.getElementById('mod-id').value;
   const dados = {};
-  for (const c of m.campos) {
+  for (const c of m.campos.filter(c => c.tipo !== 'calc')) {
     let v = document.getElementById('mod-f-' + c.id).value.trim();
     if (v === '') v = null;
     else if (c.tipo === 'number') v = Number(v);
