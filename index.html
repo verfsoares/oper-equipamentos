@@ -550,23 +550,8 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="modal-header"><div class="modal-title" id="modal-inspecao-title">Novo Treinamento / Inspeção</div><button class="modal-close" onclick="closeModal('modal-inspecao')">x</button></div>
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Data *</div><input class="form-input" type="date" id="insp-data" /></div>
-      <div class="form-group"><div class="form-label">Equipamento (obrigatório na inspeção)</div><select class="form-select" id="insp-equip"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><div class="form-label">Equipamento</div><select class="form-select" id="insp-equip"><option value="">Selecione...</option></select></div>
       <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="insp-cliente"><option value="">- Nenhum -</option></select></div>
-      <div class="form-group"><div class="form-label">Tipo</div>
-        <select class="form-select" id="insp-tipo">
-          <option>Treinamento Operacional</option>
-          <option>Treinamento de Segurança</option>
-          <option>Integração</option>
-          <option>Checklist Operacional</option>
-          <option>Inspecao de Seguranca</option>
-          <option>Manutencao Preventiva</option>
-          <option>Manutencao Corretiva</option>
-          <option>Vistoria de Entrega</option>
-          <option>Vistoria de Devolucao</option>
-          <option>Inspecao Fotografica</option>
-          <option>Outro</option>
-        </select>
-      </div>
       <div class="form-group"><div class="form-label">Status do Equipamento</div>
         <select class="form-select" id="insp-status-equip">
           <option>Bom estado</option>
@@ -1680,11 +1665,11 @@ async function carregarInspecoes() {
   const tipoIcon = { 'Checklist Operacional':'OK', 'Inspecao de Seguranca':'SEG', 'Manutencao Preventiva':'PREV', 'Manutencao Corretiva':'COR', 'Vistoria de Entrega':'ENT', 'Vistoria de Devolucao':'DEV', 'Inspecao Fotografica':'FOTO', 'Outro':'OUT' };
   const statusColor = { 'Bom estado':'var(--green)', 'Estado regular':'var(--amber)', 'Necessita manutencao':'var(--red)', 'Inoperante':'#64748b' };
   document.getElementById('inspecao-table-body').innerHTML = insp && insp.length ?
-    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Cliente</th><th>Tipo</th><th>Status Equip.</th><th>Arquivos</th><th>Usuario</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Cliente</th><th>Status Equip.</th><th>Arquivos</th><th>Usuario</th><th></th></tr></thead><tbody>' +
     insp.map(i => {
       const nArq = i.inspecao_arquivos ? i.inspecao_arquivos.length : 0;
       const cor = statusColor[i.status_equipamento] || 'var(--muted)';
-      return '<tr><td>' + (i.data_inspecao||'-') + '</td><td><strong>' + (i.equipamentos?.frota||'-') + '</strong> . ' + (i.equipamentos?.equipamento||'-') + '</td><td>' + (i.clientes?.razao_social||'-') + '</td><td>' + (i.tipo_inspecao||'-') + '</td><td><span style="color:' + cor + ';font-weight:500">' + (i.status_equipamento||'-') + '</span></td><td><span style="background:rgba(30,111,224,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">' + nArq + ' arquivo(s)</span></td><td style="color:var(--muted)">' + (i.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verInspecao(\'' + i.id + '\')">Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarInspecao(\'' + i.id + '\')">X</button></td></tr>';
+      return '<tr><td>' + (i.data_inspecao||'-') + '</td><td><strong>' + (i.equipamentos?.frota||'-') + '</strong> . ' + (i.equipamentos?.equipamento||'-') + '</td><td>' + (i.clientes?.razao_social||'-') + '</td><td><span style="color:' + cor + ';font-weight:500">' + (i.status_equipamento||'-') + '</span></td><td><span style="background:rgba(30,111,224,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">' + nArq + ' arquivo(s)</span></td><td style="color:var(--muted)">' + (i.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verInspecao(\'' + i.id + '\')">Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarInspecao(\'' + i.id + '\')">X</button></td></tr>';
     }).join('') + '</tbody></table>' :
     '<div class="loading">Nenhuma inspecao registrada</div>';
 }
@@ -1704,15 +1689,12 @@ function mostrarArquivosSelecionados() {
 async function salvarInspecao() {
   const equipId = document.getElementById('insp-equip').value;
   const data = document.getElementById('insp-data').value;
-  const tipo = document.getElementById('insp-tipo').value;
-  const ehTreinamento = tipo.startsWith('Treinamento') || tipo === 'Integração';
   if (!data) return showToast('Preencha a data', true);
-  if (!equipId && !ehTreinamento) return showToast('Selecione o equipamento da inspeção', true);
   const { data: insp, error } = await db.from('inspecoes').insert({
     equipamento_id: equipId || null,
     cliente_id: document.getElementById('insp-cliente').value || null,
     data_inspecao: data,
-    tipo_inspecao: document.getElementById('insp-tipo').value,
+    tipo_inspecao: 'Treinamento e Inspeção',
     status_equipamento: document.getElementById('insp-status-equip').value,
     descricao: document.getElementById('insp-desc').value,
     usuario: currentUser?.nome || '-'
@@ -1764,7 +1746,7 @@ async function verInspecao(id) {
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">EQUIPAMENTO</div><div style="font-weight:600">' + (i.equipamentos?.frota||'-') + ' . ' + (i.equipamentos?.equipamento||'-') + '</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CLIENTE</div><div style="font-weight:600">' + (i.clientes?.razao_social||'-') + '</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">' + (i.data_inspecao||'-') + '</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">' + (i.tipo_inspecao||'-') + '</div></div>' +
+    
     '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">STATUS DO EQUIPAMENTO</div><div style="font-weight:600;color:' + cor + '">' + (i.status_equipamento||'-') + '</div></div>' +
     (i.descricao ? '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DESCRICAO</div><div style="font-size:13px">' + i.descricao + '</div></div>' : '') +
     '</div>' +
