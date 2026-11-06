@@ -1593,17 +1593,23 @@ async function salvarMovimentacao() {
   const status = document.getElementById('mv-status').value;
   const data = document.getElementById('mv-data').value;
   if (!equipId || !status || !data) return showToast('Preencha os campos obrigatorios', true);
-  const { error } = await db.from('movimentacoes').insert({
+  // Se a maquina ja tem apontamento nesse dia (ex.: lancamento automatico "Atuando"), atualiza o do dia em vez de duplicar
+  const { data: existentes } = await db.from('movimentacoes').select('id, cliente_id, regiao').eq('equipamento_id', equipId).eq('data', data);
+  const anterior = (existentes || [])[0];
+  const dados = {
     data, equipamento_id: equipId, status,
-    cliente_id: document.getElementById('mv-cliente').value || null,
-    regiao: document.getElementById('mv-regiao').value || null,
+    cliente_id: document.getElementById('mv-cliente').value || anterior?.cliente_id || null,
+    regiao: document.getElementById('mv-regiao').value || anterior?.regiao || null,
     comentarios: document.getElementById('mv-coment').value,
     usuario: currentUser?.nome || '-'
-  });
+  };
+  const { error } = anterior
+    ? await db.from('movimentacoes').update(dados).in('id', existentes.map(m => m.id))
+    : await db.from('movimentacoes').insert(dados);
   if (error) return showToast('Erro: ' + error.message, true);
   await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
   closeModal('modal-mov');
-  showToast('Movimentacao registrada!');
+  showToast(anterior ? 'Apontamento do dia atualizado!' : 'Movimentacao registrada!');
   await carregarMovimentacoes();
   await carregarEquipamentos();
 }
