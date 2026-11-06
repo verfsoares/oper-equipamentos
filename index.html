@@ -233,10 +233,6 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Status da Frota</div>
       <div class="status-summary" id="dash-status-pills"></div>
-      <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">Equipamentos por Status</div><div class="bar-chart" id="chart-status"></div></div>
-        <div class="chart-card"><div class="chart-title">Equipamentos por Cliente</div><div class="bar-chart" id="chart-cliente"></div></div>
-      </div>
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">&#128176; Resumo Financeiro - Periodo</div>
       <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px">
         <div class="kpi-card amber"><div class="kpi-label">Fretes</div><div class="kpi-value" style="color:var(--amber);font-size:20px" id="dash-frete">R$ 0</div></div>
@@ -1044,7 +1040,7 @@ async function carregarDashboard() {
         '<div class="status-pill"><div class="sdot" style="background:'+(statusColors[s]||'#888')+'"></div>'+(statusMap[s]||s)+': '+Math.round(n/totalRegistros*100)+'%</div>'
       ).join('');
     const maxS = Math.max(...Object.values(counts), 1);
-    document.getElementById('chart-status').innerHTML =
+    (document.getElementById('chart-status') || {}).innerHTML =
       Object.entries(counts).map(([s,n]) =>
         '<div class="bar-row"><div class="bar-label">'+(statusMap[s]||s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(n/maxS*100)+'%;background:'+(statusColors[s]||'var(--accent)')+'">'+Math.round(n/totalRegistros*100)+'%</div></div></div>'
       ).join('');
@@ -1082,7 +1078,7 @@ async function carregarDashboard() {
     '<div style="color:var(--muted);font-size:13px">Nenhum apontamento no periodo</div>';
 
   const maxS = Math.max(...Object.values(counts), 1);
-  document.getElementById('chart-status').innerHTML = statusList.length > 0 ?
+  (document.getElementById('chart-status') || {}).innerHTML = statusList.length > 0 ?
     Object.entries(counts).map(([s,n]) =>
       '<div class="bar-row"><div class="bar-label">'+(statusMap[s]||s)+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(n/maxS*100)+'%;background:'+(statusColors[s]||'var(--accent)')+'">'+n+'</div></div></div>'
     ).join('') :
@@ -1101,7 +1097,7 @@ async function carregarDashboard() {
   const maxC = Math.max(...Object.values(cliCounts), 1);
   const cliNames = {};
   allClientes.forEach(c => { cliNames[c.id] = c.razao_social; });
-  document.getElementById('chart-cliente').innerHTML = Object.entries(cliCounts).slice(0,6).map(([id,n],i) =>
+  (document.getElementById('chart-cliente') || {}).innerHTML = Object.entries(cliCounts).slice(0,6).map(([id,n],i) =>
     '<div class="bar-row"><div class="bar-label">'+(cliNames[id]||'Sem cliente')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(n/maxC*100)+'%;background:'+cliColors[i%cliColors.length]+'">'+n+'</div></div></div>'
   ).join('') || '<div style="color:var(--muted);font-size:13px;padding:8px">Nenhum dado</div>';
 
