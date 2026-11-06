@@ -722,6 +722,12 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Usuarios: login pelo Supabase Auth; nome e perfil vem da tabela "perfis" (o DRE fica no site separado)
+// Data de hoje no horario do computador (Brasilia), no formato AAAA-MM-DD. maisDias: soma dias
+function hojeLocal(maisDias = 0) {
+  const d = new Date(); d.setDate(d.getDate() + maisDias);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 let currentUser = null;
 let allEquipamentos = [];
 let allClientes = [];
@@ -760,7 +766,7 @@ async function entrarNoSistema(user) {
   document.getElementById('topDate').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = hojeLocal();
   document.querySelectorAll('input[type=date]').forEach(i => { if (!i.value) i.value = hoje; });
   initApp();
 }
@@ -921,17 +927,26 @@ async function carregarDashboard() {
     else label.textContent = 'Status atual dos equipamentos';
   }
 
-  // Busca apontamentos do periodo
-  let qm = db.from('movimentacoes').select('equipamento_id, status, data').order('data', { ascending: false });
+  // Busca apontamentos do periodo (todas as paginas: o Supabase devolve no maximo 1000 linhas por vez)
   const temFiltro = ini || fim || mes || ano;
-  if (ini && fim) { qm = qm.gte('data', ini).lte('data', fim); }
-  else if (ini) { qm = qm.gte('data', ini); }
-  else if (fim) { qm = qm.lte('data', fim); }
-  else if (ano && mes) { qm = qm.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
-  else if (ano) { qm = qm.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
-  else if (mes) { const y = new Date().getFullYear(); qm = qm.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
-
-  const { data: movs } = await qm;
+  const montarConsulta = () => {
+    let qm = db.from('movimentacoes').select('equipamento_id, status, data').order('data', { ascending: false });
+    if (ini && fim) { qm = qm.gte('data', ini).lte('data', fim); }
+    else if (ini) { qm = qm.gte('data', ini); }
+    else if (fim) { qm = qm.lte('data', fim); }
+    else if (ano && mes) { qm = qm.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31'); }
+    else if (ano) { qm = qm.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
+    else if (mes) { const y = new Date().getFullYear(); qm = qm.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
+    else { qm = qm.eq('data', hojeLocal()); }   // sem filtro: apontamentos de hoje
+    return qm;
+  };
+  const movs = [];
+  for (let pagina = 0; pagina < 50; pagina++) {
+    const { data: lote, error } = await montarConsulta().range(pagina * 1000, pagina * 1000 + 999);
+    if (error || !lote) break;
+    movs.push(...lote);
+    if (lote.length < 1000) break;
+  }
 
   // Pega o status de cada equipamento
   const ultimoStatus = {};
@@ -949,9 +964,12 @@ async function carregarDashboard() {
       ultimoStatus[equipId] = predominante;
     });
   } else {
-    // Sem filtro: usa status_atual do cadastro (fonte de verdade)
+    // Sem filtro: usa o apontamento de HOJE de cada maquina; sem apontamento hoje, usa o status do cadastro
+    const statusHoje = {};
+    movs.forEach(m => { statusHoje[m.equipamento_id] = m.status; });
     allEquipamentos.forEach(e => {
-      if (e.status_atual) ultimoStatus[e.id] = e.status_atual;
+      const s = statusHoje[e.id] || e.status_atual;
+      if (s) ultimoStatus[e.id] = s;
     });
   }
 
@@ -1571,7 +1589,7 @@ async function editarMovimentacao(id) {
       usuario: currentUser?.nome || '-'
     }).eq('id', id);
     if (error) return showToast('Erro: ' + error.message, true);
-    await db.from('equipamentos').update({ status_atual: status }).eq('id', m.equipamento_id);
+    if (document.getElementById('mv-data').value === hojeLocal()) await db.from('equipamentos').update({ status_atual: status }).eq('id', m.equipamento_id);
     closeModal('modal-mov');
     document.querySelector('#modal-mov .modal-title').textContent = 'Registrar Movimentacao';
     document.querySelector('#modal-mov .btn-primary').onclick = salvarMovimentacao;
@@ -1607,7 +1625,8 @@ async function salvarMovimentacao() {
     ? await db.from('movimentacoes').update(dados).in('id', existentes.map(m => m.id))
     : await db.from('movimentacoes').insert(dados);
   if (error) return showToast('Erro: ' + error.message, true);
-  await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
+  // status atual do cadastro so muda quando o apontamento e de hoje
+  if (data === hojeLocal()) await db.from('equipamentos').update({ status_atual: status }).eq('id', equipId);
   closeModal('modal-mov');
   showToast(anterior ? 'Apontamento do dia atualizado!' : 'Movimentacao registrada!');
   await carregarMovimentacoes();
@@ -2118,7 +2137,7 @@ const MODULOS = {
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true }
     ],
     // data de entrega e obrigatoria na tabela: preenchida com o dia do lancamento
-    antesDeSalvar: (d, id) => { if (!id) d.data_entrega = new Date().toISOString().slice(0, 10); }
+    antesDeSalvar: (d, id) => { if (!id) d.data_entrega = hojeLocal(); }
   },
   crachas: {
     tabela: 'crachas_selos', titulo: 'Crachás', botao: '+ Novo Crachá', ordem: 'data_validade', crescente: true,
@@ -2131,7 +2150,7 @@ const MODULOS = {
     // tipo e emissao sao obrigatorios na tabela: preenchidos automaticamente
     antesDeSalvar: (d, id) => {
       d.tipo = 'Crachá';
-      if (!id) d.data_emissao = new Date().toISOString().slice(0, 10);
+      if (!id) d.data_emissao = hojeLocal();
     }
   },
   plaquetas: {
@@ -2212,8 +2231,8 @@ function celulaModulo(c, r) {
   const v = r[c.id];
   if (c.cor && c.cor[v]) return '<span style="color:' + c.cor[v] + ';font-weight:600">' + txt + '</span>';
   if (c.alertaVencimento && v) {
-    const hoje = new Date().toISOString().slice(0, 10);
-    const em30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+    const hoje = hojeLocal();
+    const em30 = hojeLocal(30);
     const dias = Math.round((new Date(String(v).slice(0, 10)) - new Date(hoje)) / 864e5);
     const info = c.mostrarDias
       ? (dias < 0 ? ' (vencido há ' + (-dias) + ' dia' + (dias === -1 ? '' : 's') + ')' : dias === 0 ? ' (vence hoje)' : ' (faltam ' + dias + ' dia' + (dias === 1 ? '' : 's') + ')')
