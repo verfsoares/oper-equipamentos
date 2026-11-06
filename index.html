@@ -51,6 +51,7 @@ body{font-family:'Helvetica Neue','Inter',Helvetica,Arial,sans-serif;background:
 #content{flex:1;overflow-y:auto;padding:24px}
 .view{display:none}
 .view.active{display:block}
+.secao-kpi{font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;margin:4px 0 10px;padding-left:10px;border-left:3px solid var(--accent)}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -199,9 +200,20 @@ textarea.form-input{resize:vertical;min-height:70px}
           <div id="mapa-lista"></div>
         </div>
       </div>
-      <!-- FILTROS DO DASHBOARD -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-right:4px">&#128197; Visualizar por:</div>
+      <!-- STATUS DO DIA (sempre hoje) -->
+      <div class="secao-kpi" id="titulo-status-dia">Status do Dia</div>
+      <div class="kpi-grid">
+        <div class="kpi-card green"><div class="kpi-label">Taxa de Ocupacao</div><div class="kpi-value" style="color:var(--green)" id="dia-util">-%</div><div class="kpi-sub" id="dia-util-sub">-</div></div>
+        <div class="kpi-card" style="--cor-pc:#facc15"><div class="kpi-label">Parada no Cliente</div><div class="kpi-value" style="color:#facc15" id="dia-pc">-%</div><div class="kpi-sub" id="dia-pc-sub">-</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="dia-prev">-%</div><div class="kpi-sub" id="dia-prev-sub">-</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Corretiva</div><div class="kpi-value" style="color:var(--red)" id="dia-corr">-%</div><div class="kpi-sub" id="dia-corr-sub">-</div></div>
+        <div class="kpi-card teal"><div class="kpi-label">Apontados Hoje</div><div class="kpi-value" style="color:var(--teal)" id="dia-total">-</div><div class="kpi-sub" id="dia-total-sub">-</div></div>
+      </div>
+
+      <!-- STATUS DA FROTA DO MES (filtro: do dia 1 ate hoje, pode mudar o periodo) -->
+      <div class="secao-kpi" id="titulo-status-mes">Status da Frota do Mês</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-right:4px">&#128197; Período:</div>
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:12px;color:var(--muted)">De:</span>
           <input class="form-input" type="date" id="dash-ini" style="width:150px" onchange="carregarDashboard()" />
@@ -926,23 +938,53 @@ function renderMapaAtuacao() {
     '</tbody></table>' :
     '<div class="loading" style="padding:20px">Cadastre a UF dos clientes para aparecerem no mapa</div>';
 }
+// Primeiro dia do mes corrente (AAAA-MM-01)
+const primeiroDiaDoMes = () => hojeLocal().slice(0, 8) + '01';
+
+// STATUS DO DIA: situacao de cada maquina hoje (apontamento de hoje; sem apontamento, o status do cadastro)
+async function renderStatusDoDia() {
+  const hoje = hojeLocal();
+  const { data } = await db.from('movimentacoes').select('equipamento_id, status').eq('data', hoje);
+  const doDia = {};
+  (data || []).forEach(m => { doDia[m.equipamento_id] = m.status; });
+  const status = allEquipamentos.map(e => doDia[e.id] || e.status_atual).filter(Boolean);
+  const total = status.length;
+  const qtd = st => status.filter(s => s === st).length;
+  const pct = n => total ? Math.round(n / total * 100) + '%' : '0%';
+  const frase = (n, um, varias) => n + (n === 1 ? ' máquina ' + um : ' máquinas ' + varias);
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('titulo-status-dia', 'Status do Dia · ' + fmtData(hoje));
+  set('dia-util', pct(qtd('A')));   set('dia-util-sub', frase(qtd('A'), 'atuando', 'atuando'));
+  set('dia-pc', pct(qtd('PC')));    set('dia-pc-sub', frase(qtd('PC'), 'parada no cliente', 'paradas no cliente'));
+  set('dia-prev', pct(qtd('P')));   set('dia-prev-sub', frase(qtd('P'), 'em preventiva', 'em preventiva'));
+  set('dia-corr', pct(qtd('C')));   set('dia-corr-sub', frase(qtd('C'), 'em corretiva', 'em corretiva'));
+  const apontados = Object.keys(doDia).length;
+  set('dia-total', apontados);      set('dia-total-sub', 'de ' + allEquipamentos.length + ' equipamentos');
+}
+
 async function carregarDashboard() {
   await carregarColaboradores();
   renderMapaAtuacao();
+  // na primeira abertura, o periodo do mes vai do dia 1 ate hoje
+  const elIni = document.getElementById('dash-ini'), elFim = document.getElementById('dash-fim');
+  if (elIni && !elIni.dataset.iniciado) { elIni.value = primeiroDiaDoMes(); elFim.value = hojeLocal(); elIni.dataset.iniciado = '1'; }
+  await renderStatusDoDia();
   const ini = document.getElementById('dash-ini')?.value;
   const fim = document.getElementById('dash-fim')?.value;
   const mes = document.getElementById('dash-mes')?.value;
   const ano = document.getElementById('dash-ano')?.value;
 
-  // Label do periodo
+  // Titulo e label do periodo
   const label = document.getElementById('dash-periodo-label');
-  if (label) {
-    if (ini || fim) label.textContent = 'Periodo: ' + (ini||'inicio') + ' a ' + (fim||'hoje');
-    else if (ano && mes) label.textContent = mes + '/' + ano;
-    else if (ano) label.textContent = 'Ano: ' + ano;
-    else if (mes) label.textContent = 'Mes: ' + mes;
-    else label.textContent = 'Status atual dos equipamentos';
-  }
+  const titulo = document.getElementById('titulo-status-mes');
+  let periodoTxt;
+  if (ini || fim) periodoTxt = (ini ? fmtData(ini) : 'início') + ' a ' + (fim ? fmtData(fim) : 'hoje');
+  else if (ano && mes) periodoTxt = mes + '/' + ano;
+  else if (ano) periodoTxt = 'ano ' + ano;
+  else if (mes) periodoTxt = 'mês ' + mes;
+  else periodoTxt = 'situação atual';
+  if (label) label.textContent = '';
+  if (titulo) titulo.textContent = (ini === primeiroDiaDoMes() && fim === hojeLocal() ? 'Status da Frota do Mês · ' : 'Status da Frota · ') + periodoTxt;
 
   // Busca apontamentos do periodo (todas as paginas: o Supabase devolve no maximo 1000 linhas por vez)
   const temFiltro = ini || fim || mes || ano;
@@ -1137,7 +1179,10 @@ async function carregarDashboard() {
 }
 
 function limparFiltrosDash() {
-  ['dash-ini','dash-fim','dash-mes','dash-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // volta para o mes vigente: do dia 1 ate hoje
+  ['dash-mes','dash-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('dash-ini').value = primeiroDiaDoMes();
+  document.getElementById('dash-fim').value = hojeLocal();
   carregarDashboard();
 }
 
