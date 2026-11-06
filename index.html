@@ -10,6 +10,9 @@
 *{margin:0;padding:0;box-sizing:border-box}
 /* Paleta KWAY (kway.com.br): marinho #07122B/#0C1D40/#13285A, vermelho #D32F2F/#A3161A, dourado #F5B400, verde #1F9D55, azul #1E6FE0 */
 :root{--bg:#07122b;--surface:#0c1d40;--surface2:#13285a;--border:rgba(201,211,234,0.10);--border2:rgba(201,211,234,0.18);--text:#f5f7fb;--muted:#9fb0d3;--accent:#d32f2f;--accent-hover:#a3161a;--accent2:#ef8a8a;--green:#1f9d55;--red:#e53935;--amber:#f5b400;--purple:#8b5cf6;--teal:#14b8a6;--blue:#1e6fe0;--sw:240px}
+/* Todo o texto da tela em MAIÚSCULAS (padrão visual). O que é digitado nos campos fica como foi digitado. */
+body,button,select,option{text-transform:uppercase}
+input,textarea{text-transform:none}
 body{font-family:'Helvetica Neue','Inter',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
 .login-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px;width:380px}
@@ -163,7 +166,7 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
   <div class="nav-section">Pessoas</div>
   <div class="nav-item" onclick="nav('colaboradores',this)"><span class="nav-icon">&#128119;</span><span>Colaboradores</span></div>
-  <div class="nav-item" onclick="nav('ferias',this)"><span class="nav-icon">&#127958;&#65039;</span><span>Férias</span></div>
+  <div class="nav-item" onclick="nav('ferias',this)"><span class="nav-icon">&#127958;&#65039;</span><span>Programação de Férias</span></div>
   <div class="nav-item" onclick="nav('epi',this)"><span class="nav-icon">&#129466;</span><span>Fichas de EPI</span></div>
   <div class="nav-item" onclick="nav('crachas',this)"><span class="nav-icon">&#129706;</span><span>Crachás</span></div>
   <div class="nav-section">Sistema</div>
@@ -809,7 +812,7 @@ const pageMap = {
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
   visitas:          { title: 'Visitas Comerciais', loader: carregarVisitas },
   colaboradores:    { title: 'Colaboradores', loader: () => carregarModulo('colaboradores') },
-  ferias:           { title: 'Férias', loader: () => carregarModulo('ferias') },
+  ferias:           { title: 'Programação de Férias', loader: () => carregarModulo('ferias') },
   epi:              { title: 'Fichas de EPI', loader: () => carregarModulo('epi') },
   custos:           { title: 'Custos Operacionais', loader: carregarCustos },
   plaquetas:        { title: 'Plaquetas dos Equipamentos', loader: () => carregarModulo('plaquetas') },
@@ -846,9 +849,12 @@ function renderMapaAtuacao() {
   const ufCliente = {};
   allClientes.forEach(c => { if (c.uf) ufCliente[c.id] = c.uf.trim().toUpperCase(); });
   const cont = {};
-  const soma = (uf, campo) => { if (!uf || !MAPA_BR.estados[uf]) return; cont[uf] = cont[uf] || { clientes: 0, equipamentos: 0 }; cont[uf][campo]++; };
+  const soma = (uf, campo) => { if (!uf || !MAPA_BR.estados[uf]) return; cont[uf] = cont[uf] || { clientes: 0, equipamentos: 0, colaboradores: 0 }; cont[uf][campo]++; };
   allClientes.forEach(c => soma((c.uf || '').trim().toUpperCase(), 'clientes'));
   allEquipamentos.forEach(e => soma((e.uf || ufCliente[e.cliente_id] || '').trim().toUpperCase(), 'equipamentos'));
+  // colaboradores ativos (nao desligados), no estado do cliente onde trabalham
+  const colabAtivos = allColaboradores.filter(c => c.status !== 'Desligado');
+  colabAtivos.forEach(c => soma(ufCliente[c.cliente_id], 'colaboradores'));
   const maxEq = Math.max(1, ...Object.values(cont).map(c => c.equipamentos));
   const cor = c => {
     if (!c) return 'var(--surface2)';
@@ -913,14 +919,15 @@ function renderMapaAtuacao() {
   const ufs = Object.keys(cont).sort((a, b) => cont[b].equipamentos - cont[a].equipamentos || a.localeCompare(b));
   const totEq = ufs.reduce((s, u) => s + cont[u].equipamentos, 0);
   const pill = (valor, rotulo) => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:80px"><div style="font-size:18px;font-weight:700;color:#fff;line-height:1">' + valor + '</div><div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.8px">' + rotulo + '</div></div>';
-  document.getElementById('mapa-resumo').innerHTML = pill(ufs.length, 'Estados') + pill(totEq, 'Equipamentos');
+  document.getElementById('mapa-resumo').innerHTML = pill(ufs.length, 'Estados') + pill(totEq, 'Equipamentos') + pill(colabAtivos.length, 'Colaboradores');
   document.getElementById('mapa-lista').innerHTML = ufs.length ?
-    '<table style="font-size:12px" class="tabela-compacta"><thead><tr><th>Estado</th><th style="text-align:right">Equipamentos</th></tr></thead><tbody>' +
-    ufs.map(u => '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + cor(cont[u]) + ';margin-right:8px"></span><strong>' + u + '</strong> <span style="color:var(--muted)">' + MAPA_BR.estados[u].nome + '</span></td><td style="text-align:right">' + cont[u].equipamentos + '</td></tr>').join('') +
+    '<table style="font-size:12px" class="tabela-compacta"><thead><tr><th>Estado</th><th style="text-align:right">Equipamentos</th><th style="text-align:right">Colaboradores</th></tr></thead><tbody>' +
+    ufs.map(u => '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + cor(cont[u]) + ';margin-right:8px"></span><strong>' + u + '</strong> <span style="color:var(--muted)">' + MAPA_BR.estados[u].nome + '</span></td><td style="text-align:right">' + cont[u].equipamentos + '</td><td style="text-align:right">' + cont[u].colaboradores + '</td></tr>').join('') +
     '</tbody></table>' :
     '<div class="loading" style="padding:20px">Cadastre a UF dos clientes para aparecerem no mapa</div>';
 }
 async function carregarDashboard() {
+  await carregarColaboradores();
   renderMapaAtuacao();
   const ini = document.getElementById('dash-ini')?.value;
   const fim = document.getElementById('dash-fim')?.value;
@@ -2150,11 +2157,16 @@ const MODULOS = {
       { id:'cliente_id', label:'Cliente / Local de Trabalho', tipo:'ref', ref:OPC_CLI },
       { id:'data_admissao', label:'Data de Admissão', tipo:'date', obrig:true },
       { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Afastado','Desligado'], obrig:true, cor:{ Ativo:VERDE, Afastado:AMARELO, Desligado:CINZA } },
+      // vencimentos: ficam amarelos quando faltam 30 dias ou menos e vermelhos quando vencem
+      { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true },
+      { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true },
+      { id:'venc_selo', label:'Vencimento do Selo da Máquina', tipo:'date', alertaVencimento:true },
+      { id:'venc_ferias', label:'Vencimento das Férias', tipo:'date', alertaVencimento:true },
       { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
     ]
   },
   ferias: {
-    tabela: 'ferias', titulo: 'Férias', botao: '+ Programar Férias', ordem: 'data_inicio',
+    tabela: 'ferias', titulo: 'Programação de Férias', botao: '+ Programar Férias', ordem: 'data_inicio',
     campos: [
       { id:'colaborador_id', label:'Colaborador', tipo:'ref', ref:OPC_COLAB, obrig:true, negrito:true },
       { id:'periodo_aquisitivo_inicio', label:'Período Aquisitivo - Início', tipo:'date' },
@@ -2245,7 +2257,7 @@ function montarTelasModulos() {
 }
 
 async function carregarColaboradores() {
-  const { data } = await db.from('colaboradores').select('id,nome').order('nome');
+  const { data } = await db.from('colaboradores').select('id,nome,cliente_id,status').order('nome');
   allColaboradores = data || [];
 }
 
@@ -2256,7 +2268,7 @@ async function carregarModulo(chave) {
   const { data, error } = await db.from(m.tabela).select('*').order(m.ordem, { ascending: !!m.crescente });
   if (error) { body.innerHTML = '<div class="loading">Erro ao carregar: ' + esc(error.message) + '</div>'; return; }
   m.registros = data || [];
-  if (chave === 'colaboradores') allColaboradores = m.registros.map(r => ({ id: r.id, nome: r.nome }));
+  if (chave === 'colaboradores') allColaboradores = m.registros.map(r => ({ id: r.id, nome: r.nome, cliente_id: r.cliente_id, status: r.status }));
   renderModulo(chave);
 }
 
