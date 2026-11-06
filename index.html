@@ -1024,12 +1024,14 @@ async function carregarDashboard() {
     document.getElementById('kpi-util-sub').textContent = maqAtuando + (maqAtuando === 1 ? ' máquina atuando' : ' máquinas atuando') + (nDias > 1 ? ' em ' + nDias + ' dias' : '');
     // Parado no cliente / Preventiva / Corretiva: maquinas distintas no periodo (e, se for mais de 1 dia, quantos dias)
     const maqCom = st => new Set(movs.filter(m => m.status === st).map(m => m.equipamento_id)).size;
-    const rotulo = (n, situacao, dias) => (n === 1 ? 'máquina ' + situacao.um : 'máquinas ' + situacao.varias) + (nDias > 1 ? ' · ' + dias + ' dia' + (dias === 1 ? '' : 's') : '');
-    document.getElementById('kpi-pc').textContent = maqCom('PC');
+    const rotulo = (n, situacao, dias) => n + (n === 1 ? ' máquina ' + situacao.um : ' máquinas ' + situacao.varias) + (nDias > 1 ? ' · ' + dias + ' dia' + (dias === 1 ? '' : 's') : '');
+    // percentual em cima (dias no status / total de apontamentos), como na Taxa de Ocupacao
+    const pctDias = dias => totalRegistros > 0 ? Math.round((dias / totalRegistros) * 100) + '%' : '0%';
+    document.getElementById('kpi-pc').textContent = pctDias(diasParCli);
     document.getElementById('kpi-pc-sub').textContent = rotulo(maqCom('PC'), { um: 'parada no cliente', varias: 'paradas no cliente' }, diasParCli);
-    document.getElementById('kpi-prev').textContent = maqCom('P');
+    document.getElementById('kpi-prev').textContent = pctDias(diasPrevent);
     document.getElementById('kpi-prev-sub').textContent = rotulo(maqCom('P'), { um: 'em preventiva', varias: 'em preventiva' }, diasPrevent);
-    document.getElementById('kpi-corr').textContent = maqCom('C');
+    document.getElementById('kpi-corr').textContent = pctDias(diasCorret);
     document.getElementById('kpi-corr-sub').textContent = rotulo(maqCom('C'), { um: 'em corretiva', varias: 'em corretiva' }, diasCorret);
 
     // Pills por status
@@ -1058,12 +1060,14 @@ async function carregarDashboard() {
 
   document.getElementById('kpi-total').textContent = statusList.length || '0';
   document.getElementById('kpi-util').textContent = statusList.length > 0 ? Math.round((atuando2/nTotal)*100) + '%' : '0%';
-  document.getElementById('kpi-pc').textContent = parCli;
-  document.getElementById('kpi-pc-sub').textContent = parCli === 1 ? 'máquina parada no cliente' : 'máquinas paradas no cliente';
-  document.getElementById('kpi-prev').textContent = prevent;
-  document.getElementById('kpi-prev-sub').textContent = prevent === 1 ? 'máquina em preventiva' : 'máquinas em preventiva';
-  document.getElementById('kpi-corr').textContent = corret;
-  document.getElementById('kpi-corr-sub').textContent = corret === 1 ? 'máquina em corretiva' : 'máquinas em corretiva';
+  const pctMaq = n => statusList.length > 0 ? Math.round((n / nTotal) * 100) + '%' : '0%';
+  document.getElementById('kpi-util-sub').textContent = atuando2 + (atuando2 === 1 ? ' máquina atuando' : ' máquinas atuando');
+  document.getElementById('kpi-pc').textContent = pctMaq(parCli);
+  document.getElementById('kpi-pc-sub').textContent = parCli + (parCli === 1 ? ' máquina parada no cliente' : ' máquinas paradas no cliente');
+  document.getElementById('kpi-prev').textContent = pctMaq(prevent);
+  document.getElementById('kpi-prev-sub').textContent = prevent + (prevent === 1 ? ' máquina em preventiva' : ' máquinas em preventiva');
+  document.getElementById('kpi-corr').textContent = pctMaq(corret);
+  document.getElementById('kpi-corr-sub').textContent = corret + (corret === 1 ? ' máquina em corretiva' : ' máquinas em corretiva');
 
   // Status pills
   const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Parada no Cliente' };
