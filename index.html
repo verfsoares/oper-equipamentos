@@ -246,7 +246,7 @@ textarea.form-input{resize:vertical;min-height:70px}
         <div class="kpi-card red"><div class="kpi-label">Corretiva</div><div class="kpi-value" style="color:var(--red)" id="kpi-corr">-</div><div class="kpi-sub" id="kpi-corr-sub">Equipamentos</div></div>
         <div class="kpi-card teal"><div class="kpi-label">Total Apontados</div><div class="kpi-value" style="color:var(--teal)" id="kpi-total">-</div><div class="kpi-sub" id="kpi-total-sub">No periodo selecionado</div></div>
       </div>
-      <div class="secao-kpi" id="titulo-financeiro">&#128176; Resumo Financeiro do Mês Vigente</div>
+      <div class="secao-kpi" id="titulo-financeiro">&#128176; Custo Operacional do Mês Vigente</div>
       <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px">
         <div class="kpi-card amber"><div class="kpi-label">Fretes</div><div class="kpi-value" style="color:var(--amber);font-size:20px" id="dash-frete">R$ 0</div></div>
         <div class="kpi-card blue"><div class="kpi-label">Combustivel</div><div class="kpi-value" style="color:var(--accent2);font-size:20px" id="dash-comb">R$ 0</div></div>
@@ -1151,7 +1151,7 @@ async function carregarDashboard() {
   // Custos do mes vigente: do dia 1 ate hoje (nao depende do filtro de periodo)
   const finIni = primeiroDiaDoMes(), finFim = hojeLocal();
   const tituloFin = document.getElementById('titulo-financeiro');
-  if (tituloFin) tituloFin.textContent = '💰 Resumo Financeiro do Mês Vigente · ' + fmtData(finIni) + ' a ' + fmtData(finFim);
+  if (tituloFin) tituloFin.textContent = '💰 Custo Operacional do Mês Vigente · ' + fmtData(finIni) + ' a ' + fmtData(finFim);
   const { data: custos } = await db.from('custos').select('custo_total,frete,combustivel,pneus,pecas,servicos').gte('data', finIni).lte('data', finFim);
   const tipos = ['frete','combustivel','pneus','pecas','servicos'];
   const ids = ['dash-frete','dash-comb','dash-pneus','dash-pecas','dash-serv'];
