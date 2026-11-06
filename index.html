@@ -113,6 +113,7 @@ textarea.form-input{resize:vertical;min-height:70px}
 .bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.8)}
 .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .filters .form-input,.filters .form-select{flex:1;min-width:140px}
+.tabela-compacta td,.tabela-compacta th{padding:6px 10px}
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
@@ -184,8 +185,8 @@ textarea.form-input{resize:vertical;min-height:70px}
     <!-- DASHBOARD -->
     <div class="view active" id="v-dashboard">
       <!-- MAPA DE ATUACAO -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap;align-items:center">
-        <div style="flex:1 1 560px;min-width:300px;max-width:680px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+        <div style="flex:0 1 340px;min-width:260px">
           <div class="chart-title" style="margin-bottom:8px">&#127463;&#127479; Nossa atuação</div>
           <div id="mapa-atuacao"></div>
         </div>
@@ -872,11 +873,11 @@ function renderMapaAtuacao() {
   // Lado do rotulo para os estados vizinhos nao se sobreporem
   const ladoEsq = new Set(['MG', 'SP', 'GO', 'DF', 'MS', 'PR', 'SC', 'RS', 'MT', 'RO', 'AC', 'AM']);
   const ajusteY = { SP: 10, RJ: 14, MG: -6, ES: -12, DF: -8, GO: 6 };
-  const W = MAPA_BR.w, H = MAPA_BR.h, M = 125;   // margem lateral para os rotulos
+  const W = MAPA_BR.w, H = MAPA_BR.h, M = 175;   // margem lateral para os rotulos
   let svg = '<svg viewBox="' + (-M) + ' -6 ' + (W + 2 * M) + ' ' + (H + 12) + '" style="width:100%;height:auto;display:block" role="img" aria-label="Mapa do Brasil com os locais de atuação da KWAY">';
   for (const [uf, e] of Object.entries(MAPA_BR.estados)) {
     const c = cont[uf];
-    const dica = e.nome + (c ? ' - ' + c.clientes + ' cliente(s), ' + c.equipamentos + ' equipamento(s)' : ' - sem atuação');
+    const dica = e.nome + (c ? ' - ' + c.equipamentos + ' equipamento(s)' : ' - sem atuação');
     svg += '<path d="' + e.d + '" fill="' + cor(c) + '" stroke="rgba(201,211,234,0.35)" stroke-width="0.6"><title>' + dica + '</title></path>';
   }
   const alfinete = (x, y) =>
@@ -895,7 +896,8 @@ function renderMapaAtuacao() {
     const x = Math.round(e.cx), y = Math.round(e.cy + 6 + (ajusteY[uf] || 0));
     const nomes = [...(marcasPorUf[uf] || [])];
     const esq = ladoEsq.has(uf);
-    let g = '<g><title>' + esc(e.nome + ': ' + (nomes.join(', ') || 'operação KWAY')) + '</title>' + alfinete(x, y);
+    const s = 1.7;   // alfinetes e nomes maiores que o mapa, para continuarem legiveis no mapa pequeno
+    let g = '<g transform="translate(' + x + ',' + y + ') scale(' + s + ') translate(' + (-x) + ',' + (-y) + ')"><title>' + esc(e.nome + ': ' + (nomes.join(', ') || 'operação KWAY')) + '</title>' + alfinete(x, y);
     if (baseUf.has(uf)) {
       // bandeirinha KWAY na base
       g += '<line x1="' + (x + 9) + '" y1="' + (y - 2) + '" x2="' + (x + 9) + '" y2="' + (y - 40) + '" stroke="#fff" stroke-width="1.2"/>' +
@@ -907,14 +909,13 @@ function renderMapaAtuacao() {
   }
   el.innerHTML = svg + '</svg>';
 
-  const ufs = Object.keys(cont).sort((a, b) => cont[b].equipamentos - cont[a].equipamentos || cont[b].clientes - cont[a].clientes);
-  const totCli = ufs.reduce((s, u) => s + cont[u].clientes, 0);
+  const ufs = Object.keys(cont).sort((a, b) => cont[b].equipamentos - cont[a].equipamentos || a.localeCompare(b));
   const totEq = ufs.reduce((s, u) => s + cont[u].equipamentos, 0);
-  const pill = (valor, rotulo) => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;min-width:90px"><div style="font-size:22px;font-weight:700;color:#fff;line-height:1">' + valor + '</div><div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.8px">' + rotulo + '</div></div>';
-  document.getElementById('mapa-resumo').innerHTML = pill(ufs.length, 'Estados') + pill(totCli, 'Clientes') + pill(totEq, 'Equipamentos');
+  const pill = (valor, rotulo) => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:80px"><div style="font-size:18px;font-weight:700;color:#fff;line-height:1">' + valor + '</div><div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.8px">' + rotulo + '</div></div>';
+  document.getElementById('mapa-resumo').innerHTML = pill(ufs.length, 'Estados') + pill(totEq, 'Equipamentos');
   document.getElementById('mapa-lista').innerHTML = ufs.length ?
-    '<table><thead><tr><th>Estado</th><th style="text-align:right">Clientes</th><th style="text-align:right">Equipamentos</th></tr></thead><tbody>' +
-    ufs.map(u => '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + cor(cont[u]) + ';margin-right:8px"></span><strong>' + u + '</strong> <span style="color:var(--muted)">' + MAPA_BR.estados[u].nome + '</span></td><td style="text-align:right">' + cont[u].clientes + '</td><td style="text-align:right">' + cont[u].equipamentos + '</td></tr>').join('') +
+    '<table style="font-size:12px" class="tabela-compacta"><thead><tr><th>Estado</th><th style="text-align:right">Equipamentos</th></tr></thead><tbody>' +
+    ufs.map(u => '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + cor(cont[u]) + ';margin-right:8px"></span><strong>' + u + '</strong> <span style="color:var(--muted)">' + MAPA_BR.estados[u].nome + '</span></td><td style="text-align:right">' + cont[u].equipamentos + '</td></tr>').join('') +
     '</tbody></table>' :
     '<div class="loading" style="padding:20px">Cadastre a UF dos clientes para aparecerem no mapa</div>';
 }
