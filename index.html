@@ -4,45 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OPER - ERP Operacional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2537;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0f4ff;--muted:#8b9bbf;--accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--teal:#14b8a6;--sw:240px}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
+/* Paleta KWAY (kway.com.br): marinho #07122B/#0C1D40/#13285A, vermelho #D32F2F/#A3161A, dourado #F5B400, verde #1F9D55, azul #1E6FE0 */
+:root{--bg:#07122b;--surface:#0c1d40;--surface2:#13285a;--border:rgba(201,211,234,0.10);--border2:rgba(201,211,234,0.18);--text:#f5f7fb;--muted:#9fb0d3;--accent:#d32f2f;--accent-hover:#a3161a;--accent2:#ef8a8a;--green:#1f9d55;--red:#e53935;--amber:#f5b400;--purple:#8b5cf6;--teal:#14b8a6;--blue:#1e6fe0;--sw:240px}
+body{font-family:'Helvetica Neue','Inter',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
 .login-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px;width:380px}
 .login-logo{text-align:center;margin-bottom:28px}
 .login-icon{width:60px;height:60px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px}
-.login-title{font-size:24px;font-weight:700}
+.login-title{font-size:26px;font-weight:700;font-family:'Cinzel',Georgia,serif;letter-spacing:2px}
 .login-sub{font-size:13px;color:var(--muted);margin-top:4px}
 .login-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;outline:none;margin-bottom:12px}
 .login-input:focus{border-color:var(--accent)}
 .login-btn{width:100%;background:var(--accent);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
-.login-btn:hover{background:#2563eb}
+.login-btn:hover{background:var(--accent-hover)}
 .login-error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#f87171;margin-bottom:12px;display:none}
 .login-forgot{text-align:center;font-size:13px;color:var(--muted);margin-top:14px;cursor:pointer;text-decoration:underline}
 #sidebar{width:var(--sw);height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .brand-icon{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.brand-name{font-size:17px;font-weight:700}
+.brand-name{font-size:18px;font-weight:700;font-family:'Cinzel',Georgia,serif;letter-spacing:1.5px}
 .brand-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 .nav-section{padding:10px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.15s}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:rgba(59,130,246,0.15);color:var(--accent2)}
+.nav-item.active{background:rgba(211,47,47,0.16);color:#fff;box-shadow:inset 3px 0 0 var(--accent)}
 .nav-icon{font-size:16px;width:20px;text-align:center}
 .user-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(59,130,246,0.25);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(211,47,47,0.25);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
 .user-name{font-size:13px;font-weight:500}
 .user-role{font-size:11px;color:var(--muted)}
 .logout-btn{margin-left:auto;cursor:pointer;color:var(--muted);font-size:18px;background:none;border:none}
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0}
-.page-title{font-size:16px;font-weight:600;flex:1}
+.page-title{font-size:17px;font-weight:600;flex:1;font-family:'Cinzel',Georgia,serif;letter-spacing:0.5px}
 .btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--surface2)}
 .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn-primary:hover{background:#2563eb}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 #content{flex:1;overflow-y:auto;padding:24px}
 .view{display:none}
 .view.active{display:block}
@@ -60,9 +62,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
 .badge-A{background:rgba(16,185,129,0.15);color:#34d399}
-.badge-P{background:rgba(245,158,11,0.15);color:#fbbf24}
+.badge-P{background:rgba(245,180,0,0.15);color:#f5b400}
 .badge-C{background:rgba(239,68,68,0.15);color:#f87171}
-.badge-D{background:rgba(59,130,246,0.15);color:#60a5fa}
+.badge-D{background:rgba(30,111,224,0.20);color:#8ab8ff}
 .badge-T{background:rgba(139,92,246,0.15);color:#a78bfa}
 .badge-MOB{background:rgba(20,184,166,0.15);color:#2dd4bf}
 .badge-DESMOB{background:rgba(100,116,139,0.15);color:#94a3b8}
@@ -141,11 +143,14 @@ textarea.form-input{resize:vertical;min-height:70px}
 <div id="sidebar">
   <div class="brand">
     <div class="brand-icon">&#9881;&#65039;</div>
-    <div><div class="brand-name">OPER</div><div class="brand-sub">Unidade de Negocio Movimentacao de Carga</div></div>
+    <div><div class="brand-name">OPER</div><div class="brand-sub">UN - Movimentação de Carga</div></div>
   </div>
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
+  <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
+  <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
+  <div class="nav-item" onclick="nav('vencimentos',this)"><span class="nav-icon">&#128197;</span><span>Vencimento de Contratos</span></div>
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
   <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Treinamento e Inspeção</span></div>
@@ -158,9 +163,6 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('ferias',this)"><span class="nav-icon">&#127958;&#65039;</span><span>Férias</span></div>
   <div class="nav-item" onclick="nav('epi',this)"><span class="nav-icon">&#129466;</span><span>Fichas de EPI</span></div>
   <div class="nav-item" onclick="nav('crachas',this)"><span class="nav-icon">&#129706;</span><span>Crachás / Selos</span></div>
-  <div class="nav-section">Cadastros</div>
-  <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon">&#127970;</span><span>Cadastro de Clientes</span></div>
-  <div class="nav-item" onclick="nav('contratos',this)"><span class="nav-icon">&#128196;</span><span>Contratos</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item" onclick="nav('usuarios',this)"><span class="nav-icon">&#128101;</span><span>Usuarios</span></div>
   <div class="user-footer">
@@ -427,17 +429,6 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
-    <!-- CONTRATOS -->
-    <div class="view" id="v-contratos">
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="table-title">Contratos</div>
-          <button class="btn btn-primary" onclick="openModal('modal-contrato')">+ Novo Contrato</button>
-        </div>
-        <div id="contrato-table-body"><div class="loading">Carregando...</div></div>
-      </div>
-    </div>
-
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
       <div class="table-wrap">
@@ -457,35 +448,18 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Data *</div><input class="form-input" type="date" id="manut-data" /></div>
       <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="manut-equip-sel"><option value="">Selecione...</option></select></div>
-      <div class="form-group"><div class="form-label">Cliente / Operacao</div><select class="form-select" id="manut-cliente-sel"><option value="">- Nenhum -</option></select></div>
-      <div class="form-group"><div class="form-label">Tipo de Manutencao</div>
+      <div class="form-group full"><div class="form-label">Tipo de Manutenção *</div>
         <select class="form-select" id="manut-tipo">
-          <option>Manutencao Preventiva</option>
-          <option>Manutencao Corretiva</option>
-          <option>Troca de Pecas</option>
-          <option>Revisao Geral</option>
-          <option>Borracharia</option>
-          <option>Eletrica</option>
-          <option>Hidraulica</option>
-          <option>Outro</option>
+          <option value="Manutencao Preventiva">Preventiva</option>
+          <option value="Manutencao Corretiva">Corretiva</option>
         </select>
       </div>
-      <div class="form-group"><div class="form-label">Status apos manutencao</div>
-        <select class="form-select" id="manut-status">
-          <option>Operacional</option>
-          <option>Em aguardo de pecas</option>
-          <option>Aguardando aprovacao</option>
-          <option>Inoperante</option>
-        </select>
-      </div>
-      <div class="form-group"><div class="form-label">Custo (R$)</div><input class="form-input" type="number" id="manut-custo" placeholder="0,00" /></div>
-      <div class="form-group full"><div class="form-label">O que foi feito *</div><textarea class="form-input" id="manut-descricao" placeholder="Descreva os servicos realizados, pecas substituidas..."></textarea></div>
       <div class="form-group full">
-        <div class="form-label">Anexar Arquivos (Fotos, NF, Laudos)</div>
+        <div class="form-label">Laudo de Manutenção (PDF, foto ou Word)</div>
         <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2)" onclick="document.getElementById('manut-files').click()">
           <div style="font-size:24px;margin-bottom:8px">&#128206;</div>
-          <div style="font-size:13px;color:var(--muted)">Clique para selecionar arquivos</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">Fotos, PDF, Word, NF — multiplos arquivos</div>
+          <div style="font-size:13px;color:var(--muted)">Clique para selecionar o laudo</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Pode anexar mais de um arquivo</div>
         </div>
         <input type="file" id="manut-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mostrarArquivosManut()" />
         <div id="manut-files-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
@@ -658,7 +632,6 @@ textarea.form-input{resize:vertical;min-height:70px}
       <div class="form-group"><div class="form-label">UF</div><input class="form-input" id="eq-uf" maxlength="2" placeholder="MG" /></div>
       <div class="form-group"><div class="form-label">Operador</div><input class="form-input" id="eq-operador" placeholder="Nome do operador" /></div>
       <div class="form-group"><div class="form-label">Nº de Série</div><input class="form-input" id="eq-serie" /></div>
-      <div class="form-group"><div class="form-label">Nº de Série Correto</div><input class="form-input" id="eq-serie-correto" /></div>
     </div>
     <input type="hidden" id="eq-id" value="" />
     <input type="hidden" id="eq-status" value="D" />
@@ -741,27 +714,6 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div class="modal-footer">
       <button class="btn" onclick="fecharCliente()">Cancelar</button>
       <button class="btn btn-primary" id="btn-salvar-cliente" onclick="salvarCliente()">Salvar Cliente</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONTRATO -->
-<div class="modal-overlay" id="modal-contrato">
-  <div class="modal">
-    <div class="modal-header"><div class="modal-title">Novo Contrato</div><button class="modal-close" onclick="closeModal('modal-contrato')">x</button></div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Numero *</div><input class="form-input" id="cn-num" placeholder="CNT-2026-001" /></div>
-      <div class="form-group"><div class="form-label">Cliente *</div><select class="form-select" id="cn-cliente"><option value="">Selecione...</option></select></div>
-      <div class="form-group full"><div class="form-label">Objeto</div><input class="form-input" id="cn-objeto" placeholder="Descricao do contrato" /></div>
-      <div class="form-group"><div class="form-label">Data Inicio</div><input class="form-input" type="date" id="cn-ini" /></div>
-      <div class="form-group"><div class="form-label">Data Fim</div><input class="form-input" type="date" id="cn-fim" /></div>
-      <div class="form-group"><div class="form-label">Status</div>
-        <select class="form-select" id="cn-status"><option>Ativo</option><option>Encerrado</option><option>Renovacao</option></select>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('modal-contrato')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarContrato()">Salvar Contrato</button>
     </div>
   </div>
 </div>
@@ -852,7 +804,7 @@ const pageMap = {
   'manutencao-equip': { title: 'Manutencao de Equipamentos', loader: carregarManutencaoEquip },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
-  contratos:    { title: 'Contratos', loader: carregarContratos },
+  vencimentos:  { title: 'Vencimento de Contratos', loader: () => carregarModulo('vencimentos') },
   usuarios:     { title: 'Usuarios', loader: carregarUsuarios }
 };
 
@@ -1069,14 +1021,14 @@ async function carregarEquipamentos() {
 function renderEquipamentos(list) {
   document.getElementById('equip-count').textContent = list.length + ' registros';
   document.getElementById('equip-table-body').innerHTML = list.length ?
-    '<div style="overflow-x:auto"><table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Cliente</th><th>UF</th><th>Operador</th><th>Nº Série</th><th>Nº Série Correto</th><th>Origem</th><th>Fornecedor</th><th></th></tr></thead><tbody>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Frota</th><th>Equipamento</th><th>Tipo</th><th>Combustivel</th><th>Capacidade</th><th>Ano</th><th>Cliente</th><th>UF</th><th>Operador</th><th>Nº Série</th><th>Origem</th><th>Fornecedor</th><th></th></tr></thead><tbody>' +
     list.map(e => {
       const obs = (e.observacoes || '').split(' . ').map(p => p.trim());
       const cap = e.capacidade || obs[0] || '-';
       const ano = e.ano || obs[1] || '-';
       const forn = e.fornecedor || obs[2] || '-';
-      const serieDiferente = e.numero_serie && e.numero_serie_correto && e.numero_serie.trim() !== e.numero_serie_correto.trim();
-      return '<tr><td class="frota">' + e.frota + '</td><td><strong>' + e.equipamento + '</strong></td><td>' + (e.tipo||'-') + '</td><td>' + (e.combustivel||'-') + '</td><td>' + cap + '</td><td>' + ano + '</td><td>' + (e.clientes?.razao_social||'-') + '</td><td>' + (e.uf||'-') + '</td><td>' + (e.operador||'-') + '</td><td>' + (e.numero_serie||'-') + '</td><td' + (serieDiferente ? ' style="color:var(--amber);font-weight:600" title="Diferente do Nº de Série"' : '') + '>' + (e.numero_serie_correto||'-') + '</td><td>' + (e.origem||'-') + '</td><td>' + (e.origem === 'Terceiro' ? '<span style="color:var(--amber);font-weight:500">' + forn + '</span>' : '-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarEquipamento(\'' + e.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarEquipamento(\'' + e.id + '\',\'' + e.frota + '\')">&#128465;&#65039;</button></td></tr>';
+      const serie = e.numero_serie_correto || e.numero_serie || '-';
+      return '<tr><td class="frota">' + e.frota + '</td><td><strong>' + e.equipamento + '</strong></td><td>' + (e.tipo||'-') + '</td><td>' + (e.combustivel||'-') + '</td><td>' + cap + '</td><td>' + ano + '</td><td>' + (e.clientes?.razao_social||'-') + '</td><td>' + (e.uf||'-') + '</td><td>' + (e.operador||'-') + '</td><td>' + serie + '</td><td>' + (e.origem||'-') + '</td><td>' + (e.origem === 'Terceiro' ? '<span style="color:var(--amber);font-weight:500">' + forn + '</span>' : '-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarEquipamento(\'' + e.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarEquipamento(\'' + e.id + '\',\'' + e.frota + '\')">&#128465;&#65039;</button></td></tr>';
     }).join('') + '</tbody></table></div>' :
     '<div class="loading">Nenhum equipamento cadastrado</div>';
 }
@@ -1102,7 +1054,7 @@ function abrirNovoEquipamento() {
   document.getElementById('eq-origem').value = 'Proprio';
   document.getElementById('eq-fornecedor').value = '';
   preencherClientesEquip('');
-  ['eq-uf','eq-operador','eq-serie','eq-serie-correto'].forEach(i => document.getElementById(i).value = '');
+  ['eq-uf','eq-operador','eq-serie'].forEach(i => document.getElementById(i).value = '');
   document.getElementById('modal-equip-title').textContent = 'Novo Equipamento';
   openModal('modal-equip');
 }
@@ -1129,7 +1081,7 @@ async function salvarEquipamento() {
     uf: document.getElementById('eq-uf').value.trim().toUpperCase() || null,
     operador: document.getElementById('eq-operador').value.trim() || null,
     numero_serie: document.getElementById('eq-serie').value.trim() || null,
-    numero_serie_correto: document.getElementById('eq-serie-correto').value.trim() || null
+    numero_serie_correto: document.getElementById('eq-serie').value.trim() || null
   };
   let error;
   if (!id) Object.assign(dados, { status_atual: document.getElementById('eq-status').value || 'D', horimetro_inicial: 0, horimetro_atual: 0 });
@@ -1160,8 +1112,7 @@ async function editarEquipamento(id) {
   preencherClientesEquip(e.cliente_id || '');
   document.getElementById('eq-uf').value = e.uf || '';
   document.getElementById('eq-operador').value = e.operador || '';
-  document.getElementById('eq-serie').value = e.numero_serie || '';
-  document.getElementById('eq-serie-correto').value = e.numero_serie_correto || '';
+  document.getElementById('eq-serie').value = e.numero_serie_correto || e.numero_serie || '';
   document.getElementById('modal-equip-title').textContent = 'Editar Equipamento';
   openModal('modal-equip');
 }
@@ -1453,33 +1404,8 @@ async function carregarContratos() {
   const ec = document.getElementById('eq-contrato'); if (ec) ec.innerHTML = optsC;
 }
 
-async function salvarContrato() {
-  const num = document.getElementById('cn-num').value.trim();
-  const cli = document.getElementById('cn-cliente').value;
-  if (!num || !cli) return showToast('Preencha os campos obrigatorios', true);
-  const { error } = await db.from('contratos').insert({
-    numero: num, cliente_id: cli,
-    objeto: document.getElementById('cn-objeto').value,
-    data_inicio: document.getElementById('cn-ini').value || null,
-    data_fim: document.getElementById('cn-fim').value || null,
-    status: document.getElementById('cn-status').value
-  });
-  if (error) return showToast('Erro: ' + error.message, true);
-  closeModal('modal-contrato');
-  showToast('Contrato salvo!');
-  await carregarContratos();
-}
-
-async function deletarContrato(id, numero) {
-  if (!confirm('Deseja excluir o contrato ' + numero + '?')) return;
-  const { error } = await db.from('contratos').delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Contrato excluido!');
-  await carregarContratos();
-}
-
 async function carregarUsuarios() {
-  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(59,130,246,0.15);color:#60a5fa', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24', 'HEAD DE FINANCAS':'background:rgba(16,185,129,0.15);color:#34d399', SST:'background:rgba(20,184,166,0.15);color:#2dd4bf', 'CONTROLADOR DE OPERACOES':'background:rgba(59,130,246,0.15);color:#60a5fa' };
+  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(30,111,224,0.15);color:#8ab8ff', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24', 'HEAD DE FINANCAS':'background:rgba(16,185,129,0.15);color:#34d399', SST:'background:rgba(20,184,166,0.15);color:#2dd4bf', 'CONTROLADOR DE OPERACOES':'background:rgba(30,111,224,0.15);color:#8ab8ff' };
   const el = document.getElementById('usuario-table-body');
   const { data, error } = await db.from('perfis').select('*').order('nome');
   if (error) { el.innerHTML = '<div class="loading">Erro ao carregar usuários</div>'; return; }
@@ -1661,7 +1587,7 @@ async function carregarInspecoes() {
     insp.map(i => {
       const nArq = i.inspecao_arquivos ? i.inspecao_arquivos.length : 0;
       const cor = statusColor[i.status_equipamento] || 'var(--muted)';
-      return '<tr><td>' + (i.data_inspecao||'-') + '</td><td><strong>' + (i.equipamentos?.frota||'-') + '</strong> . ' + (i.equipamentos?.equipamento||'-') + '</td><td>' + (i.clientes?.razao_social||'-') + '</td><td>' + (i.tipo_inspecao||'-') + '</td><td><span style="color:' + cor + ';font-weight:500">' + (i.status_equipamento||'-') + '</span></td><td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">' + nArq + ' arquivo(s)</span></td><td style="color:var(--muted)">' + (i.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verInspecao(\'' + i.id + '\')">Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarInspecao(\'' + i.id + '\')">X</button></td></tr>';
+      return '<tr><td>' + (i.data_inspecao||'-') + '</td><td><strong>' + (i.equipamentos?.frota||'-') + '</strong> . ' + (i.equipamentos?.equipamento||'-') + '</td><td>' + (i.clientes?.razao_social||'-') + '</td><td>' + (i.tipo_inspecao||'-') + '</td><td><span style="color:' + cor + ';font-weight:500">' + (i.status_equipamento||'-') + '</span></td><td><span style="background:rgba(30,111,224,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">' + nArq + ' arquivo(s)</span></td><td style="color:var(--muted)">' + (i.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verInspecao(\'' + i.id + '\')">Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarInspecao(\'' + i.id + '\')">X</button></td></tr>';
     }).join('') + '</tbody></table>' :
     '<div class="loading">Nenhuma inspecao registrada</div>';
 }
@@ -1789,15 +1715,13 @@ async function carregarManutencaoEquip() {
   // Popular selects do modal
   const se = document.getElementById('manut-equip-sel');
   if (se) se.innerHTML = '<option value="">Selecione...</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
-  const sc = document.getElementById('manut-cliente-sel');
-  if (sc) sc.innerHTML = '<option value="">- Nenhum -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
 
   const fEquip = document.getElementById('filter-manut-equip')?.value;
   const fCli   = document.getElementById('filter-manut-cliente')?.value;
   const fIni   = document.getElementById('filter-manut-ini')?.value;
   const fFim   = document.getElementById('filter-manut-fim')?.value;
 
-  let q = db.from('manutencao_equipamentos').select('*, equipamentos(frota,equipamento), clientes(razao_social), manut_arquivos(id)').order('data_manutencao', { ascending: false });
+  let q = db.from('manutencao_equipamentos').select('*, equipamentos(frota,equipamento), clientes(razao_social), manut_arquivos(id,nome_arquivo,url_arquivo)').order('data_manutencao', { ascending: false });
   if (fEquip) q = q.eq('equipamento_id', fEquip);
   if (fCli)   q = q.eq('cliente_id', fCli);
   if (fIni)   q = q.gte('data_manutencao', fIni);
@@ -1807,19 +1731,16 @@ async function carregarManutencaoEquip() {
   const tipoColor = { 'Manutencao Preventiva':'var(--amber)', 'Manutencao Corretiva':'var(--red)', 'Troca de Pecas':'var(--purple)', 'Revisao Geral':'var(--teal)', 'Borracharia':'var(--green)', 'Eletrica':'var(--accent2)', 'Hidraulica':'var(--blue)', 'Outro':'var(--muted)' };
 
   document.getElementById('manut-equip-table-body').innerHTML = manuts && manuts.length ?
-    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Cliente/Operacao</th><th>Tipo</th><th>Status</th><th>Custo</th><th>O que foi feito</th><th>Arquivos</th><th>Usuario</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Tipo</th><th>Laudo</th><th>Usuario</th><th></th></tr></thead><tbody>' +
     manuts.map(m => {
-      const nArq = m.manut_arquivos ? m.manut_arquivos.length : 0;
+      const arqs = m.manut_arquivos || [];
       const cor = tipoColor[m.tipo_manutencao] || 'var(--muted)';
+      const tipoTxt = (m.tipo_manutencao || '-').replace(/^Manutencao /, '');
       return '<tr>' +
-        '<td>'+m.data_manutencao+'</td>' +
+        '<td>'+fmtData(m.data_manutencao)+'</td>' +
         '<td><strong>'+(m.equipamentos?.frota||'-')+'</strong> · '+(m.equipamentos?.equipamento||'-')+'</td>' +
-        '<td style="font-size:12px;color:var(--muted)">'+(m.clientes?.razao_social||'-')+'</td>' +
-        '<td><span style="color:'+cor+';font-size:12px;font-weight:500">'+(m.tipo_manutencao||'-')+'</span></td>' +
-        '<td style="font-size:12px">'+(m.status_manutencao||'-')+'</td>' +
-        '<td style="color:var(--green);font-weight:600">'+(m.custo>0?'R$ '+m.custo.toLocaleString('pt-BR'):'-')+'</td>' +
-        '<td style="font-size:12px;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(m.descricao||'-')+'</td>' +
-        '<td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">&#128206; '+nArq+'</span></td>' +
+        '<td><span style="color:'+cor+';font-weight:600">'+tipoTxt+'</span></td>' +
+        '<td>'+(arqs.length ? arqs.map(a => '<a href="'+esc(a.url_arquivo)+'" target="_blank" style="color:var(--accent2);font-size:12px;display:block">&#128206; '+esc(a.nome_arquivo)+'</a>').join('') : '<span style="color:var(--muted);font-size:12px">sem laudo</span>')+'</td>' +
         '<td style="color:var(--muted);font-size:12px">'+(m.usuario||'-')+'</td>' +
         '<td style="white-space:nowrap">' +
         '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="verManutencao(\''+m.id+'\')">&#128065; Ver</button> ' +
@@ -1853,12 +1774,12 @@ async function salvarManutencaoEquip() {
 
   const { data: manut, error } = await db.from('manutencao_equipamentos').insert({
     equipamento_id:   equipId,
-    cliente_id:       document.getElementById('manut-cliente-sel').value || null,
+    cliente_id:       allEquipamentos.find(e => e.id === equipId)?.cliente_id || null,
     data_manutencao:  data,
     tipo_manutencao:  document.getElementById('manut-tipo').value,
-    status_manutencao: document.getElementById('manut-status').value,
-    custo:            parseFloat(document.getElementById('manut-custo').value) || 0,
-    descricao:        document.getElementById('manut-descricao').value,
+    status_manutencao: '',
+    custo:            0,
+    descricao:        '',
     usuario:          currentUser?.nome || '-'
   }).select().single();
 
@@ -1882,9 +1803,9 @@ async function salvarManutencaoEquip() {
   closeModal('modal-manut-equip');
   document.getElementById('manut-files-preview').innerHTML = '';
   document.getElementById('manut-files').value = '';
-  document.getElementById('manut-descricao').value = '';
-  document.getElementById('manut-custo').value = '';
-  showToast('Manutencao salva' + (uploadOk > 0 ? ' com ' + uploadOk + ' arquivo(s)!' : '!'));
+  const falharam = files.length - uploadOk;
+  if (falharam > 0) showToast('Manutencao salva, mas ' + falharam + ' arquivo(s) nao foram enviados', true);
+  else showToast('Manutencao salva' + (uploadOk > 0 ? ' com ' + uploadOk + ' laudo(s)!' : ' sem laudo!'));
   await carregarManutencaoEquip();
 }
 
@@ -1896,14 +1817,10 @@ async function verManutencao(id) {
   document.getElementById('ver-manut-content').innerHTML =
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">' +
     '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">EQUIPAMENTO</div><div style="font-weight:600">'+(m.equipamentos?.frota||'-')+' · '+(m.equipamentos?.equipamento||'-')+'</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">'+m.data_manutencao+'</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">'+(m.tipo_manutencao||'-')+'</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">STATUS</div><div style="font-weight:600">'+(m.status_manutencao||'-')+'</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CLIENTE/OPERACAO</div><div style="font-weight:600">'+(m.clientes?.razao_social||'-')+'</div></div>' +
-    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CUSTO</div><div style="font-weight:600;color:var(--green)">'+(m.custo>0?'R$ '+m.custo.toLocaleString('pt-BR'):'-')+'</div></div>' +
-    (m.descricao?'<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">O QUE FOI FEITO</div><div style="font-size:13px">'+m.descricao+'</div></div>':'') +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DATA</div><div style="font-weight:600">'+fmtData(m.data_manutencao)+'</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">TIPO</div><div style="font-weight:600">'+(m.tipo_manutencao||'-').replace(/^Manutencao /, '')+'</div></div>' +
     '</div>' +
-    '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos ('+(arqs?.length||0)+')</div>' +
+    '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Laudos ('+(arqs?.length||0)+')</div>' +
     ((arqs && arqs.length) ?
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
       arqs.map(a => '<a href="'+a.url_arquivo+'" target="_blank" style="text-decoration:none">' +
@@ -1954,7 +1871,7 @@ async function carregarVisitas() {
     '<table><thead><tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Responsável</th><th>Pauta</th><th>Arquivos</th><th>Usuário</th><th></th></tr></thead><tbody>' +
     visitas.map(v => {
       const nArq = v.visita_arquivos ? v.visita_arquivos.length : 0;
-      return '<tr><td>'+v.data_visita+'</td><td><strong>'+(v.clientes?.razao_social||'-')+'</strong></td><td style="font-size:12px">'+(tipoIcon[v.tipo_visita]||'&#128196;')+' '+(v.tipo_visita||'-')+'</td><td style="font-size:12px;color:var(--muted)">'+(v.responsavel||'-')+'</td><td style="font-size:12px;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(v.descricao||'-')+'</td><td><span style="background:rgba(59,130,246,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">&#128206; '+nArq+'</span></td><td style="color:var(--muted);font-size:12px">'+(v.usuario||'-')+'</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verVisita(\''+v.id+'\')">&#128065; Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarVisita(\''+v.id+'\')">&#128465;&#65039;</button></td></tr>';
+      return '<tr><td>'+v.data_visita+'</td><td><strong>'+(v.clientes?.razao_social||'-')+'</strong></td><td style="font-size:12px">'+(tipoIcon[v.tipo_visita]||'&#128196;')+' '+(v.tipo_visita||'-')+'</td><td style="font-size:12px;color:var(--muted)">'+(v.responsavel||'-')+'</td><td style="font-size:12px;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(v.descricao||'-')+'</td><td><span style="background:rgba(30,111,224,0.15);color:var(--accent2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">&#128206; '+nArq+'</span></td><td style="color:var(--muted);font-size:12px">'+(v.usuario||'-')+'</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="verVisita(\''+v.id+'\')">&#128065; Ver</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarVisita(\''+v.id+'\')">&#128465;&#65039;</button></td></tr>';
     }).join('') + '</tbody></table>' :
     '<div class="loading">Nenhuma visita registrada</div>';
 }
@@ -2084,7 +2001,7 @@ const MODULOS = {
       { id:'equipamento_id', label:'Equipamento', tipo:'ref', ref:OPC_EQUIP, obrig:true, negrito:true },
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
       { id:'numero_laudo', label:'Nº do Laudo', tipo:'text' },
-      { id:'responsavel_tecnico', label:'Responsável Técnico', tipo:'text' },
+      { id:'responsavel_tecnico', label:'Fornecedor', tipo:'text' },  // coluna do banco mantida; so o rotulo mudou
       { id:'descricao', label:'Descrição / Conclusão', tipo:'textarea', full:true, naTabela:false }
     ]
   },
@@ -2150,6 +2067,16 @@ const MODULOS = {
       if (d.tipo === 'Selo' && !d.equipamento_id) return 'Selo: selecione o equipamento';
       return null;
     }
+  },
+  vencimentos: {
+    tabela: 'contratos', titulo: 'Vencimento de Contratos', botao: '+ Novo Contrato', ordem: 'data_fim', crescente: true, semUsuario: true,
+    campos: [
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
+      { id:'numero', label:'Nº do Contrato', tipo:'text', obrig:true },
+      { id:'data_inicio', label:'Início', tipo:'date' },
+      { id:'data_fim', label:'Vencimento', tipo:'date', obrig:true, alertaVencimento:true, mostrarDias:true },
+      { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Renovacao','Encerrado'], obrig:true, cor:{ Ativo:VERDE, Renovacao:AMARELO, Encerrado:CINZA } }
+    ]
   }
 };
 
@@ -2209,8 +2136,13 @@ function celulaModulo(c, r) {
   if (c.alertaVencimento && v) {
     const hoje = new Date().toISOString().slice(0, 10);
     const em30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
-    if (v < hoje) return '<span style="color:var(--red);font-weight:600">' + txt + ' (vencido)</span>';
-    if (v <= em30) return '<span style="color:var(--amber);font-weight:600">' + txt + ' (vence em breve)</span>';
+    const dias = Math.round((new Date(String(v).slice(0, 10)) - new Date(hoje)) / 864e5);
+    const info = c.mostrarDias
+      ? (dias < 0 ? ' (vencido há ' + (-dias) + ' dia' + (dias === -1 ? '' : 's') + ')' : dias === 0 ? ' (vence hoje)' : ' (faltam ' + dias + ' dia' + (dias === 1 ? '' : 's') + ')')
+      : (v < hoje ? ' (vencido)' : ' (vence em breve)');
+    if (v < hoje) return '<span style="color:var(--red);font-weight:600">' + txt + info + '</span>';
+    if (v <= em30) return '<span style="color:var(--amber);font-weight:600">' + txt + info + '</span>';
+    if (c.mostrarDias) return '<span style="color:var(--green);font-weight:600">' + txt + info + '</span>';
   }
   return c.negrito ? '<strong>' + txt + '</strong>' : txt;
 }
@@ -2291,7 +2223,7 @@ async function salvarModulo() {
       }
       dados.arquivos = lista;
     }
-    if (!id) dados.usuario = currentUser?.nome || '-';
+    if (!id && !m.semUsuario) dados.usuario = currentUser?.nome || '-';
     const { error } = id ? await db.from(m.tabela).update(dados).eq('id', id) : await db.from(m.tabela).insert(dados);
     if (error) return showToast('Erro ao salvar: ' + error.message, true);
     closeModal('modal-mod');
