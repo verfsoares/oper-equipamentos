@@ -144,8 +144,7 @@ textarea.form-input{resize:vertical;min-height:70px}
     <div><div class="brand-name">OPER</div><div class="brand-sub">Unidade de Negocio Movimentacao de Carga</div></div>
   </div>
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="nav('dre-resultado',this)"><span class="nav-icon">&#128200;</span><span>DRE</span></div>
-  <div class="nav-item" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">&#128202;</span><span>KPIs Equipamentos</span></div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon">&#127959;&#65039;</span><span>Cadastro de Equipamento</span></div>
   <div class="nav-section">Operacao</div>
   <div class="nav-item" onclick="nav('movimentacao',this)"><span class="nav-icon">&#128260;</span><span>Apontamento Diario Operacional</span></div>
@@ -167,135 +166,14 @@ textarea.form-input{resize:vertical;min-height:70px}
 
 <div id="main">
   <div id="topbar">
-    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="page-title" id="pageTitle">KPIs Equipamentos</div>
     <div style="font-size:12px;color:var(--muted)" id="topDate"></div>
     <button class="btn btn-primary" id="mainBtn" onclick="mainAction()" style="display:none">+ Novo</button>
   </div>
   <div id="content">
 
-    <!-- DRE RESULTADO -->
-    <div class="view active" id="v-dre-resultado">
-      <!-- FILTROS -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:120px" id="drei-ano" onchange="carregarDREResultado()">
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-        </select>
-        <button class="btn btn-primary" onclick="abrirModalDRE()">+ Lançar</button>
-        <button class="btn" onclick="carregarDREResultado()">&#8635; Atualizar</button>
-      </div>
-
-      <!-- FILTRO POR GRUPO DE UNIDADE -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <button id="grp-btn-todas" onclick="selecionarGrupo('todas')" class="btn" style="font-size:12px;font-weight:600;background:rgba(59,130,246,0.2);color:var(--accent2);border-color:var(--accent2)">&#127759; TODAS AS UNIDADES</button>
-        <button id="grp-btn-anglo" onclick="selecionarGrupo('anglo')" class="btn" style="font-size:12px">&#128205; ANGLO AMERICAN</button>
-        <button id="grp-btn-csnmg" onclick="selecionarGrupo('csnmg')" class="btn" style="font-size:12px">&#128205; CSN MG</button>
-        <button id="grp-btn-csnsp" onclick="selecionarGrupo('csnsp')" class="btn" style="font-size:12px">&#128205; CSN SP</button>
-      </div>
-      <input type="hidden" id="drei-grupo-ativo" value="todas" />
-
-      <!-- LEGENDA -->
-      <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="width:14px;height:14px;border-radius:3px;background:rgba(16,185,129,0.25);border:1px solid var(--green)"></div>
-          <span style="font-size:12px;color:var(--green);font-weight:600">REA = Realizado</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="width:14px;height:14px;border-radius:3px;background:rgba(139,92,246,0.25);border:1px solid var(--purple)"></div>
-          <span style="font-size:12px;color:var(--purple);font-weight:600">PRV = Previsto</span>
-        </div>
-      </div>
-
-      <!-- TABELA DRE -->
-      <div style="overflow-x:auto;margin-bottom:20px">
-        <div id="dre-resultado-content"><div class="loading">Carregando...</div></div>
-      </div>
-      <!-- LANCAMENTOS -->
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="table-title">Lançamentos <span class="table-count" id="drei-count"></span></div>
-        </div>
-        <div id="drei-lancamentos"><div class="loading">Carregando...</div></div>
-      </div>
-    </div>
-
-    <!-- DRE REALIZADO -->
-    <div class="view" id="v-dre-realizado">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:200px" id="drec-filter-equip" onchange="carregarDRETipo('realizado')"><option value="">Todos os equipamentos</option></select>
-        <select class="form-select" style="width:180px" id="drec-filter-cliente" onchange="carregarDRETipo('realizado')"><option value="">Todos os clientes</option></select>
-        <select class="form-select" style="width:140px" id="drec-filter-mes" onchange="carregarDRETipo('realizado')">
-          <option value="">Todos os meses</option>
-          <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Marco</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-        <select class="form-select" style="width:120px" id="drec-filter-ano" onchange="carregarDRETipo('realizado')">
-          <option value="">Todos os anos</option>
-          <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
-        </select>
-        <button class="btn btn-primary" onclick="abrirModalDRETipo('realizado')">+ Lancar DRE Realizado</button>
-      </div>
-      <div id="drec-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
-      <div class="table-wrap" style="margin-top:16px">
-        <div class="table-header"><div class="table-title">Lancamentos Realizados <span class="table-count" id="drec-count"></span></div></div>
-        <div id="drec-table-body"><div class="loading">Carregando...</div></div>
-      </div>
-    </div>
-
-    <!-- DRE PROJETADA -->
-    <div class="view" id="v-dre-projetada">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:200px" id="drep-filter-equip" onchange="carregarDRETipo('projetada')"><option value="">Todos os equipamentos</option></select>
-        <select class="form-select" style="width:180px" id="drep-filter-cliente" onchange="carregarDRETipo('projetada')"><option value="">Todos os clientes</option></select>
-        <select class="form-select" style="width:140px" id="drep-filter-mes" onchange="carregarDRETipo('projetada')">
-          <option value="">Todos os meses</option>
-          <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Marco</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-        <select class="form-select" style="width:120px" id="drep-filter-ano" onchange="carregarDRETipo('projetada')">
-          <option value="">Todos os anos</option>
-          <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
-        </select>
-        <button class="btn btn-primary" onclick="abrirModalDRETipo('projetada')">+ Lancar DRE Projetada</button>
-      </div>
-      <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--accent2)">
-        &#128161; <strong>DRE Projetada</strong> — Lançamentos de novos negócios futuros. Use para projetar receitas e custos estimados de contratos ainda não iniciados.
-      </div>
-      <div id="drep-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
-      <div class="table-wrap" style="margin-top:16px">
-        <div class="table-header"><div class="table-title">Lancamentos Previstos <span class="table-count" id="drep-count"></span></div></div>
-        <div id="drep-table-body"><div class="loading">Carregando...</div></div>
-      </div>
-    </div>
-
-    <!-- ANALISE ESTRATEGICA -->
-    <div class="view" id="v-analise">
-      <!-- FILTROS -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <div style="font-size:13px;font-weight:600;color:var(--text)">&#129504; Analisar:</div>
-        <select class="form-select" style="width:220px" id="analise-unidade">
-          <option value="todas">Todas as Unidades</option>
-          <option value="anglo">Anglo American</option>
-          <option value="csnmg">CSN MG</option>
-          <option value="csnsp">CSN SP</option>
-        </select>
-        <select class="form-select" style="width:120px" id="analise-ano">
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-        </select>
-        <button class="btn btn-primary" onclick="gerarAnalise()" id="btn-analise">&#129504; Gerar Analise</button>
-      </div>
-      <!-- RESULTADO -->
-      <div id="analise-content">
-        <div style="text-align:center;padding:60px;color:var(--muted)">
-          <div style="font-size:48px;margin-bottom:16px">&#129504;</div>
-          <div style="font-size:16px;font-weight:600;margin-bottom:8px">Analise Estrategica com IA</div>
-          <div style="font-size:13px">Selecione a unidade de negocio e clique em Gerar Analise</div>
-        </div>
-      </div>
-    </div>
-
     <!-- DASHBOARD -->
-    <div class="view" id="v-dashboard">
+    <div class="view active" id="v-dashboard">
       <!-- FILTROS DO DASHBOARD -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-right:4px">&#128197; Visualizar por:</div>
@@ -554,33 +432,6 @@ textarea.form-input{resize:vertical;min-height:70px}
       </div>
     </div>
 
-    <!-- DRE -->
-    <div class="view active" id="v-dre">
-      <!-- FILTROS -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:200px" id="dre-filter-equip" onchange="carregarDRE()"><option value="">Todos os equipamentos</option></select>
-        <select class="form-select" style="width:180px" id="dre-filter-cliente" onchange="carregarDRE()"><option value="">Todos os clientes</option></select>
-        <select class="form-select" style="width:140px" id="dre-filter-mes" onchange="carregarDRE()">
-          <option value="">Todos os meses</option>
-          <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Marco</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-        <select class="form-select" style="width:120px" id="dre-filter-ano" onchange="carregarDRE()">
-          <option value="">Todos os anos</option>
-          <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
-        </select>
-        <button class="btn btn-primary" onclick="openModal('modal-dre')">+ Lancar Resultado</button>
-      </div>
-
-      <!-- DRE CONSOLIDADA -->
-      <div id="dre-content"><div class="loading">Selecione os filtros para ver o resultado</div></div>
-
-      <!-- LANCAMENTOS -->
-      <div class="table-wrap" style="margin-top:16px">
-        <div class="table-header"><div class="table-title">Lancamentos <span class="table-count" id="dre-count"></span></div></div>
-        <div id="dre-table-body"><div class="loading">Carregando...</div></div>
-      </div>
-    </div>
-
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
       <div class="table-wrap">
@@ -756,161 +607,6 @@ textarea.form-input{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- MODAL LANCAMENTO DRE -->
-<div class="modal-overlay" id="modal-drei">
-  <div class="modal" style="max-width:540px">
-    <div class="modal-header"><div class="modal-title" id="modal-drei-title">Lançar na DRE</div><button class="modal-close" onclick="closeModal('modal-drei')">x</button></div>
-
-    <!-- SELECTOR REALIZADO / PREVISTO -->
-    <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border2);border-radius:10px;overflow:hidden">
-      <button id="btn-nat-rec" onclick="selecionarNatureza('realizado')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(16,185,129,0.2);color:var(--green);border-right:1px solid var(--border2)">
-        &#9679; REALIZADO
-      </button>
-      <button id="btn-nat-prj" onclick="selecionarNatureza('previsto')" style="flex:1;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted)">
-        &#9711; PREVISTO
-      </button>
-    </div>
-    <input type="hidden" id="drei-natureza" value="realizado" />
-
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Mês de Referência *</div><input class="form-input" type="month" id="drei-mes" /></div>
-      <div class="form-group"><div class="form-label">Conta da DRE *</div>
-        <select class="form-select" id="drei-tipo" onchange="atualizarContasDRE()">
-          <optgroup label="── RECEITA">
-            <option value="receita">Receita Bruta</option>
-          </optgroup>
-          <optgroup label="── MÃO DE OBRA">
-            <option value="salarios">Salários</option>
-            <option value="periculosidade">Periculosidade</option>
-            <option value="bonus">Bônus</option>
-            <option value="encargos">Encargos</option>
-            <option value="alimentacao">Alimentação</option>
-            <option value="transporte">Transporte</option>
-            <option value="aux_moradia">Auxílio Moradia</option>
-            <option value="pj_alocado">PJ Alocado</option>
-            <option value="seguro_vida">Seguro de Vida</option>
-          </optgroup>
-          <optgroup label="── CUSTOS OPERACIONAIS">
-            <option value="manutencao">Manutenção (Peças + Serviços)</option>
-            <option value="borracharia">Material de Borracharia</option>
-            <option value="combustiveis">Combustíveis/Lubrificantes</option>
-            <option value="outros_insumos">Outros Insumos Diretos</option>
-            <option value="alugueis">Aluguéis Máqs/Equiptos/Veics</option>
-            <option value="provisionamento">Provisionamento Preventivas</option>
-            <option value="depreciacao">Depreciação/Amortização</option>
-            <option value="uniformes">Uniformes/EPIs</option>
-            <option value="servicos_terc">Serviços Terceiros</option>
-            <option value="fretes">Fretes</option>
-          </optgroup>
-          <optgroup label="── DESPESAS FINANCEIRAS">
-            <option value="antecipacao_recebiveis">Antecipacao de Recebiveis</option>
-          </optgroup>
-            <option value="consultoria">Consultoria/Serv.Terc</option>
-            <option value="passagens">Passagens Aéreas</option>
-            <option value="hoteis">Hotéis/Diárias</option>
-            <option value="cursos">Cursos/Seminários/Mentorias</option>
-            <option value="brindes">Brindes/Marketing</option>
-            <option value="deslocamento">Deslocamento</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="form-group" id="drei-cliente-group">
-        <div class="form-label">Unidade de Negócio (Cliente)</div>
-        <select class="form-select" id="drei-cliente"><option value="">- Geral -</option></select>
-      </div>
-      <div class="form-group" id="drei-contrato-group" style="display:none">
-        <div class="form-label">Contrato</div>
-        <select class="form-select" id="drei-contrato-sel"><option value="">- Nenhum -</option></select>
-      </div>
-      <div class="form-group" id="drei-equip-group" style="display:none">
-        <div class="form-label">Máquina / Equipamento</div>
-        <select class="form-select" id="drei-equip-sel"><option value="">- Nenhum -</option></select>
-      </div>
-      <div class="form-group"><div class="form-label">Valor (R$) *</div><input class="form-input" type="number" id="drei-valor" placeholder="0,00" /></div>
-      <div class="form-group full"><div class="form-label">Descrição / Observação</div><input class="form-input" id="drei-obs" placeholder="Ex: Pneu EP-K-121, NF 1234, Salário operador João..." /></div>
-    </div>
-    <input type="hidden" id="drei-id" value="" />
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('modal-drei')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarDRELancamento()">Salvar Lançamento</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DRE -->
-<div class="modal-overlay" id="modal-dre">
-  <div class="modal" style="max-width:680px">
-    <div class="modal-header"><div class="modal-title" id="modal-dre-title">Lancar Resultado</div><button class="modal-close" onclick="fecharDRE()">x</button></div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Mes de Referencia *</div><input class="form-input" type="month" id="dre-mes-ref" /></div>
-      <div class="form-group"><div class="form-label">Equipamento *</div><select class="form-select" id="dre-equip"><option value="">Selecione...</option></select></div>
-      <div class="form-group"><div class="form-label">Cliente</div><select class="form-select" id="dre-cliente"><option value="">- Nenhum -</option></select></div>
-      <div class="form-group"><div class="form-label">Contrato</div><select class="form-select" id="dre-contrato"><option value="">- Nenhum -</option></select></div>
-    </div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">RECEITAS</div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Receita Realizado (R$)</div><input class="form-input" type="number" id="dre-rec-rec" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Receita Novos Negocios (R$)</div><input class="form-input" type="number" id="dre-rec-nov" placeholder="0" oninput="calcDRE()" /></div>
-    </div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">IMPOSTOS S/ RECEITA</div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">PIS 1,65% (R$)</div><input class="form-input" type="number" id="dre-pis" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">COFINS 7,6% (R$)</div><input class="form-input" type="number" id="dre-cofins" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">ISS 5% (R$)</div><input class="form-input" type="number" id="dre-iss" placeholder="0" oninput="calcDRE()" /></div>
-    </div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">MAO DE OBRA</div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Salarios (R$)</div><input class="form-input" type="number" id="dre-sal" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Periculosidade (R$)</div><input class="form-input" type="number" id="dre-peric" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Bonus (R$)</div><input class="form-input" type="number" id="dre-bonus" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Encargos (R$)</div><input class="form-input" type="number" id="dre-enc" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Alimentacao (R$)</div><input class="form-input" type="number" id="dre-alim" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Transporte (R$)</div><input class="form-input" type="number" id="dre-transp" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Auxilio Moradia (R$)</div><input class="form-input" type="number" id="dre-moradia" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">PJ Alocado (R$)</div><input class="form-input" type="number" id="dre-pj" placeholder="0" oninput="calcDRE()" /></div>
-    </div>
-
-    <div style="margin:16px 0 8px;font-size:12px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:8px">CUSTOS OPERACIONAIS</div>
-    <div class="form-grid">
-      <div class="form-group"><div class="form-label">Manutencao - Pecas + Servicos (R$)</div><input class="form-input" type="number" id="dre-manut" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Material de Borracharia (R$)</div><input class="form-input" type="number" id="dre-borra" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Combustiveis / Lubrificantes (R$)</div><input class="form-input" type="number" id="dre-comb" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Outros Insumos Diretos (R$)</div><input class="form-input" type="number" id="dre-insumos" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Alugueis Maq/Equip/Veics (R$)</div><input class="form-input" type="number" id="dre-alug" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Provisionamento Preventivas (R$)</div><input class="form-input" type="number" id="dre-prov" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Depreciacao/Amortizacao (R$)</div><input class="form-input" type="number" id="dre-depr" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Uniformes / EPIs (R$)</div><input class="form-input" type="number" id="dre-epis" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Servicos Terceiros (R$)</div><input class="form-input" type="number" id="dre-serv3" placeholder="0" oninput="calcDRE()" /></div>
-      <div class="form-group"><div class="form-label">Fretes (R$)</div><input class="form-input" type="number" id="dre-frete" placeholder="0" oninput="calcDRE()" /></div>
-    </div>
-
-
-    <!-- PREVIEW RESULTADO -->
-    <div style="margin-top:20px;background:var(--surface2);border-radius:12px;padding:16px" id="dre-preview">
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Preview do Resultado</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Receita Bruta</div><div style="font-size:16px;font-weight:700;color:var(--green)" id="prev-rec">R$ 0</div></div>
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Receita Liquida</div><div style="font-size:16px;font-weight:700;color:var(--accent2)" id="prev-liq">R$ 0</div></div>
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Margem Contribuicao</div><div style="font-size:16px;font-weight:700" id="prev-mc">R$ 0</div></div>
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">% Margem Contrib.</div><div style="font-size:16px;font-weight:700" id="prev-mc-pct">0%</div></div>
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">Resultado GMP</div><div style="font-size:16px;font-weight:700" id="prev-gmp">R$ 0</div></div>
-        <div style="text-align:center;background:var(--surface);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--muted)">% Margem GMP</div><div style="font-size:16px;font-weight:700" id="prev-gmp-pct">0%</div></div>
-      </div>
-    </div>
-
-    <div class="form-group full" style="margin-top:14px"><div class="form-label">Observacoes</div><textarea class="form-input" id="dre-obs" placeholder="Observacoes do periodo..."></textarea></div>
-    <input type="hidden" id="dre-id" value="" />
-    <input type="hidden" id="dre-tipo-hidden" value="dre" />
-    <div class="modal-footer">
-      <button class="btn" onclick="fecharDRE()">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarDRE()">Salvar Resultado</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL EQUIPAMENTO -->
 <div class="modal-overlay" id="modal-equip">
   <div class="modal">
@@ -1062,60 +758,73 @@ const SUPABASE_KEY = 'sb_publishable_gaXyxhf93n7TGZ0aY8Jarw_5YRMsMW-';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const USERS = {
-  'veronica@oper.com.br': { senha: '123456', nome: 'Veronica Soares', perfil: 'GERENTE', initials: 'VS' },
-  'eduardo@oper.com.br':  { senha: 'kwaypitombo', nome: 'Eduardo Pitombo', perfil: 'CEO', initials: 'EP' },
-  'vitor@oper.com.br':    { senha: 'kwaysousa', nome: 'Vitor Sousa', perfil: 'HEAD DE FINANCAS', initials: 'VS2' }
-};
-
+// Usuarios: login pelo Supabase Auth; nome e perfil vem da tabela "perfis" (o DRE fica no site separado)
 let currentUser = null;
 let allEquipamentos = [];
 let allClientes = [];
 let allContratos = [];
 
-function doLogin() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const senha = document.getElementById('login-pass').value;
+function mostrarErroLogin(msg) {
   const err = document.getElementById('login-error');
-  const u = USERS[email];
-  if (u && u.senha === senha) {
-    err.style.display = 'none';
-    currentUser = { email, ...u };
-    document.getElementById('uName').textContent = u.nome;
-    document.getElementById('uRole').textContent = u.perfil;
-    document.getElementById('uAvatar').textContent = u.initials;
-    document.getElementById('topDate').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    const hoje = new Date().toISOString().split('T')[0];
-    document.querySelectorAll('input[type=date]').forEach(i => { if (!i.value) i.value = hoje; });
-    initApp();
-  } else {
-    err.style.display = 'block';
-  }
+  err.textContent = msg;
+  err.style.display = 'block';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const senha = document.getElementById('login-pass').value;
+  const btn = document.querySelector('.login-btn');
+  if (!email || !senha) return mostrarErroLogin('Informe e-mail e senha.');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if (error) return mostrarErroLogin('E-mail ou senha incorretos.');
+  await entrarNoSistema(data.user);
+}
 
-function doLogout() {
+async function entrarNoSistema(user) {
+  const { data: p, error } = await db.from('perfis').select('*').eq('id', user.id).maybeSingle();
+  if (error || !p) {
+    await db.auth.signOut();
+    return mostrarErroLogin('Usuário sem perfil cadastrado. Fale com o administrador.');
+  }
+  currentUser = { id: user.id, email: user.email, nome: p.nome, perfil: p.perfil, initials: p.iniciais || '', acessoDRE: p.acesso_dre === true };
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('uName').textContent = currentUser.nome;
+  document.getElementById('uRole').textContent = currentUser.perfil;
+  document.getElementById('uAvatar').textContent = currentUser.initials;
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const hoje = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type=date]').forEach(i => { if (!i.value) i.value = hoje; });
+  initApp();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+async function doLogout() {
+  await db.auth.signOut();
   currentUser = null;
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-pass').value = '';
+  nav('dashboard', document.querySelector('.nav-item[onclick*="dashboard"]'));
 }
+
+// Mantem o usuario conectado ao recarregar a pagina
+db.auth.getSession().then(({ data }) => { if (data.session) entrarNoSistema(data.session.user); });
 
 async function initApp() {
   await Promise.all([carregarClientes(), carregarContratos()]);
   await carregarEquipamentos();
-  await carregarDREResultado();
+  await carregarDashboard();
 }
 
 const pageMap = {
-  dre:              { title: 'DRE', loader: carregarDRE },
-  'dre-realizado': { title: 'DRE Realizado', loader: () => carregarDRETipo('realizado') },
-  'dre-resultado': { title: 'DRE', loader: carregarDREResultado },
-  'dre-projetada':  { title: 'DRE Projetada', loader: () => carregarDRETipo('projetada') },
-  analise:          { title: 'Analise Estrategica', loader: () => {} },
   dashboard:        { title: 'KPIs Equipamentos', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
@@ -1423,28 +1132,53 @@ async function editarEquipamento(id) {
   openModal('modal-equip');
 }
 
+// Executa as etapas em ordem e para na primeira que der erro, mostrando qual foi
+async function executarEtapas(etapas) {
+  for (const [descricao, fn] of etapas) {
+    const { error } = await fn();
+    if (error) { showToast('Erro ao ' + descricao + ': ' + error.message, true); return false; }
+  }
+  return true;
+}
+
+async function idsDe(tabela, coluna, valor) {
+  const { data } = await db.from(tabela).select('id').eq(coluna, valor);
+  return (data || []).map(r => r.id);
+}
+
 async function deletarEquipamento(id, frota) {
-  if (!confirm('Deseja excluir o equipamento ' + frota + '?\n\nATENÇÃO: Todos os apontamentos, custos e inspeções deste equipamento também serão excluídos!')) return;
-  // Exclui registros relacionados primeiro
-  await db.from('movimentacoes').delete().eq('equipamento_id', id);
-  await db.from('custos').delete().eq('equipamento_id', id);
-  await db.from('inspecoes').delete().eq('equipamento_id', id);
-  await db.from('dre_lancamentos').delete().eq('equipamento_id', id);
-  // Agora exclui o equipamento
-  const { error } = await db.from('equipamentos').delete().eq('id', id);
-  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  if (!confirm('Deseja excluir o equipamento ' + frota + '?\n\nATENÇÃO: Todos os apontamentos, custos, inspeções, manutenções e lançamentos de DRE deste equipamento também serão excluídos!')) return;
+  const inspIds = await idsDe('inspecoes', 'equipamento_id', id);
+  const manutIds = await idsDe('manutencao_equipamentos', 'equipamento_id', id);
+  const etapas = [
+    ['excluir apontamentos', () => db.from('movimentacoes').delete().eq('equipamento_id', id)],
+    ['excluir custos', () => db.from('custos').delete().eq('equipamento_id', id)],
+  ];
+  if (inspIds.length) etapas.push(['excluir fotos das inspeções', () => db.from('inspecao_arquivos').delete().in('inspecao_id', inspIds)]);
+  etapas.push(['excluir inspeções', () => db.from('inspecoes').delete().eq('equipamento_id', id)]);
+  if (manutIds.length) etapas.push(['excluir arquivos das manutenções', () => db.from('manut_arquivos').delete().in('manut_id', manutIds)]);
+  etapas.push(['excluir manutenções', () => db.from('manutencao_equipamentos').delete().eq('equipamento_id', id)]);
+  if (currentUser?.acessoDRE) etapas.push(['excluir lançamentos de DRE', () => db.from('dre_lancamentos').delete().eq('equipamento_id', id)]);
+  etapas.push(['excluir o equipamento', () => db.from('equipamentos').delete().eq('id', id)]);
+  if (!await executarEtapas(etapas)) return;
   showToast('Equipamento ' + frota + ' excluído!');
   await carregarEquipamentos();
 }
 
 async function deletarCliente(id, nome) {
-  if (!confirm('Deseja excluir o cliente ' + nome + '?\n\nATENÇÃO: Os apontamentos e lançamentos vinculados a este cliente serão desvinculados.')) return;
-  // Desvincula movimentacoes
-  await db.from('movimentacoes').update({ cliente_id: null }).eq('cliente_id', id);
-  await db.from('dre_lancamentos').update({ cliente_id: null }).eq('cliente_id', id);
-  // Exclui o cliente
-  const { error } = await db.from('clientes').delete().eq('id', id);
-  if (error) return showToast('Erro ao excluir: ' + error.message, true);
+  if (!confirm('Deseja excluir o cliente ' + nome + '?\n\nATENÇÃO: Apontamentos, equipamentos, contratos, inspeções, visitas, manutenções e lançamentos de DRE vinculados a este cliente serão desvinculados (ficam sem cliente).')) return;
+  const semCliente = { cliente_id: null };
+  const etapas = [
+    ['desvincular apontamentos', () => db.from('movimentacoes').update(semCliente).eq('cliente_id', id)],
+    ['desvincular equipamentos', () => db.from('equipamentos').update(semCliente).eq('cliente_id', id)],
+    ['desvincular contratos', () => db.from('contratos').update(semCliente).eq('cliente_id', id)],
+    ['desvincular inspeções', () => db.from('inspecoes').update(semCliente).eq('cliente_id', id)],
+    ['desvincular visitas', () => db.from('visitas').update(semCliente).eq('cliente_id', id)],
+    ['desvincular manutenções', () => db.from('manutencao_equipamentos').update(semCliente).eq('cliente_id', id)],
+  ];
+  if (currentUser?.acessoDRE) etapas.push(['desvincular lançamentos de DRE', () => db.from('dre_lancamentos').update(semCliente).eq('cliente_id', id)]);
+  etapas.push(['excluir o cliente', () => db.from('clientes').delete().eq('id', id)]);
+  if (!await executarEtapas(etapas)) return;
   showToast('Cliente ' + nome + ' excluído!');
   await carregarClientes();
 }
@@ -1697,12 +1431,15 @@ async function deletarContrato(id, numero) {
   await carregarContratos();
 }
 
-function carregarUsuarios() {
-  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(59,130,246,0.15);color:#60a5fa', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24', 'HEAD DE FINANCAS':'background:rgba(16,185,129,0.15);color:#34d399' };
-  document.getElementById('usuario-table-body').innerHTML =
-    '<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th></tr></thead><tbody>' +
-    Object.entries(USERS).map(([email, u]) =>
-      '<tr><td><strong>' + u.nome + '</strong></td><td>' + email + '</td><td><span class="badge" style="' + (badgePerfil[u.perfil]||'') + '">' + u.perfil + '</span></td></tr>'
+async function carregarUsuarios() {
+  const badgePerfil = { GERENTE:'background:rgba(139,92,246,0.15);color:#a78bfa', COORDENADOR:'background:rgba(59,130,246,0.15);color:#60a5fa', SUPERVISOR:'background:rgba(20,184,166,0.15);color:#2dd4bf', DIRETOR:'background:rgba(239,68,68,0.15);color:#f87171', CEO:'background:rgba(245,158,11,0.15);color:#fbbf24', 'HEAD DE FINANCAS':'background:rgba(16,185,129,0.15);color:#34d399', SST:'background:rgba(20,184,166,0.15);color:#2dd4bf', 'CONTROLADOR DE OPERACOES':'background:rgba(59,130,246,0.15);color:#60a5fa' };
+  const el = document.getElementById('usuario-table-body');
+  const { data, error } = await db.from('perfis').select('*').order('nome');
+  if (error) { el.innerHTML = '<div class="loading">Erro ao carregar usuários</div>'; return; }
+  el.innerHTML =
+    '<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Acesso ao DRE</th></tr></thead><tbody>' +
+    (data || []).map(u =>
+      '<tr><td><strong>' + u.nome + '</strong></td><td>' + (u.email || '-') + '</td><td><span class="badge" style="' + (badgePerfil[u.perfil]||'') + '">' + u.perfil + '</span></td><td>' + (u.acesso_dre ? 'Sim' : 'Não') + '</td></tr>'
     ).join('') + '</tbody></table>';
 }
 
@@ -1985,758 +1722,6 @@ async function deletarInspecao(id) {
   await db.from('inspecoes').delete().eq('id', id);
   showToast('Inspecao excluida!');
   await carregarInspecoes();
-}
-
-// ============================================================
-// DRE RESULTADO — PLANILHA MENSAL
-// ============================================================
-const MESES_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-const PLANO_CONTAS = [
-  { id:'receita_bruta', label:'RECEITA BRUTA', nivel:1, tipo:'header', cor:'var(--green)' },
-  { id:'receita', label:'Unidades de Negócio', nivel:3, tipo:'clientes', cor:null },
-  { id:'total_receita', label:'= TOTAL RECEITA BRUTA', nivel:1, tipo:'total', cor:'var(--green)' },
-  { id:'pis', label:'(-) PIS 1,65%', nivel:2, tipo:'conta', cor:'var(--red)' },
-  { id:'cofins', label:'(-) COFINS 7,6%', nivel:2, tipo:'conta', cor:'var(--red)' },
-  { id:'iss', label:'(-) ISS 5%', nivel:2, tipo:'conta', cor:'var(--red)' },
-  { id:'receita_liq', label:'= RECEITA LÍQUIDA', nivel:1, tipo:'total', cor:'var(--accent2)' },
-  { id:'operacao', label:'OPERAÇÃO', nivel:1, tipo:'subtotal_operacao', cor:'var(--amber)' },
-  { id:'mao_obra', label:'MÃO DE OBRA', nivel:2, tipo:'subheader', cor:'var(--amber)' },
-  { id:'salarios', label:'Salários', nivel:3, tipo:'conta', cor:null },
-  { id:'periculosidade', label:'Periculosidade', nivel:3, tipo:'conta', cor:null },
-  { id:'bonus', label:'Bônus', nivel:3, tipo:'conta', cor:null },
-  { id:'encargos', label:'Encargos', nivel:3, tipo:'conta', cor:null },
-  { id:'alimentacao', label:'Alimentação', nivel:3, tipo:'conta', cor:null },
-  { id:'transporte', label:'Transporte', nivel:3, tipo:'conta', cor:null },
-  { id:'aux_moradia', label:'Auxílio Moradia', nivel:3, tipo:'conta', cor:null },
-  { id:'pj_alocado', label:'PJ Alocado', nivel:3, tipo:'conta', cor:null },
-  { id:'seguro_vida', label:'Seguro de Vida', nivel:3, tipo:'conta', cor:null },
-  { id:'total_mao_obra', label:'= TOTAL MÃO DE OBRA', nivel:2, tipo:'subtotal_mo', cor:'var(--amber)' },
-  { id:'custos_op', label:'CUSTOS OPERACIONAIS', nivel:2, tipo:'subheader', cor:'var(--purple)' },
-  { id:'manutencao', label:'Manutenção (Peças + Serviços)', nivel:3, tipo:'conta', cor:null },
-  { id:'borracharia', label:'Material de Borracharia', nivel:3, tipo:'conta', cor:null },
-  { id:'combustiveis', label:'Combustíveis/Lubrificantes', nivel:3, tipo:'conta', cor:null },
-  { id:'outros_insumos', label:'Outros Insumos Diretos', nivel:3, tipo:'conta', cor:null },
-  { id:'alugueis', label:'Aluguéis Máqs/Equiptos/Veics', nivel:3, tipo:'conta', cor:null },
-  { id:'provisionamento', label:'Provisionamento Preventivas', nivel:3, tipo:'conta', cor:null },
-  { id:'depreciacao', label:'Depreciação/Amortização', nivel:3, tipo:'conta', cor:null },
-  { id:'uniformes', label:'Uniformes/EPIs', nivel:3, tipo:'conta', cor:null },
-  { id:'servicos_terc', label:'Serviços Terceiros', nivel:3, tipo:'conta', cor:null },
-  { id:'fretes', label:'Fretes', nivel:3, tipo:'conta', cor:null },
-  { id:'total_custos_op', label:'= TOTAL CUSTOS OPERACIONAIS', nivel:2, tipo:'subtotal_co', cor:'var(--purple)' },
-  { id:'total_operacao', label:'= TOTAL OPERAÇÃO', nivel:1, tipo:'subtotal_operacao_total', cor:'var(--amber)' },
-  { id:'mc_valor', label:'= MARGEM CONTRIBUIÇÃO (R$)', nivel:1, tipo:'resultado', cor:null },
-  { id:'mc_pct', label:'= MARGEM CONTRIBUIÇÃO (%)', nivel:1, tipo:'pct', cor:null },
-  { id:'custos_adm', label:'CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'header', cor:'var(--teal)' },
-  { id:'consultoria', label:'Consultoria/Serv.Terc', nivel:2, tipo:'conta', cor:null },
-  { id:'passagens', label:'Passagens Aéreas', nivel:2, tipo:'conta', cor:null },
-  { id:'hoteis', label:'Hotéis/Diárias', nivel:2, tipo:'conta', cor:null },
-  { id:'cursos', label:'Cursos/Seminários/Mentorias', nivel:2, tipo:'conta', cor:null },
-  { id:'brindes', label:'Brindes/Marketing', nivel:2, tipo:'conta', cor:null },
-  { id:'deslocamento', label:'Deslocamento', nivel:2, tipo:'conta', cor:null },
-  { id:'total_adm', label:'= TOTAL CUSTOS ADMINISTRATIVOS', nivel:1, tipo:'subtotal_adm', cor:'var(--teal)' },
-  { id:'desp_financeiras', label:'DESPESAS FINANCEIRAS', nivel:1, tipo:'header', cor:'var(--red)' },
-  { id:'antecipacao_recebiveis', label:'Antecipacao de Recebiveis', nivel:2, tipo:'conta', cor:null },
-  { id:'total_desp_fin', label:'= TOTAL DESPESAS FINANCEIRAS', nivel:1, tipo:'subtotal_fin', cor:'var(--red)' },
-  { id:'gpm_valor', label:'= RESULTADO GPM (R$)', nivel:1, tipo:'resultado', cor:null },
-  { id:'gpm_pct', label:'= RESULTADO GPM (%)', nivel:1, tipo:'pct', cor:null },
-];
-
-// Grupos de unidades de negocio
-const GRUPOS_DRE = {
-  todas: null,
-  anglo: ['anglo'],
-  csnmg: ['pires','fernandinho','almox','entreposto','casa de pedra'],
-  csnsp: ['taubate','taubaté','santo amaro']
-};
-
-// Retorna IDs dos clientes que pertencem ao grupo
-function getClientesDoGrupo(grupo) {
-  if (grupo === 'todas' || !GRUPOS_DRE[grupo]) return null; // null = sem filtro
-  const palavras = GRUPOS_DRE[grupo];
-  return allClientes
-    .filter(c => palavras.some(p => c.razao_social.toLowerCase().includes(p)))
-    .map(c => c.id);
-}
-
-function selecionarGrupo(grupo) {
-  document.getElementById('drei-grupo-ativo').value = grupo;
-  ['todas','anglo','csnmg','csnsp'].forEach(g => {
-    const btn = document.getElementById('grp-btn-'+g);
-    if (btn) { btn.style.background='var(--surface2)'; btn.style.color='var(--muted)'; btn.style.borderColor='var(--border2)'; }
-  });
-  const btn = document.getElementById('grp-btn-'+grupo);
-  const cores = { todas:'var(--accent2)', anglo:'var(--amber)', csnmg:'var(--green)', csnsp:'var(--teal)' };
-  const bgs = { todas:'rgba(59,130,246,0.2)', anglo:'rgba(245,158,11,0.2)', csnmg:'rgba(16,185,129,0.2)', csnsp:'rgba(20,184,166,0.2)' };
-  if (btn) { btn.style.background=bgs[grupo]; btn.style.color=cores[grupo]; btn.style.borderColor=cores[grupo]; }
-  carregarDREResultado();
-}
-
-function obterRowsFiltrados(rows) {
-  const grupo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
-  if (grupo === 'todas') return rows;
-  const ids = getClientesDoGrupo(grupo);
-  if (!ids || ids.length === 0) return [];
-  return rows.filter(r => {
-    // Receita: filtra estritamente pelo cliente do grupo
-    if (r.conta === 'receita') return r.cliente_id && ids.includes(r.cliente_id);
-    // Custos COM cliente: filtra pelo cliente do grupo
-    if (r.cliente_id) return ids.includes(r.cliente_id);
-    // Custos SEM cliente: nao aparecem nas unidades especificas
-    return false;
-  });
-}
-
-function selecionarNatureza(nat) {
-  document.getElementById('drei-natureza').value = nat;
-  const btnRec = document.getElementById('btn-nat-rec');
-  const btnPrj = document.getElementById('btn-nat-prj');
-  if (nat === 'realizado') {
-    btnRec.style.background = 'rgba(16,185,129,0.2)'; btnRec.style.color = 'var(--green)';
-    btnPrj.style.background = 'var(--surface2)'; btnPrj.style.color = 'var(--muted)';
-  } else {
-    btnPrj.style.background = 'rgba(139,92,246,0.2)'; btnPrj.style.color = 'var(--purple)';
-    btnRec.style.background = 'var(--surface2)'; btnRec.style.color = 'var(--muted)';
-  }
-}
-
-function atualizarContasDRE() {
-  const conta = document.getElementById('drei-tipo').value;
-  const isReceita = conta === 'receita';
-  const isImposto = ['pis','cofins','iss'].includes(conta);
-
-  // Cliente/Unidade de Negocio — aparece sempre
-  const gcli = document.getElementById('drei-cliente-group');
-  if (gcli) gcli.style.display = 'flex';
-
-  // Contrato — aparece na receita
-  const gcon = document.getElementById('drei-contrato-group');
-  if (gcon) gcon.style.display = isReceita ? 'flex' : 'none';
-
-  // Maquina — aparece nas despesas (nao na receita nem nos impostos)
-  const geq = document.getElementById('drei-equip-group');
-  if (geq) geq.style.display = (!isReceita && !isImposto) ? 'flex' : 'none';
-}
-
-async function abrirModalDRE() {
-  const hoje = new Date();
-  const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
-  document.getElementById('drei-mes').value = mesAtual;
-  document.getElementById('drei-id').value = '';
-  document.getElementById('drei-valor').value = '';
-  document.getElementById('drei-obs').value = '';
-  document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
-  // Popular selects
-  const sc = document.getElementById('drei-cliente');
-  if (sc) sc.innerHTML = '<option value="">- Geral -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
-  const se = document.getElementById('drei-equip-sel');
-  if (se) se.innerHTML = '<option value="">- Nenhum -</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' · '+e.equipamento+'</option>').join('');
-  const sct = document.getElementById('drei-contrato-sel');
-  if (sct) sct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
-  selecionarNatureza('realizado');
-  atualizarContasDRE();
-  openModal('modal-drei');
-}
-
-async function carregarDREResultado() {
-  const ano = document.getElementById('drei-ano')?.value || new Date().getFullYear();
-
-  const { data: rows } = await db.from('dre_lancamentos')
-    .select('*, clientes(razao_social), equipamentos(frota), contratos(numero)')
-    .gte('mes_referencia', ano+'-01-01')
-    .lte('mes_referencia', ano+'-12-31')
-    .order('mes_referencia', { ascending: false });
-
-  if (!rows) { document.getElementById('dre-resultado-content').innerHTML = '<div class="loading">Erro ao carregar</div>'; return; }
-
-  // Aplica filtro de grupo
-  const rowsFiltrados = obterRowsFiltrados(rows);
-  const grupoAtivo = document.getElementById('drei-grupo-ativo')?.value || 'todas';
-
-  const dados = {};
-  const dadosCliente = {}; // [cliente_id][mes][natureza]
-
-  rowsFiltrados.forEach(r => {
-    const m = new Date(r.mes_referencia+'T12:00:00').getMonth();
-    const nat = r.natureza || 'realizado';
-    if (!dados[r.conta]) dados[r.conta] = Array(12).fill(null).map(()=>({realizado:0,previsto:0}));
-    dados[r.conta][m][nat] = (dados[r.conta][m][nat]||0) + (r.valor||0);
-    if (r.conta === 'receita' && r.cliente_id) {
-      if (!dadosCliente[r.cliente_id]) dadosCliente[r.cliente_id] = { nome: r.clientes?.razao_social||'-', vals: Array(12).fill(null).map(()=>({realizado:0,previsto:0})) };
-      dadosCliente[r.cliente_id].vals[m][nat] = (dadosCliente[r.cliente_id].vals[m][nat]||0) + (r.valor||0);
-    }
-  });
-
-  const g = (conta,m,nat) => dados[conta]?.[m]?.[nat] || 0;
-  const soma = (contas,m,nat) => contas.reduce((s,c)=>s+g(c,m,nat),0);
-  const recMes = (m,nat) => Object.values(dadosCliente).reduce((s,c)=>s+(c.vals[m][nat]||0),0);
-  const pisMes     = (m,nat) => parseFloat((recMes(m,nat) * 0.0165).toFixed(2));
-  const cofinsMes  = (m,nat) => parseFloat((recMes(m,nat) * 0.076).toFixed(2));
-  const issMes     = (m,nat) => parseFloat((recMes(m,nat) * 0.05).toFixed(2));
-  const moApoioMes = (m,nat) => parseFloat((recMes(m,nat) * 0.03).toFixed(2));
-  const liqMes = (m,nat) => recMes(m,nat) - pisMes(m,nat) - cofinsMes(m,nat) - issMes(m,nat);
-  const moContas  = ['salarios','periculosidade','bonus','encargos','alimentacao','transporte','aux_moradia','pj_alocado','seguro_vida'];
-  const coContas  = ['manutencao','borracharia','combustiveis','outros_insumos','alugueis','provisionamento','depreciacao','uniformes','servicos_terc','fretes'];
-  const totalOpMes = (m,nat) => soma(moContas,m,nat) + soma(coContas,m,nat);
-  const admContas  = ['consultoria','passagens','hoteis','cursos','brindes','deslocamento'];
-  const finContas  = ['antecipacao_recebiveis'];
-  const mcMes  = (m,nat) => liqMes(m,nat) - totalOpMes(m,nat);
-  const gpmMes = (m,nat) => mcMes(m,nat) - soma(admContas,m,nat) - soma(finContas,m,nat);
-
-  const fmtN = (v, nat, corOverride) => {
-    const bg = nat==='previsto' ? 'rgba(139,92,246,0.04)' : '';
-    if (v === 0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">-</td>';
-    // PRV: tudo roxo exceto vermelho se negativo
-    const c = corOverride
-      ? corOverride
-      : nat==='previsto'
-        ? (v < 0 ? 'var(--red)' : '#a78bfa')
-        : (v < 0 ? 'var(--red)' : 'inherit');
-    return '<td style="text-align:right;font-size:11px;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>';
-  };
-  const fmtNResult = (v, nat) => {
-    const bg = nat==='previsto' ? 'rgba(139,92,246,0.08)' : 'rgba(16,185,129,0.06)';
-    const c = nat==='previsto'
-      ? (v < 0 ? 'var(--red)' : '#a78bfa')
-      : (v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--muted)');
-    return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;white-space:nowrap;border-left:1px solid var(--border);background:'+bg+'">'+(v!==0?'R$\u00a0'+v.toLocaleString('pt-BR',{maximumFractionDigits:0}):'-')+'</td>';
-  };
-  const fmtP = (v, base, nat) => {
-    const bg = nat==='previsto' ? 'rgba(139,92,246,0.08)' : 'rgba(16,185,129,0.06)';
-    if (base===0 && v===0) return '<td style="text-align:right;font-size:11px;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">-</td>';
-    const p = base!==0 ? (v/base*100).toFixed(1)+'%' : (v>0?'∞':v<0?'-∞':'-');
-    const c = nat==='previsto'
-      ? (v < 0 ? 'var(--red)' : '#a78bfa')
-      : (v >= 0 ? 'var(--green)' : 'var(--red)');
-    return '<td style="text-align:right;font-size:11px;font-weight:700;color:'+c+';padding:4px 8px;border-left:1px solid var(--border);background:'+bg+'">'+p+'</td>';
-  };
-  const totRec = fn => Array(12).fill(0).map((_,m)=>fn(m,'realizado')).reduce((s,v)=>s+v,0);
-  const totPrj = fn => Array(12).fill(0).map((_,m)=>fn(m,'previsto')).reduce((s,v)=>s+v,0);
-
-  // Cabeçalho com 2 sub-colunas por mês
-  const thMes = MESES_LABELS.map(l =>
-    '<th colspan="2" style="text-align:center;font-size:11px;color:var(--muted);padding:6px 4px;border-left:2px solid var(--border2)">'+l+'/'+String(ano).slice(2)+'</th>'
-  ).join('') + '<th colspan="2" style="text-align:center;font-size:11px;color:var(--accent2);padding:6px 4px;border-left:2px solid var(--border2)">TOTAL</th>';
-
-  const thSub = Array(13).fill(0).map(()=>
-    '<th style="text-align:right;font-size:10px;color:var(--green);padding:3px 8px;border-left:1px solid var(--border);font-weight:600;background:rgba(16,185,129,0.06)">REA</th>'+
-    '<th style="text-align:right;font-size:10px;color:var(--purple);padding:3px 8px;border-left:1px solid var(--border);font-weight:600;background:rgba(139,92,246,0.06)">PRV</th>'
-  ).join('');
-
-  let rowsHtml = '';
-
-  PLANO_CONTAS.forEach(conta => {
-    const indent = conta.nivel===2?'padding-left:18px':conta.nivel===3?'padding-left:32px':'';
-    const isSubtotal = ['subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total','subtotal_adm','subtotal_fin'].includes(conta.tipo);
-    const bg = conta.tipo==='header'?'background:rgba(255,255,255,0.05)':conta.tipo==='subheader'?'background:rgba(255,255,255,0.02)':['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total','subtotal_adm','subtotal_fin'].includes(conta.tipo)?'background:rgba(255,255,255,0.04)':'';
-    const bold = ['header','subheader','total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao','subtotal_operacao_total','subtotal_adm','subtotal_fin'].includes(conta.tipo)?'font-weight:700':'font-weight:400';
-    const fSize = ['header','subheader','subtotal_operacao'].includes(conta.tipo)?'font-size:12px':'font-size:11px';
-    const borderB = ['total','resultado','pct','subtotal_mo','subtotal_co','subtotal_operacao_total','subtotal_adm','subtotal_fin'].includes(conta.tipo)?'border-bottom:2px solid var(--border2)':'border-bottom:1px solid var(--border)';
-
-    if (conta.tipo === 'subtotal_operacao') {
-      const vR = Array(12).fill(0).map((_,m)=>totalOpMes(m,'realizado'));
-      const vP = Array(12).fill(0).map((_,m)=>totalOpMes(m,'previsto'));
-      const cells = Array(12).fill(0).map((_,m)=>fmtN(vR[m],'var(--amber)')+fmtN(vP[m],'var(--amber)')).join('');
-      const tR = vR.reduce((s,v)=>s+v,0), tP = vP.reduce((s,v)=>s+v,0);
-      rowsHtml += '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)"><td style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--amber);position:sticky;left:0;background:var(--surface2)">'+conta.label+'</td>'+cells+fmtN(tR,'var(--amber)')+fmtN(tP,'var(--amber)')+'</tr>';
-      return;
-    }
-
-    if (['header','subheader'].includes(conta.tipo)) {
-      rowsHtml += '<tr style="'+bg+'"><td colspan="27" style="padding:7px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+'">'+conta.label+'</td></tr>';
-      return;
-    }
-
-    if (conta.tipo === 'clientes') {
-      Object.entries(dadosCliente).forEach(([cid,cdata]) => {
-        const cells = Array(12).fill(0).map((_,m)=>fmtN(cdata.vals[m].realizado,'var(--green)')+fmtN(cdata.vals[m].previsto,'var(--purple)')).join('');
-        const totR = Array(12).fill(0).map((_,m)=>cdata.vals[m].realizado).reduce((s,v)=>s+v,0);
-        const totP = Array(12).fill(0).map((_,m)=>cdata.vals[m].previsto).reduce((s,v)=>s+v,0);
-        rowsHtml += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 12px 5px 28px;font-size:11px;color:var(--muted);position:sticky;left:0;background:var(--surface)">'+cdata.nome+'</td>'+cells+fmtN(totR,'var(--green)')+fmtN(totP,'var(--purple)')+'</tr>';
-      });
-      if (!Object.keys(dadosCliente).length) rowsHtml += '<tr><td colspan="27" style="padding:5px 28px;font-size:11px;color:var(--muted)">Nenhuma receita lançada</td></tr>';
-      return;
-    }
-
-    // Linhas calculadas
-    const getVals = (nat) => {
-      if (conta.id==='total_receita') return Array(12).fill(0).map((_,m)=>recMes(m,nat));
-      if (conta.id==='pis')       return Array(12).fill(0).map((_,m)=>pisMes(m,nat));
-      if (conta.id==='cofins')    return Array(12).fill(0).map((_,m)=>cofinsMes(m,nat));
-      if (conta.id==='iss')       return Array(12).fill(0).map((_,m)=>issMes(m,nat));
-      if (conta.id==='mo_apoio')  return Array(12).fill(0).map((_,m)=>moApoioMes(m,nat));
-      if (conta.id==='receita_liq') return Array(12).fill(0).map((_,m)=>liqMes(m,nat));
-      if (conta.id==='total_mao_obra') return Array(12).fill(0).map((_,m)=>soma(moContas,m,nat));
-      if (conta.id==='total_adm')   return Array(12).fill(0).map((_,m)=>soma(admContas,m,nat));
-      if (conta.id==='total_desp_fin') return Array(12).fill(0).map((_,m)=>soma(finContas,m,nat));
-      if (conta.id==='total_custos_op') return Array(12).fill(0).map((_,m)=>soma(coContas,m,nat));
-      if (conta.id==='total_operacao') return Array(12).fill(0).map((_,m)=>totalOpMes(m,nat));
-      if (conta.id==='mc_valor') return Array(12).fill(0).map((_,m)=>mcMes(m,nat));
-      if (conta.id==='gpm_valor') return Array(12).fill(0).map((_,m)=>gpmMes(m,nat));
-      return Array(12).fill(0).map((_,m)=>g(conta.id,m,nat));
-    };
-
-    if (conta.id==='mc_pct') {
-      const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(mcMes(m,'realizado'),recMes(m,'realizado'),'realizado') +
-        fmtP(mcMes(m,'previsto'),recMes(m,'previsto'),'previsto')
-      ).join('');
-      const totMcR=totRec(m=>mcMes(m,'realizado')), totRecR=totRec(m=>recMes(m,'realizado'));
-      const totMcP=totPrj(m=>mcMes(m,'previsto')), totRecP=totPrj(m=>recMes(m,'previsto'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totMcR,totRecR,'realizado')+fmtP(totMcP,totRecP,'previsto')+'</tr>';
-      return;
-    }
-    if (conta.id==='gpm_pct') {
-      const cells = Array(12).fill(0).map((_,m)=>
-        fmtP(gpmMes(m,'realizado'),recMes(m,'realizado'),'realizado') +
-        fmtP(gpmMes(m,'previsto'),recMes(m,'previsto'),'previsto')
-      ).join('');
-      const totGR=totRec(m=>gpmMes(m,'realizado')), totRecR=totRec(m=>recMes(m,'realizado'));
-      const totGP=totPrj(m=>gpmMes(m,'previsto')), totRecP=totPrj(m=>recMes(m,'previsto'));
-      rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:var(--green)">'+conta.label+'</td>'+cells+fmtP(totGR,totRecR,'realizado')+fmtP(totGP,totRecP,'previsto')+'</tr>';
-      return;
-    }
-
-    const valsR = getVals('realizado');
-    const valsP = getVals('previsto');
-    const isRes = ['total_receita','receita_liq','mc_valor','gpm_valor','total_mao_obra','total_custos_op','total_operacao','total_adm','total_desp_fin'].includes(conta.id);
-    // Para linhas de resultado calculado, sempre mostrar mesmo negativo
-    const cellsFn = isRes
-      ? Array(12).fill(0).map((_,m)=>fmtNResult(valsR[m],'realizado')+fmtNResult(valsP[m],'previsto')).join('')
-      : Array(12).fill(0).map((_,m)=>fmtN(valsR[m],'realizado',conta.cor)+fmtN(valsP[m],'previsto',conta.cor==='var(--red)'?'var(--red)':null)).join('');
-    const tR = valsR.reduce((s,v)=>s+v,0);
-    const tP = valsP.reduce((s,v)=>s+v,0);
-    const totCellsFn = isRes
-      ? fmtNResult(tR,'realizado')+fmtNResult(tP,'previsto')
-      : fmtN(tR,'realizado',conta.cor)+fmtN(tP,'previsto',conta.cor==='var(--red)'?'var(--red)':null);
-    rowsHtml += '<tr style="'+bg+';'+borderB+'"><td style="padding:5px 12px;'+indent+';'+fSize+';'+bold+';color:'+(conta.cor||'var(--text)')+';position:sticky;left:0;background:var(--surface'+(bg?'2':'')+')">'+(isRes?'<strong>':'')+conta.label+(isRes?'</strong>':'')+'</td>'+cellsFn+totCellsFn+'</tr>';
-  });
-
-  document.getElementById('dre-resultado-content').innerHTML =
-    '<div style="overflow-x:auto"><table style="border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:max-content">'+
-    '<thead>'+
-    '<tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid var(--border)">'+
-    '<th rowspan="2" style="text-align:left;padding:10px 12px;font-size:12px;color:var(--muted);min-width:200px;position:sticky;left:0;background:var(--surface2)">CONTA</th>'+
-    thMes+'</tr>'+
-    '<tr style="background:rgba(255,255,255,0.03);border-bottom:2px solid var(--border2)">'+thSub+'</tr>'+
-    '</thead><tbody>'+rowsHtml+'</tbody></table></div>';
-
-  // Lista de lancamentos com editar/excluir
-  const contaLabels = {
-    receita:'Receita Bruta', pis:'PIS 1,65%', cofins:'COFINS 7,6%', iss:'ISS 5%',
-    salarios:'Salários', periculosidade:'Periculosidade', bonus:'Bônus', encargos:'Encargos',
-    alimentacao:'Alimentação', transporte:'Transporte', aux_moradia:'Auxílio Moradia', pj_alocado:'PJ Alocado', seguro_vida:'Seguro de Vida',
-    manutencao:'Manutenção', borracharia:'Borracharia', combustiveis:'Combustíveis', outros_insumos:'Outros Insumos',
-    alugueis:'Aluguéis', provisionamento:'Provisionamento', depreciacao:'Depreciação',
-    uniformes:'Uniformes/EPIs', servicos_terc:'Serviços Terceiros', fretes:'Fretes',
-    mo_apoio:'MO Apoio GPM 3%', consultoria:'Consultoria', passagens:'Passagens Aéreas',
-    hoteis:'Hotéis/Diárias', cursos:'Cursos/Seminários', brindes:'Brindes/Marketing', deslocamento:'Deslocamento', antecipacao_recebiveis:'Antecipacao de Recebiveis'
-  };
-
-  const countEl = document.getElementById('drei-count');
-  if (countEl) countEl.textContent = rowsFiltrados.length + ' registros';
-
-  const lancEl = document.getElementById('drei-lancamentos');
-  if (lancEl) {
-    lancEl.innerHTML = rowsFiltrados.length ?
-      '<table><thead><tr><th>Mês</th><th>Natureza</th><th>Conta</th><th>Cliente</th><th>Valor</th><th>Descrição</th><th>Usuário</th><th></th></tr></thead><tbody>' +
-      [...rowsFiltrados].sort((a,b) => b.mes_referencia?.localeCompare(a.mes_referencia)).map(r =>
-        '<tr><td>'+r.mes_referencia?.substring(0,7)+'</td>'+
-        '<td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+(r.natureza==='realizado'?'rgba(16,185,129,0.15)':'rgba(139,92,246,0.15)')+';color:'+(r.natureza==='realizado'?'var(--green)':'var(--purple)')+'">'+( r.natureza==='realizado'?'REA':'PRV')+'</span></td>'+
-        '<td style="font-size:12px">'+(contaLabels[r.conta]||r.conta||'-')+'</td>'+
-        '<td style="font-size:12px;color:var(--muted)">'+(r.clientes?.razao_social||'-')+'</td>'+
-        '<td style="color:var(--green);font-weight:600">R$ '+(r.valor||0).toLocaleString('pt-BR',{maximumFractionDigits:0})+'</td>'+
-        '<td style="font-size:12px;color:var(--muted)">'+(r.observacoes||'-')+'</td>'+
-        '<td style="font-size:12px;color:var(--muted)">'+(r.usuario||'-')+'</td>'+
-        '<td style="white-space:nowrap">'+
-        '<button class="btn" style="padding:4px 8px;font-size:11px;color:var(--teal);border-color:rgba(20,184,166,0.3)" onclick="replicarDRELancamento(\''+r.id+'\')" title="Replicar até o final do ano">&#128260; Replicar</button> '+
-        '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRELancamento(\''+r.id+'\')">&#9999;&#65039;</button> '+
-        '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRELancamento(\''+r.id+'\')">&#128465;&#65039;</button>'+
-        '</td></tr>'
-      ).join('') + '</tbody></table>' :
-      '<div class="loading">Nenhum lançamento no período</div>';
-  }
-}
-
-
-async function salvarDRELancamento() {
-  const mes = document.getElementById('drei-mes').value;
-  const conta = document.getElementById('drei-tipo').value;
-  const natureza = document.getElementById('drei-natureza').value;
-  const valor = parseFloat(document.getElementById('drei-valor').value) || 0;
-  if (!mes || !conta || !valor) return showToast('Preencha mês, conta e valor', true);
-  const id = document.getElementById('drei-id').value;
-  const cliente_id = document.getElementById('drei-cliente').value || null;
-  const equipamento_id = document.getElementById('drei-equip-sel').value || null;
-  const contrato_id = document.getElementById('drei-contrato-sel').value || null;
-  const observacoes = document.getElementById('drei-obs').value;
-  const usuario = currentUser?.nome || '-';
-  const dados = {
-    conta, natureza, cliente_id, equipamento_id, contrato_id,
-    mes_referencia: mes + '-01', valor, observacoes, usuario
-  };
-  let error;
-  if (id) { ({ error } = await db.from('dre_lancamentos').update(dados).eq('id', id)); }
-  else { ({ error } = await db.from('dre_lancamentos').insert(dados)); }
-  if (error) return showToast('Erro: ' + error.message, true);
-
-  closeModal('modal-drei');
-  document.getElementById('drei-id').value = '';
-  document.getElementById('drei-valor').value = '';
-  document.getElementById('drei-obs').value = '';
-  document.getElementById('modal-drei-title').textContent = 'Lançar na DRE';
-  selecionarNatureza('realizado');
-  showToast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
-  await carregarDREResultado();
-}
-
-async function replicarDRELancamento(id) {
-  const { data: r } = await db.from('dre_lancamentos').select('*').eq('id', id).single();
-  if (!r) return;
-
-  const mesOrigem = new Date(r.mes_referencia + 'T12:00:00');
-  const anoRef = mesOrigem.getFullYear();
-  const mesInicio = mesOrigem.getMonth() + 1; // mês seguinte
-  const mesFim = 12;
-
-  if (mesInicio > mesFim) return showToast('Este lançamento já está em Dezembro!', true);
-
-  const quantMeses = mesFim - mesInicio + 1;
-  if (!confirm('Replicar "' + (r.observacoes||r.conta) + '" (R$ ' + (r.valor||0).toLocaleString('pt-BR') + ') para os meses ' + (mesInicio+1 > 12 ? 'já está no último mês' : (mesInicio) + ' a ' + mesFim + '/' + anoRef) + '?\n\n' + quantMeses + ' mês(es) serão criados.')) return;
-
-  let criados = 0;
-  for (let m = mesInicio + 1; m <= 12; m++) {
-    const mesStr = anoRef + '-' + String(m).padStart(2,'0') + '-01';
-    const { error } = await db.from('dre_lancamentos').insert({
-      conta: r.conta,
-      natureza: r.natureza || 'realizado',
-      cliente_id: r.cliente_id || null,
-      equipamento_id: r.equipamento_id || null,
-      contrato_id: r.contrato_id || null,
-      mes_referencia: mesStr,
-      valor: r.valor,
-      observacoes: r.observacoes || '',
-      usuario: currentUser?.nome || '-'
-    });
-    if (!error) criados++;
-  }
-
-  showToast('Replicado em ' + criados + ' mês(es) até Dezembro/' + anoRef + '!');
-  await carregarDREResultado();
-}
-
-async function editarDRELancamento(id) {
-  const { data: r } = await db.from('dre_lancamentos').select('*').eq('id', id).single();
-  if (!r) return;
-  document.getElementById('drei-id').value = r.id;
-  document.getElementById('drei-mes').value = r.mes_referencia?.substring(0,7) || '';
-  document.getElementById('drei-tipo').value = r.conta || '';
-  document.getElementById('drei-natureza').value = r.natureza || 'realizado';
-  document.getElementById('drei-valor').value = r.valor || '';
-  document.getElementById('drei-obs').value = r.observacoes || '';
-  document.getElementById('drei-cliente').value = r.cliente_id || '';
-  document.getElementById('drei-equip-sel').value = r.equipamento_id || '';
-  document.getElementById('drei-contrato-sel').value = r.contrato_id || '';
-  selecionarNatureza(r.natureza || 'realizado');
-  atualizarContasDRE();
-  document.getElementById('modal-drei-title').textContent = 'Editar Lançamento';
-  openModal('modal-drei');
-}
-
-async function deletarDRELancamento(id) {
-  if (!confirm('Deseja excluir este lançamento?')) return;
-  const { error } = await db.from('dre_lancamentos').delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Lançamento excluído!');
-  await carregarDREResultado();
-}
-
-
-// ============================================================
-// DRE REALIZADO E PREVISTO
-// ============================================================
-function prefixo(tipo) { return tipo === 'realizado' ? 'drec' : 'drep'; }
-function tabela(tipo) { return tipo === 'realizado' ? 'resultado_realizado' : 'resultado_previsto'; }
-
-function abrirModalDRETipo(tipo) {
-  document.getElementById('dre-id').value = '';
-  document.getElementById('dre-tipo-hidden').value = tipo;
-  document.getElementById('modal-dre-title').textContent = tipo === 'realizado' ? 'Lancar DRE Realizado' : 'Lancar DRE Projetada';
-  // Limpa campos
-  ['dre-rec-rec','dre-rec-nov','dre-pis','dre-cofins','dre-iss','dre-sal','dre-peric','dre-bonus','dre-enc','dre-alim','dre-transp','dre-moradia','dre-pj','dre-manut','dre-borra','dre-comb','dre-insumos','dre-alug','dre-prov','dre-depr','dre-epis','dre-serv3','dre-frete','dre-adm-mob','dre-adm-cons','dre-adm-pass','dre-adm-hotel','dre-adm-curso','dre-adm-brindes','dre-obs'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
-  calcDRE();
-  openModal('modal-dre');
-}
-
-async function carregarDRETipo(tipo) {
-  const px = prefixo(tipo);
-  const tb = tabela(tipo);
-  // Popular selects filtro
-  const seEquip = document.getElementById(px+'-filter-equip');
-  if (seEquip && seEquip.options.length === 1) {
-    allEquipamentos.forEach(e => { const o = document.createElement('option'); o.value=e.id; o.textContent=e.frota+' . '+e.equipamento; seEquip.appendChild(o); });
-  }
-  const seCli = document.getElementById(px+'-filter-cliente');
-  if (seCli && seCli.options.length === 1) {
-    allClientes.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=c.razao_social; seCli.appendChild(o); });
-  }
-  const fEquip = document.getElementById(px+'-filter-equip')?.value;
-  const fCli = document.getElementById(px+'-filter-cliente')?.value;
-  const fMes = document.getElementById(px+'-filter-mes')?.value;
-  const fAno = document.getElementById(px+'-filter-ano')?.value;
-  let q = db.from(tb).select('*, equipamentos(frota,equipamento), clientes(razao_social), contratos(numero)').order('mes_referencia', { ascending: false });
-  if (fEquip) q = q.eq('equipamento_id', fEquip);
-  if (fCli) q = q.eq('cliente_id', fCli);
-  if (fAno && fMes) q = q.gte('mes_referencia', fAno+'-'+fMes+'-01').lte('mes_referencia', fAno+'-'+fMes+'-31');
-  else if (fAno) q = q.gte('mes_referencia', fAno+'-01-01').lte('mes_referencia', fAno+'-12-31');
-  else if (fMes) { const y = new Date().getFullYear(); q = q.gte('mes_referencia', y+'-'+fMes+'-01').lte('mes_referencia', y+'-'+fMes+'-31'); }
-  const { data: rows } = await q.limit(100);
-  document.getElementById(px+'-count').textContent = (rows?.length||0) + ' lancamentos';
-  if (!rows || !rows.length) {
-    document.getElementById(px+'-content').innerHTML = '<div class="loading">Nenhum lancamento encontrado</div>';
-    document.getElementById(px+'-table-body').innerHTML = '<div class="loading">Nenhum lancamento</div>';
-    return;
-  }
-  // Reutiliza logica de totais da DRE
-  const tot = r => ({
-    recBruta: (r.receita_realizado||0)+(r.receita_novos_negocios||0),
-    impostos: (r.pis||0)+(r.cofins||0)+(r.iss||0),
-    maoObra: (r.salarios||0)+(r.periculosidade||0)+(r.bonus||0)+(r.encargos_sociais||0)+(r.alimentacao||0)+(r.transporte||0)+(r.auxilio_moradia||0)+(r.pj_alocado||0),
-    custOp: (r.manutencao||0)+(r.borracharia||0)+(r.combustiveis||0)+(r.outros_insumos||0)+(r.aluguel_maquinas||0)+(r.provisionamento_preventivas||0)+(r.depreciacao||0)+(r.uniformes_epis||0)+(r.servicos_terceiros||0)+(r.fretes||0),
-    custAdm: (r.mao_obra_apoio||0)+(r.consultoria||0)+(r.passagens_aereas||0)+(r.hoteis_diarias||0)+(r.cursos||0)+(r.brindes||0)
-  });
-  let totRec=0, totImp=0, totMO=0, totCO=0, totCA=0;
-  rows.forEach(r => { const t=tot(r); totRec+=t.recBruta; totImp+=t.impostos; totMO+=t.maoObra; totCO+=t.custOp; totCA+=t.custAdm; });
-  const totLiq=totRec-totImp, totMC=totLiq-totMO-totCO, totGMP=totMC-totCA;
-  const corMC=totMC>=0?'var(--green)':'var(--red)', corGMP=totGMP>=0?'var(--green)':'var(--red)';
-  const corLabel = tipo === 'realizado' ? 'var(--teal)' : 'var(--purple)';
-
-  // KPIs resumo
-  document.getElementById(px+'-content').innerHTML =
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--green)"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Receita Bruta</div><div style="font-size:22px;font-weight:700;color:var(--green)">'+fmt(totRec)+'</div></div>' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--accent2)"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Receita Liquida</div><div style="font-size:22px;font-weight:700;color:var(--accent2)">'+fmt(totLiq)+'</div></div>' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+corMC+'"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Margem Contribuicao</div><div style="font-size:22px;font-weight:700;color:'+corMC+'">'+fmt(totMC)+'</div><div style="font-size:12px;color:'+corMC+'">'+pct(totMC,totLiq)+'</div></div>' +
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid '+corGMP+'"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Resultado GMP</div><div style="font-size:22px;font-weight:700;color:'+corGMP+'">'+fmt(totGMP)+'</div><div style="font-size:12px;color:'+corGMP+'">'+pct(totGMP,totLiq)+'</div></div>' +
-    '</div>';
-
-  // Tabela
-  document.getElementById(px+'-table-body').innerHTML =
-    '<table><thead><tr><th>Mes</th><th>Equipamento</th><th>Cliente</th><th>Receita Bruta</th><th>Rec. Liquida</th><th>Marg. Contrib.</th><th>% MC</th><th>Resultado GMP</th><th>% GMP</th><th></th></tr></thead><tbody>' +
-    rows.map(r => {
-      const t=tot(r), liq=t.recBruta-t.impostos, mc=liq-t.maoObra-t.custOp, gmp=mc-t.custAdm;
-      const cMC=mc>=0?'var(--green)':'var(--red)', cGMP=gmp>=0?'var(--green)':'var(--red)';
-      return '<tr><td>'+r.mes_referencia?.substring(0,7)+'</td><td><strong>'+(r.equipamentos?.frota||'-')+'</strong></td><td>'+(r.clientes?.razao_social||'-')+'</td><td style="color:var(--green)">'+fmt(t.recBruta)+'</td><td style="color:var(--accent2)">'+fmt(liq)+'</td><td style="color:'+cMC+'">'+fmt(mc)+'</td><td style="color:'+cMC+'">'+pct(mc,liq)+'</td><td style="color:'+cGMP+'">'+fmt(gmp)+'</td><td style="color:'+cGMP+'">'+pct(gmp,liq)+'</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRETipo(\''+r.id+'\',\''+tipo+'\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRETipo(\''+r.id+'\',\''+tipo+'\')">&#128465;&#65039;</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-async function editarDRETipo(id, tipo) {
-  const { data: r } = await db.from(tabela(tipo)).select('*').eq('id', id).single();
-  if (!r) return;
-  document.getElementById('dre-id').value = r.id;
-  document.getElementById('dre-tipo-hidden').value = tipo;
-  document.getElementById('modal-dre-title').textContent = tipo === 'realizado' ? 'Editar DRE Realizado' : 'Editar DRE Projetada';
-  document.getElementById('dre-mes-ref').value = r.mes_referencia?.substring(0,7)||'';
-  document.getElementById('dre-equip').value = r.equipamento_id||'';
-  document.getElementById('dre-cliente').value = r.cliente_id||'';
-  document.getElementById('dre-contrato').value = r.contrato_id||'';
-  const set = (id, val) => { const e=document.getElementById(id); if(e) e.value=val||0; };
-  set('dre-rec-rec',r.receita_realizado); set('dre-rec-nov',r.receita_novos_negocios);
-  set('dre-pis',r.pis); set('dre-cofins',r.cofins); set('dre-iss',r.iss);
-  set('dre-sal',r.salarios); set('dre-peric',r.periculosidade); set('dre-bonus',r.bonus);
-  set('dre-enc',r.encargos_sociais); set('dre-alim',r.alimentacao); set('dre-transp',r.transporte);
-  set('dre-moradia',r.auxilio_moradia); set('dre-pj',r.pj_alocado);
-  set('dre-manut',r.manutencao); set('dre-borra',r.borracharia); set('dre-comb',r.combustiveis);
-  set('dre-insumos',r.outros_insumos); set('dre-alug',r.aluguel_maquinas);
-  set('dre-prov',r.provisionamento_preventivas); set('dre-depr',r.depreciacao);
-  set('dre-epis',r.uniformes_epis); set('dre-serv3',r.servicos_terceiros); set('dre-frete',r.fretes);
-  set('dre-adm-mob',r.mao_obra_apoio); set('dre-adm-cons',r.consultoria);
-  set('dre-adm-pass',r.passagens_aereas); set('dre-adm-hotel',r.hoteis_diarias);
-  set('dre-adm-curso',r.cursos); set('dre-adm-brindes',r.brindes);
-  document.getElementById('dre-obs').value = r.observacoes||'';
-  calcDRE();
-  openModal('modal-dre');
-}
-
-async function deletarDRETipo(id, tipo) {
-  if (!confirm('Deseja excluir este lancamento?')) return;
-  const { error } = await db.from(tabela(tipo)).delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Lancamento excluido!');
-  await carregarDRETipo(tipo);
-}
-
-// Override salvarDRE para suportar os 3 tipos
-async function salvarDRE() {
-  const equipId = document.getElementById('dre-equip').value;
-  const mes = document.getElementById('dre-mes-ref').value;
-  if (!equipId || !mes) return showToast('Preencha equipamento e mes de referencia', true);
-  const id = document.getElementById('dre-id').value;
-  const tipo = document.getElementById('dre-tipo-hidden').value || 'dre';
-  const tb = tipo === 'realizado' ? 'resultado_realizado' : tipo === 'projetada' ? 'resultado_previsto' : 'resultado';
-  const dados = {
-    equipamento_id: equipId,
-    cliente_id: document.getElementById('dre-cliente').value || null,
-    contrato_id: document.getElementById('dre-contrato').value || null,
-    mes_referencia: mes + '-01',
-    receita_realizado: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
-    pis: v('dre-pis'), cofins: v('dre-cofins'), iss: v('dre-iss'),
-    salarios: v('dre-sal'), periculosidade: v('dre-peric'), bonus: v('dre-bonus'),
-    encargos_sociais: v('dre-enc'), alimentacao: v('dre-alim'), transporte: v('dre-transp'),
-    auxilio_moradia: v('dre-moradia'), pj_alocado: v('dre-pj'),
-    manutencao: v('dre-manut'), borracharia: v('dre-borra'), combustiveis: v('dre-comb'),
-    outros_insumos: v('dre-insumos'), aluguel_maquinas: v('dre-alug'),
-    provisionamento_preventivas: v('dre-prov'), depreciacao: v('dre-depr'),
-    uniformes_epis: v('dre-epis'), servicos_terceiros: v('dre-serv3'), fretes: v('dre-frete'),
-    mao_obra_apoio: v('dre-adm-mob'), consultoria: v('dre-adm-cons'),
-    passagens_aereas: v('dre-adm-pass'), hoteis_diarias: v('dre-adm-hotel'),
-    cursos: v('dre-adm-curso'), brindes: v('dre-adm-brindes'),
-    observacoes: document.getElementById('dre-obs').value,
-    usuario: currentUser?.nome || '-'
-  };
-  let error;
-  if (id) { ({ error } = await db.from(tb).update(dados).eq('id', id)); }
-  else { ({ error } = await db.from(tb).insert(dados)); }
-  if (error) return showToast('Erro: ' + error.message, true);
-  fecharDRE();
-  showToast('Salvo com sucesso!');
-  if (tipo === 'realizado') await carregarDRETipo('realizado');
-  else if (tipo === 'projetada') await carregarDRETipo('projetada');
-  else await carregarDRE();
-}
-
-// ============================================================
-// ANALISE ESTRATEGICA COM IA
-// ============================================================
-async function gerarAnalise() {
-  const unidade = document.getElementById('analise-unidade').value;
-  const ano = document.getElementById('analise-ano').value;
-  const btn = document.getElementById('btn-analise');
-  const content = document.getElementById('analise-content');
-
-  const nomeUnidade = { todas:'Todas as Unidades', anglo:'Anglo American', csnmg:'CSN MG', csnsp:'CSN SP' }[unidade];
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Analisando...';
-  content.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:32px;margin-bottom:16px">⏳</div><div style="font-size:15px">Coletando dados da DRE e gerando analise...</div></div>';
-
-  // Busca dados da DRE
-  const { data: rows } = await db.from('dre_lancamentos')
-    .select('*, clientes(razao_social)')
-    .gte('mes_referencia', ano+'-01-01')
-    .lte('mes_referencia', ano+'-12-31');
-
-  if (!rows || !rows.length) {
-    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Nenhum dado encontrado para este período.</div>';
-    btn.disabled = false; btn.textContent = '🧠 Gerar Analise';
-    return;
-  }
-
-  // Filtra por unidade
-  const GRUPOS = { todas:null, anglo:['anglo'], csnmg:['pires','fernandinho','almox','entreposto','casa de pedra'], csnsp:['taubate','taubaté','santo amaro'] };
-  let rowsFilt = rows;
-  if (unidade !== 'todas') {
-    const palavras = GRUPOS[unidade];
-    const ids = allClientes.filter(c => palavras.some(p => c.razao_social.toLowerCase().includes(p))).map(c => c.id);
-    rowsFilt = rows.filter(r => !r.cliente_id || ids.includes(r.cliente_id));
-  }
-
-  // Monta resumo financeiro por mês
-  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const resumo = meses.map((mes, m) => {
-    const recBruta = rowsFilt.filter(r=>r.conta==='receita' && new Date(r.mes_referencia+'T12:00:00').getMonth()===m && r.natureza==='realizado').reduce((s,r)=>s+(r.valor||0),0);
-    const recPrev  = rowsFilt.filter(r=>r.conta==='receita' && new Date(r.mes_referencia+'T12:00:00').getMonth()===m && r.natureza==='previsto').reduce((s,r)=>s+(r.valor||0),0);
-    const custos   = rowsFilt.filter(r=>r.conta!=='receita' && new Date(r.mes_referencia+'T12:00:00').getMonth()===m && r.natureza==='realizado').reduce((s,r)=>s+(r.valor||0),0);
-    const impostos = parseFloat((recBruta * 0.1425).toFixed(2));
-    const recLiq   = recBruta - impostos;
-    const mc       = recLiq - custos;
-    const mcPct    = recBruta > 0 ? (mc/recBruta*100).toFixed(1) : '0';
-    return { mes, recBruta, recPrev, impostos, recLiq, custos, mc, mcPct };
-  }).filter(m => m.recBruta > 0 || m.custos > 0);
-
-  // Monta dados por conta
-  const contasTotais = {};
-  rowsFilt.filter(r=>r.natureza==='realizado').forEach(r => {
-    if (!contasTotais[r.conta]) contasTotais[r.conta] = 0;
-    contasTotais[r.conta] += r.valor || 0;
-  });
-
-  const totalRec = resumo.reduce((s,m)=>s+m.recBruta,0);
-  const totalCustos = resumo.reduce((s,m)=>s+m.custos,0);
-  const totalImp = resumo.reduce((s,m)=>s+m.impostos,0);
-  const totalLiq = totalRec - totalImp;
-  const totalMC = totalLiq - totalCustos;
-  const mcPctTotal = totalRec > 0 ? (totalMC/totalRec*100).toFixed(1) : '0';
-
-  const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', {maximumFractionDigits:0});
-
-  // Monta prompt para a IA
-  const prompt = `Você é um Controller e Gestor Financeiro especialista em empresas de locação e gestão de equipamentos pesados (empilhadeiras, guindautos, etc.).
-
-Analise os dados financeiros abaixo da unidade de negócio "${nomeUnidade}" referente ao ano ${ano} e forneça:
-
-1. DIAGNÓSTICO FINANCEIRO: avaliação objetiva das margens, custos e resultado
-2. PONTOS DE ATENÇÃO: principais riscos e problemas identificados
-3. ESTRATÉGIAS DE MELHORIA: ações concretas para melhorar rentabilidade
-4. ESTRATÉGIAS DE EXPANSÃO: como desenvolver e crescer este negócio com o cliente
-5. BENCHMARKS: compare com o mercado de locação de equipamentos (margem saudável é 25-40%)
-
-DADOS FINANCEIROS (${ano}):
-- Receita Bruta Total: ${fmt(totalRec)}
-- Impostos (PIS+COFINS+ISS = 14,25%): ${fmt(totalImp)}
-- Receita Líquida: ${fmt(totalLiq)}
-- Custos Operacionais Totais: ${fmt(totalCustos)}
-- Margem de Contribuição: ${fmt(totalMC)} (${mcPctTotal}% sobre Receita Bruta)
-
-BREAKDOWN DE CUSTOS:
-${Object.entries(contasTotais).filter(([k,v])=>k!=='receita'&&v>0).map(([k,v])=>`- ${k}: ${fmt(v)}`).join('\n')}
-
-EVOLUÇÃO MENSAL:
-${resumo.map(m=>`- ${m.mes}: Rec ${fmt(m.recBruta)} | Custos ${fmt(m.custos)} | MC ${fmt(m.mc)} (${m.mcPct}%)`).join('\n')}
-
-Seja direto, objetivo e use linguagem de negócios. Formate a resposta em seções claras com emojis para facilitar a leitura. Foque em insights acionáveis e estratégias práticas.`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const data = await response.json();
-    const texto = data.content?.[0]?.text || 'Erro ao gerar analise.';
-
-    // Formata o texto em HTML
-    const html = texto
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/#{1,3} (.*)/g, '<div style="font-size:15px;font-weight:700;color:var(--accent2);margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">$1</div>')
-      .replace(/\n- (.*)/g, '<div style="display:flex;gap:8px;margin:4px 0;padding-left:8px"><span style="color:var(--accent2);flex-shrink:0">▸</span><span>$1</span></div>')
-      .replace(/\n\n/g, '<br/>')
-      .replace(/\n/g, '<br/>');
-
-    content.innerHTML =
-      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">' +
-      '<div><div style="font-size:16px;font-weight:700">&#129504; Analise Estrategica — '+nomeUnidade+'</div>' +
-      '<div style="font-size:12px;color:var(--muted);margin-top:4px">Periodo: Janeiro a Dezembro/'+ano+' · Gerado por IA</div></div>' +
-      '<div style="display:flex;gap:10px">' +
-      '<div style="background:var(--surface2);border-radius:8px;padding:10px 16px;text-align:center"><div style="font-size:11px;color:var(--muted)">Receita Bruta</div><div style="font-size:16px;font-weight:700;color:var(--green)">'+fmt(totalRec)+'</div></div>' +
-      '<div style="background:var(--surface2);border-radius:8px;padding:10px 16px;text-align:center"><div style="font-size:11px;color:var(--muted)">Margem Contrib.</div><div style="font-size:16px;font-weight:700;color:'+(parseFloat(mcPctTotal)>=25?'var(--green)':'var(--red)')+'">'+mcPctTotal+'%</div></div>' +
-      '<div style="background:var(--surface2);border-radius:8px;padding:10px 16px;text-align:center"><div style="font-size:11px;color:var(--muted)">Resultado MC</div><div style="font-size:16px;font-weight:700;color:'+(totalMC>=0?'var(--green)':'var(--red)')+'">'+fmt(totalMC)+'</div></div>' +
-      '</div></div>' +
-      '<div style="font-size:14px;line-height:1.7;color:var(--text)">'+html+'</div>' +
-      '</div>';
-
-  } catch(e) {
-    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Erro ao conectar com a IA: ' + e.message + '</div>';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '&#129504; Gerar Analise';
 }
 
 // ============================================================
@@ -3024,246 +2009,6 @@ async function deletarVisita(id) {
 function v(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
 function fmt(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 function pct(val, base) { return base > 0 ? (val/base*100).toFixed(1) + '%' : '0%'; }
-
-function calcDRE() {
-  const recBruta = v('dre-rec-rec') + v('dre-rec-nov');
-  const impostos = v('dre-pis') + v('dre-cofins') + v('dre-iss');
-  const recLiq = recBruta - impostos;
-  const maoObra = v('dre-sal') + v('dre-peric') + v('dre-bonus') + v('dre-enc') + v('dre-alim') + v('dre-transp') + v('dre-moradia') + v('dre-pj');
-  const custOp = v('dre-manut') + v('dre-borra') + v('dre-comb') + v('dre-insumos') + v('dre-alug') + v('dre-prov') + v('dre-depr') + v('dre-epis') + v('dre-serv3') + v('dre-frete');
-  const mc = recLiq - maoObra - custOp;
-  const custAdm = v('dre-adm-mob') + v('dre-adm-cons') + v('dre-adm-pass') + v('dre-adm-hotel') + v('dre-adm-curso') + v('dre-adm-brindes');
-  const resGMP = mc - custAdm;
-
-  const corMC = mc >= 0 ? 'var(--green)' : 'var(--red)';
-  const corGMP = resGMP >= 0 ? 'var(--green)' : 'var(--red)';
-
-  const el = (id, val, cor) => { const e = document.getElementById(id); if(e){e.textContent=val; if(cor)e.style.color=cor;} };
-  el('prev-rec', fmt(recBruta), 'var(--green)');
-  el('prev-liq', fmt(recLiq), 'var(--accent2)');
-  el('prev-mc', fmt(mc), corMC);
-  el('prev-mc-pct', pct(mc, recLiq), corMC);
-  el('prev-gmp', fmt(resGMP), corGMP);
-  el('prev-gmp-pct', pct(resGMP, recLiq), corGMP);
-}
-
-async function carregarDRE() {
-  // Popular filtros
-  const seEquip = document.getElementById('dre-filter-equip');
-  if (seEquip && seEquip.options.length === 1) {
-    allEquipamentos.forEach(e => { const o = document.createElement('option'); o.value=e.id; o.textContent=e.frota+' . '+e.equipamento; seEquip.appendChild(o); });
-  }
-  const seCli = document.getElementById('dre-filter-cliente');
-  if (seCli && seCli.options.length === 1) {
-    allClientes.forEach(c => { const o = document.createElement('option'); o.value=c.id; o.textContent=c.razao_social; seCli.appendChild(o); });
-  }
-  // Popular selects do modal
-  const de = document.getElementById('dre-equip');
-  if (de) de.innerHTML = '<option value="">Selecione...</option>' + allEquipamentos.map(e=>'<option value="'+e.id+'">'+e.frota+' . '+e.equipamento+'</option>').join('');
-  const dc = document.getElementById('dre-cliente');
-  if (dc) dc.innerHTML = '<option value="">- Nenhum -</option>' + allClientes.map(c=>'<option value="'+c.id+'">'+c.razao_social+'</option>').join('');
-  const dct = document.getElementById('dre-contrato');
-  if (dct) dct.innerHTML = '<option value="">- Nenhum -</option>' + allContratos.map(c=>'<option value="'+c.id+'">'+c.numero+'</option>').join('');
-
-  const fEquip = document.getElementById('dre-filter-equip')?.value;
-  const fCli = document.getElementById('dre-filter-cliente')?.value;
-  const fMes = document.getElementById('dre-filter-mes')?.value;
-  const fAno = document.getElementById('dre-filter-ano')?.value;
-
-  let q = db.from('resultado').select('*, equipamentos(frota,equipamento), clientes(razao_social), contratos(numero)').order('mes_referencia', { ascending: false });
-  if (fEquip) q = q.eq('equipamento_id', fEquip);
-  if (fCli) q = q.eq('cliente_id', fCli);
-  if (fAno && fMes) q = q.gte('mes_referencia', fAno+'-'+fMes+'-01').lte('mes_referencia', fAno+'-'+fMes+'-31');
-  else if (fAno) q = q.gte('mes_referencia', fAno+'-01-01').lte('mes_referencia', fAno+'-12-31');
-  else if (fMes) { const y = new Date().getFullYear(); q = q.gte('mes_referencia', y+'-'+fMes+'-01').lte('mes_referencia', y+'-'+fMes+'-31'); }
-
-  const { data: rows } = await q.limit(100);
-  document.getElementById('dre-count').textContent = (rows?.length||0) + ' lancamentos';
-
-  if (!rows || !rows.length) {
-    document.getElementById('dre-content').innerHTML = '<div class="loading">Nenhum resultado lancado para o filtro selecionado</div>';
-    document.getElementById('dre-table-body').innerHTML = '<div class="loading">Nenhum lancamento</div>';
-    return;
-  }
-
-  // Consolida totais
-  const tot = r => ({
-    recBruta: (r.receita_realizado||0)+(r.receita_novos_negocios||0),
-    impostos: (r.pis||0)+(r.cofins||0)+(r.iss||0),
-    maoObra: (r.salarios||0)+(r.periculosidade||0)+(r.bonus||0)+(r.encargos_sociais||0)+(r.alimentacao||0)+(r.transporte||0)+(r.auxilio_moradia||0)+(r.pj_alocado||0),
-    custOp: (r.manutencao||0)+(r.borracharia||0)+(r.combustiveis||0)+(r.outros_insumos||0)+(r.aluguel_maquinas||0)+(r.provisionamento_preventivas||0)+(r.depreciacao||0)+(r.uniformes_epis||0)+(r.servicos_terceiros||0)+(r.fretes||0),
-    custAdm: (r.mao_obra_apoio||0)+(r.consultoria||0)+(r.passagens_aereas||0)+(r.hoteis_diarias||0)+(r.cursos||0)+(r.brindes||0)
-  });
-
-  // Soma consolidada
-  let totRec=0, totImp=0, totMO=0, totCO=0, totCA=0;
-  rows.forEach(r => { const t=tot(r); totRec+=t.recBruta; totImp+=t.impostos; totMO+=t.maoObra; totCO+=t.custOp; totCA+=t.custAdm; });
-  const totLiq = totRec - totImp;
-  const totMC = totLiq - totMO - totCO;
-  const totGMP = totMC - totCA;
-  const corMC = totMC>=0?'var(--green)':'var(--red)';
-  const corGMP = totGMP>=0?'var(--green)':'var(--red)';
-
-  // DRE Visual
-  const linha = (label, val, cor, bold, indent) =>
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;'+(bold?'font-weight:700;background:var(--surface2);border-radius:6px;':'')+(indent?'padding-left:24px;':'')+'">' +
-    '<span style="font-size:13px;color:'+(cor||'var(--text)')+'">'+(indent?'&nbsp;&nbsp;&nbsp;':'')+label+'</span>' +
-    '<span style="font-size:13px;font-weight:600;color:'+(cor||'var(--text)')+'">'+fmt(val)+'</span></div>';
-
-  const secao = (label, cor) =>
-    '<div style="padding:8px 12px;margin-top:8px;background:rgba('+( cor==='green'?'16,185,129':cor==='red'?'239,68,68':cor==='amber'?'245,158,11':'139,92,246' )+',0.1);border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--'+cor+')">'+label+'</div>';
-
-  document.getElementById('dre-content').innerHTML =
-    '<div class="form-card">' +
-    '<div class="form-card-title">DRE Consolidada</div>' +
-    secao('Receita Bruta', 'green') +
-    linha('Receita Realizado', rows.reduce((s,r)=>s+(r.receita_realizado||0),0), null, false, true) +
-    linha('Receita Novos Negocios', rows.reduce((s,r)=>s+(r.receita_novos_negocios||0),0), null, false, true) +
-    linha('TOTAL RECEITA BRUTA', totRec, 'var(--green)', true) +
-    secao('(-) Impostos s/ Receita', 'red') +
-    linha('PIS 1,65%', rows.reduce((s,r)=>s+(r.pis||0),0), 'var(--red)', false, true) +
-    linha('COFINS 7,6%', rows.reduce((s,r)=>s+(r.cofins||0),0), 'var(--red)', false, true) +
-    linha('ISS 5%', rows.reduce((s,r)=>s+(r.iss||0),0), 'var(--red)', false, true) +
-    linha('RECEITA LIQUIDA', totLiq, 'var(--accent2)', true) +
-    secao('(-) Mao de Obra', 'amber') +
-    linha('Salarios', rows.reduce((s,r)=>s+(r.salarios||0),0), null, false, true) +
-    linha('Periculosidade', rows.reduce((s,r)=>s+(r.periculosidade||0),0), null, false, true) +
-    linha('Bonus', rows.reduce((s,r)=>s+(r.bonus||0),0), null, false, true) +
-    linha('Encargos', rows.reduce((s,r)=>s+(r.encargos_sociais||0),0), null, false, true) +
-    linha('Alimentacao', rows.reduce((s,r)=>s+(r.alimentacao||0),0), null, false, true) +
-    linha('Transporte', rows.reduce((s,r)=>s+(r.transporte||0),0), null, false, true) +
-    linha('Auxilio Moradia', rows.reduce((s,r)=>s+(r.auxilio_moradia||0),0), null, false, true) +
-    linha('PJ Alocado', rows.reduce((s,r)=>s+(r.pj_alocado||0),0), null, false, true) +
-    secao('(-) Custos Operacionais', 'purple') +
-    linha('Manutencao', rows.reduce((s,r)=>s+(r.manutencao||0),0), null, false, true) +
-    linha('Borracharia', rows.reduce((s,r)=>s+(r.borracharia||0),0), null, false, true) +
-    linha('Combustiveis / Lubrificantes', rows.reduce((s,r)=>s+(r.combustiveis||0),0), null, false, true) +
-    linha('Outros Insumos Diretos', rows.reduce((s,r)=>s+(r.outros_insumos||0),0), null, false, true) +
-    linha('Alugueis Maq/Equip/Veics', rows.reduce((s,r)=>s+(r.aluguel_maquinas||0),0), null, false, true) +
-    linha('Provisionamento Preventivas', rows.reduce((s,r)=>s+(r.provisionamento_preventivas||0),0), null, false, true) +
-    linha('Depreciacao', rows.reduce((s,r)=>s+(r.depreciacao||0),0), null, false, true) +
-    linha('Uniformes / EPIs', rows.reduce((s,r)=>s+(r.uniformes_epis||0),0), null, false, true) +
-    linha('Servicos Terceiros', rows.reduce((s,r)=>s+(r.servicos_terceiros||0),0), null, false, true) +
-    linha('Fretes', rows.reduce((s,r)=>s+(r.fretes||0),0), null, false, true) +
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:'+(totMC>=0?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)')+';border-radius:8px;border:1px solid '+(totMC>=0?'var(--green)':'var(--red)')+'">' +
-    '<span style="font-size:14px;font-weight:700;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">MARGEM DE CONTRIBUICAO</span>' +
-    '<div style="text-align:right"><div style="font-size:16px;font-weight:700;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">'+fmt(totMC)+'</div><div style="font-size:12px;color:'+(totMC>=0?'var(--green)':'var(--red)')+'">'+pct(totMC,totLiq)+'</div></div></div>' +
-    secao('(-) Custos Administrativos GMP', 'teal') +
-    linha('Mao de Obra Apoio GMP 3%', rows.reduce((s,r)=>s+(r.mao_obra_apoio||0),0), null, false, true) +
-    linha('Consultoria / Serv.Terc', rows.reduce((s,r)=>s+(r.consultoria||0),0), null, false, true) +
-    linha('Passagens Aereas', rows.reduce((s,r)=>s+(r.passagens_aereas||0),0), null, false, true) +
-    linha('Hoteis / Diarias / Translados', rows.reduce((s,r)=>s+(r.hoteis_diarias||0),0), null, false, true) +
-    linha('Cursos / Seminarios / Mentorias', rows.reduce((s,r)=>s+(r.cursos||0),0), null, false, true) +
-    linha('Brindes / Marketing', rows.reduce((s,r)=>s+(r.brindes||0),0), null, false, true) +
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-top:8px;background:'+(totGMP>=0?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)')+';border-radius:8px;border:1px solid '+(totGMP>=0?'var(--green)':'var(--red)')+'">' +
-    '<span style="font-size:14px;font-weight:700;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">RESULTADO GMP</span>' +
-    '<div style="text-align:right"><div style="font-size:16px;font-weight:700;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">'+fmt(totGMP)+'</div><div style="font-size:12px;color:'+(totGMP>=0?'var(--green)':'var(--red)')+'">'+pct(totGMP,totLiq)+'</div></div></div>' +
-    '</div>';
-
-  // Tabela de lancamentos
-  document.getElementById('dre-table-body').innerHTML =
-    '<table><thead><tr><th>Mes</th><th>Equipamento</th><th>Cliente</th><th>Receita Bruta</th><th>Rec. Liquida</th><th>Margem Contrib.</th><th>% MC</th><th>Resultado GMP</th><th>% GMP</th><th></th></tr></thead><tbody>' +
-    rows.map(r => {
-      const t = tot(r);
-      const liq = t.recBruta - t.impostos;
-      const mc = liq - t.maoObra - t.custOp;
-      const gmp = mc - t.custAdm;
-      const cMC = mc>=0?'var(--green)':'var(--red)';
-      const cGMP = gmp>=0?'var(--green)':'var(--red)';
-      return '<tr>' +
-        '<td>'+r.mes_referencia?.substring(0,7)+'</td>' +
-        '<td><strong>'+(r.equipamentos?.frota||'-')+'</strong></td>' +
-        '<td>'+(r.clientes?.razao_social||'-')+'</td>' +
-        '<td style="color:var(--green)">'+fmt(t.recBruta)+'</td>' +
-        '<td style="color:var(--accent2)">'+fmt(liq)+'</td>' +
-        '<td style="color:'+cMC+'">'+fmt(mc)+'</td>' +
-        '<td style="color:'+cMC+'">'+pct(mc,liq)+'</td>' +
-        '<td style="color:'+cGMP+'">'+fmt(gmp)+'</td>' +
-        '<td style="color:'+cGMP+'">'+pct(gmp,liq)+'</td>' +
-        '<td style="white-space:nowrap">' +
-        '<button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarDRE(\''+r.id+'\')">&#9999;&#65039;</button> ' +
-        '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarDRE(\''+r.id+'\')">&#128465;&#65039;</button>' +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-async function salvarDRE() {
-  const equipId = document.getElementById('dre-equip').value;
-  const mes = document.getElementById('dre-mes-ref').value;
-  if (!equipId || !mes) return showToast('Preencha equipamento e mes de referencia', true);
-  const id = document.getElementById('dre-id').value;
-  const dados = {
-    equipamento_id: equipId,
-    cliente_id: document.getElementById('dre-cliente').value || null,
-    contrato_id: document.getElementById('dre-contrato').value || null,
-    mes_referencia: mes + '-01',
-    receita_realizado: v('dre-rec-rec'), receita_novos_negocios: v('dre-rec-nov'),
-    pis: v('dre-pis'), cofins: v('dre-cofins'), iss: v('dre-iss'),
-    salarios: v('dre-sal'), periculosidade: v('dre-peric'), bonus: v('dre-bonus'),
-    encargos_sociais: v('dre-enc'), alimentacao: v('dre-alim'), transporte: v('dre-transp'),
-    auxilio_moradia: v('dre-moradia'), pj_alocado: v('dre-pj'),
-    manutencao: v('dre-manut'), borracharia: v('dre-borra'), combustiveis: v('dre-comb'),
-    outros_insumos: v('dre-insumos'), aluguel_maquinas: v('dre-alug'),
-    provisionamento_preventivas: v('dre-prov'), depreciacao: v('dre-depr'),
-    uniformes_epis: v('dre-epis'), servicos_terceiros: v('dre-serv3'), fretes: v('dre-frete'),
-    mao_obra_apoio: v('dre-adm-mob'), consultoria: v('dre-adm-cons'),
-    passagens_aereas: v('dre-adm-pass'), hoteis_diarias: v('dre-adm-hotel'),
-    cursos: v('dre-adm-curso'), brindes: v('dre-adm-brindes'),
-    observacoes: document.getElementById('dre-obs').value,
-    usuario: currentUser?.nome || '-'
-  };
-  let error;
-  if (id) { ({ error } = await db.from('resultado').update(dados).eq('id', id)); }
-  else { ({ error } = await db.from('resultado').insert(dados)); }
-  if (error) return showToast('Erro: ' + error.message, true);
-  fecharDRE();
-  showToast(id ? 'Resultado atualizado!' : 'Resultado salvo!');
-  await carregarDRE();
-}
-
-async function editarDRE(id) {
-  const { data: r } = await db.from('resultado').select('*').eq('id', id).single();
-  if (!r) return;
-  document.getElementById('dre-id').value = r.id;
-  document.getElementById('dre-mes-ref').value = r.mes_referencia?.substring(0,7) || '';
-  document.getElementById('dre-equip').value = r.equipamento_id || '';
-  document.getElementById('dre-cliente').value = r.cliente_id || '';
-  document.getElementById('dre-contrato').value = r.contrato_id || '';
-  const set = (id, val) => { const e = document.getElementById(id); if(e) e.value = val||0; };
-  set('dre-rec-rec', r.receita_realizado); set('dre-rec-nov', r.receita_novos_negocios);
-  set('dre-pis', r.pis); set('dre-cofins', r.cofins); set('dre-iss', r.iss);
-  set('dre-sal', r.salarios); set('dre-peric', r.periculosidade); set('dre-bonus', r.bonus);
-  set('dre-enc', r.encargos_sociais); set('dre-alim', r.alimentacao); set('dre-transp', r.transporte);
-  set('dre-moradia', r.auxilio_moradia); set('dre-pj', r.pj_alocado);
-  set('dre-manut', r.manutencao); set('dre-borra', r.borracharia); set('dre-comb', r.combustiveis);
-  set('dre-insumos', r.outros_insumos); set('dre-alug', r.aluguel_maquinas);
-  set('dre-prov', r.provisionamento_preventivas); set('dre-depr', r.depreciacao);
-  set('dre-epis', r.uniformes_epis); set('dre-serv3', r.servicos_terceiros); set('dre-frete', r.fretes);
-  set('dre-adm-mob', r.mao_obra_apoio); set('dre-adm-cons', r.consultoria);
-  set('dre-adm-pass', r.passagens_aereas); set('dre-adm-hotel', r.hoteis_diarias);
-  set('dre-adm-curso', r.cursos); set('dre-adm-brindes', r.brindes);
-  document.getElementById('dre-obs').value = r.observacoes || '';
-  document.getElementById('modal-dre-title').textContent = 'Editar Resultado';
-  calcDRE();
-  openModal('modal-dre');
-}
-
-async function deletarDRE(id) {
-  if (!confirm('Deseja excluir este lancamento de resultado?')) return;
-  const { error } = await db.from('resultado').delete().eq('id', id);
-  if (error) return showToast('Erro: ' + error.message, true);
-  showToast('Resultado excluido!');
-  await carregarDRE();
-}
-
-function fecharDRE() {
-  document.getElementById('dre-id').value = '';
-  document.getElementById('modal-dre-title').textContent = 'Lancar Resultado';
-  ['dre-rec-rec','dre-rec-nov','dre-pis','dre-cofins','dre-iss','dre-sal','dre-peric','dre-bonus','dre-enc','dre-alim','dre-transp','dre-moradia','dre-pj','dre-manut','dre-borra','dre-comb','dre-insumos','dre-alug','dre-prov','dre-depr','dre-epis','dre-serv3','dre-frete','dre-adm-mob','dre-adm-cons','dre-adm-pass','dre-adm-hotel','dre-adm-curso','dre-adm-brindes'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
-  calcDRE();
-  closeModal('modal-dre');
-}
-
 function popularSelectEquipamentos() {
   const opts = '<option value="">Selecione...</option>' + allEquipamentos.map(e => '<option value="' + e.id + '">' + e.frota + ' . ' + e.equipamento + '</option>').join('');
   ['mv-equip','ct-equip'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
