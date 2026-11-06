@@ -162,7 +162,7 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('colaboradores',this)"><span class="nav-icon">&#128119;</span><span>Colaboradores</span></div>
   <div class="nav-item" onclick="nav('ferias',this)"><span class="nav-icon">&#127958;&#65039;</span><span>Férias</span></div>
   <div class="nav-item" onclick="nav('epi',this)"><span class="nav-icon">&#129466;</span><span>Fichas de EPI</span></div>
-  <div class="nav-item" onclick="nav('crachas',this)"><span class="nav-icon">&#129706;</span><span>Crachás / Selos</span></div>
+  <div class="nav-item" onclick="nav('crachas',this)"><span class="nav-icon">&#129706;</span><span>Crachás</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item" onclick="nav('usuarios',this)"><span class="nav-icon">&#128101;</span><span>Usuarios</span></div>
   <div class="user-footer">
@@ -800,7 +800,7 @@ const pageMap = {
   colaboradores:    { title: 'Colaboradores', loader: () => carregarModulo('colaboradores') },
   ferias:           { title: 'Férias', loader: () => carregarModulo('ferias') },
   epi:              { title: 'Fichas de EPI', loader: () => carregarModulo('epi') },
-  crachas:          { title: 'Crachás / Selos', loader: () => carregarModulo('crachas') },
+  crachas:          { title: 'Crachás', loader: () => carregarModulo('crachas') },
   'manutencao-equip': { title: 'Manutencao de Equipamentos', loader: carregarManutencaoEquip },
   historico:    { title: 'Historico por Equipamento', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
@@ -2038,34 +2038,27 @@ const MODULOS = {
     }
   },
   epi: {
-    tabela: 'fichas_epi', titulo: 'Fichas de EPI', botao: '+ Nova Ficha de EPI', ordem: 'data_entrega', arquivos: true,
+    tabela: 'fichas_epi', titulo: 'Fichas de EPI', botao: '+ Nova Ficha de EPI', ordem: 'data_entrega',
+    arquivos: true, rotuloArquivos: 'Ficha de EPI assinada (PDF ou foto)', aceitaArquivos: '.pdf,.jpg,.jpeg,.png,.webp',
     campos: [
       { id:'colaborador_id', label:'Colaborador', tipo:'ref', ref:OPC_COLAB, obrig:true, negrito:true },
-      { id:'data_entrega', label:'Data de Entrega', tipo:'date', obrig:true },
-      { id:'epi', label:'EPI Entregue', tipo:'text', obrig:true },
-      { id:'ca', label:'Nº do CA', tipo:'text' },
-      { id:'quantidade', label:'Quantidade', tipo:'number', padrao:1 },
-      { id:'data_troca', label:'Próxima Troca / Validade', tipo:'date', alertaVencimento:true },
-      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
-    ]
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true }
+    ],
+    // data de entrega e obrigatoria na tabela: preenchida com o dia do lancamento
+    antesDeSalvar: (d, id) => { if (!id) d.data_entrega = new Date().toISOString().slice(0, 10); }
   },
   crachas: {
-    tabela: 'crachas_selos', titulo: 'Crachás / Selos', botao: '+ Novo Crachá / Selo', ordem: 'data_emissao', arquivos: true,
+    tabela: 'crachas_selos', titulo: 'Crachás', botao: '+ Novo Crachá', ordem: 'data_validade', crescente: true,
+    arquivos: true, rotuloArquivos: 'Foto do crachá', aceitaArquivos: '.jpg,.jpeg,.png,.webp,.pdf', miniaturas: true,
     campos: [
-      { id:'tipo', label:'Tipo', tipo:'select', opcoes:['Crachá','Selo'], obrig:true, negrito:true },
-      { id:'numero', label:'Número', tipo:'text' },
-      { id:'colaborador_id', label:'Colaborador (crachá)', tipo:'ref', ref:OPC_COLAB },
-      { id:'equipamento_id', label:'Equipamento (selo)', tipo:'ref', ref:OPC_EQUIP },
-      { id:'cliente_id', label:'Cliente / Unidade', tipo:'ref', ref:OPC_CLI },
-      { id:'data_emissao', label:'Emissão', tipo:'date', obrig:true },
-      { id:'data_validade', label:'Validade', tipo:'date', alertaVencimento:true },
-      { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Devolvido','Cancelado'], obrig:true, cor:{ Ativo:VERDE, Devolvido:CINZA, Cancelado:VERMELHO } },
-      { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
+      { id:'colaborador_id', label:'Colaborador', tipo:'ref', ref:OPC_COLAB, obrig:true, negrito:true },
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true },
+      { id:'data_validade', label:'Vencimento', tipo:'date', obrig:true, alertaVencimento:true, mostrarDias:true }
     ],
-    validar: d => {
-      if (d.tipo === 'Crachá' && !d.colaborador_id) return 'Crachá: selecione o colaborador';
-      if (d.tipo === 'Selo' && !d.equipamento_id) return 'Selo: selecione o equipamento';
-      return null;
+    // tipo e emissao sao obrigatorios na tabela: preenchidos automaticamente
+    antesDeSalvar: (d, id) => {
+      d.tipo = 'Crachá';
+      if (!id) d.data_emissao = new Date().toISOString().slice(0, 10);
     }
   },
   vencimentos: {
@@ -2159,7 +2152,11 @@ function renderModulo(chave) {
     cols.map(c => '<th>' + esc(c.label) + '</th>').join('') + (m.arquivos ? '<th>Arquivos</th>' : '') + '<th></th></tr></thead><tbody>' +
     lista.map(r => '<tr>' +
       cols.map(c => '<td>' + celulaModulo(c, r) + '</td>').join('') +
-      (m.arquivos ? '<td>' + ((r.arquivos || []).map(a => '<a href="' + esc(a.url) + '" target="_blank" style="color:var(--accent2);font-size:12px;display:block">&#128206; ' + esc(a.nome) + '</a>').join('') || '-') + '</td>' : '') +
+      (m.arquivos ? '<td>' + ((r.arquivos || []).map(a =>
+        (m.miniaturas && /\.(jpe?g|png|webp|gif)$/i.test(a.nome || ''))
+          ? '<a href="' + esc(a.url) + '" target="_blank" title="' + esc(a.nome) + '"><img src="' + esc(a.url) + '" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border2);margin-right:4px" /></a>'
+          : '<a href="' + esc(a.url) + '" target="_blank" style="color:var(--accent2);font-size:12px;display:block">&#128206; ' + esc(a.nome) + '</a>'
+      ).join('') || '-') + '</td>' : '') +
       '<td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="abrirFormModulo(\'' + chave + '\',\'' + r.id + '\')">&#9999;&#65039;</button> ' +
       '<button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarModulo(\'' + chave + '\',\'' + r.id + '\')">&#128465;&#65039;</button></td></tr>'
     ).join('') + '</tbody></table></div>';
@@ -2190,8 +2187,8 @@ async function abrirFormModulo(chave, id) {
     }
     return '<div class="form-group' + (c.full ? ' full' : '') + '">' + label + campo + '</div>';
   }).join('') +
-  (m.arquivos ? '<div class="form-group full"><div class="form-label">Anexar arquivos (fotos, PDF, Word)</div>' +
-    '<input class="form-input" type="file" id="mod-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" />' +
+  (m.arquivos ? '<div class="form-group full"><div class="form-label">' + esc(m.rotuloArquivos || 'Anexar arquivos (fotos, PDF, Word)') + '</div>' +
+    '<input class="form-input" type="file" id="mod-files" multiple accept="' + (m.aceitaArquivos || '.jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx') + '" />' +
     ((r.arquivos || []).length ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">Já anexados: ' + r.arquivos.map(a => esc(a.nome)).join(', ') + '</div>' : '') + '</div>' : '');
   openModal('modal-mod');
 }
@@ -2208,7 +2205,7 @@ async function salvarModulo() {
     dados[c.id] = v;
   }
   if (m.validar) { const msg = m.validar(dados); if (msg) return showToast(msg, true); }
-  if (m.antesDeSalvar) m.antesDeSalvar(dados);
+  if (m.antesDeSalvar) m.antesDeSalvar(dados, id);
   const btn = document.getElementById('mod-btn-salvar');
   btn.disabled = true; btn.textContent = 'Salvando...';
   try {
