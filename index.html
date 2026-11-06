@@ -156,7 +156,6 @@ textarea.form-input{resize:vertical;min-height:70px}
   <div class="nav-item" onclick="nav('inspecao',this)"><span class="nav-icon">&#128269;</span><span>Treinamento e Inspeção</span></div>
   <div class="nav-item" onclick="nav('visitas',this)"><span class="nav-icon">&#128205;</span><span>Visitas Comerciais</span></div>
   <div class="nav-item" onclick="nav('manutencao-equip',this)"><span class="nav-icon">&#128295;</span><span>Manutencao de Equipamentos</span></div>
-  <div class="nav-item" onclick="nav('laudos',this)"><span class="nav-icon">&#128221;</span><span>Laudos de Manutenção</span></div>
   <div class="nav-item" onclick="nav('custos',this)"><span class="nav-icon">&#128176;</span><span>Custos Operacionais</span></div>
   <div class="nav-item" onclick="nav('plaquetas',this)"><span class="nav-icon">&#127991;&#65039;</span><span>Plaquetas dos Equipamentos</span></div>
   <div class="nav-item" onclick="nav('historico',this)"><span class="nav-icon">&#128203;</span><span>Historico</span></div>
@@ -227,7 +226,8 @@ textarea.form-input{resize:vertical;min-height:70px}
         <div class="kpi-card green"><div class="kpi-label">Taxa de Ocupacao</div><div class="kpi-value" style="color:var(--green)" id="kpi-util">-%</div><div class="kpi-sub" id="kpi-util-sub">Equipamentos atuando</div></div>
         <div class="kpi-card red"><div class="kpi-label">Ociosidade</div><div class="kpi-value" style="color:var(--red)" id="kpi-ocio">-%</div><div class="kpi-sub" id="kpi-ocio-sub">Inativo + Par.Cliente + Corretiva</div></div>
         <div class="kpi-card blue"><div class="kpi-label">Disponibilidade</div><div class="kpi-value" style="color:var(--accent2)" id="kpi-disp">-%</div><div class="kpi-sub" id="kpi-disp-sub">Status D - Disponivel</div></div>
-        <div class="kpi-card amber"><div class="kpi-label">Em Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="kpi-prev">-</div><div class="kpi-sub">Equipamentos</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Em Preventiva</div><div class="kpi-value" style="color:var(--amber)" id="kpi-prev">-</div><div class="kpi-sub" id="kpi-prev-sub">Equipamentos</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Em Corretiva</div><div class="kpi-value" style="color:var(--red)" id="kpi-corr">-</div><div class="kpi-sub" id="kpi-corr-sub">Equipamentos</div></div>
         <div class="kpi-card teal"><div class="kpi-label">Total Apontados</div><div class="kpi-value" style="color:var(--teal)" id="kpi-total">-</div><div class="kpi-sub" id="kpi-total-sub">No periodo selecionado</div></div>
       </div>
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Status da Frota</div>
@@ -807,7 +807,6 @@ const pageMap = {
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
   visitas:          { title: 'Visitas Comerciais', loader: carregarVisitas },
-  laudos:           { title: 'Laudos de Manutenção', loader: () => carregarModulo('laudos') },
   colaboradores:    { title: 'Colaboradores', loader: () => carregarModulo('colaboradores') },
   ferias:           { title: 'Férias', loader: () => carregarModulo('ferias') },
   epi:              { title: 'Fichas de EPI', loader: () => carregarModulo('epi') },
@@ -1009,7 +1008,12 @@ async function carregarDashboard() {
     document.getElementById('kpi-ocio-sub').textContent = maqOciosas + ' máq. ociosa(s) em ' + nDias + ' dia(s)';
     document.getElementById('kpi-disp').textContent = totalRegistros > 0 ? Math.round((diasDispon/totalRegistros)*100) + '%' : '0%';
     document.getElementById('kpi-disp-sub').textContent = maqDispon + ' máq. disponível(is)';
-    document.getElementById('kpi-prev').textContent = diasPrevent;
+    // Preventiva / Corretiva: maquinas distintas no periodo e quantos dias parados
+    const maqCom = st => new Set(movs.filter(m => m.status === st).map(m => m.equipamento_id)).size;
+    document.getElementById('kpi-prev').textContent = maqCom('P');
+    document.getElementById('kpi-prev-sub').textContent = 'máq. · ' + diasPrevent + ' dia(s) em preventiva';
+    document.getElementById('kpi-corr').textContent = maqCom('C');
+    document.getElementById('kpi-corr-sub').textContent = 'máq. · ' + diasCorret + ' dia(s) em corretiva';
 
     // Pills por status
     const counts = {};
@@ -1040,6 +1044,9 @@ async function carregarDashboard() {
   document.getElementById('kpi-ocio').textContent = statusList.length > 0 ? Math.round((ociosos/nTotal)*100) + '%' : '0%';
   document.getElementById('kpi-disp').textContent = statusList.length > 0 ? Math.round((dispon/nTotal)*100) + '%' : '0%';
   document.getElementById('kpi-prev').textContent = prevent;
+  document.getElementById('kpi-prev-sub').textContent = 'Equipamentos parados em preventiva';
+  document.getElementById('kpi-corr').textContent = corret;
+  document.getElementById('kpi-corr-sub').textContent = 'Equipamentos parados em corretiva';
 
   // Status pills
   const statusMap = { A:'Atuando', D:'Disponivel', C:'Corretiva', P:'Preventiva', T:'Transferencia', MOB:'Mobilizacao', DESMOB:'Desmobilizacao', IN:'Inativo', PC:'Par. Cliente' };
