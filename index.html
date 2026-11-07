@@ -256,6 +256,19 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-motivos .tit{font-size:10px;color:var(--muted);letter-spacing:1px;margin:6px 0 2px}
 .d3-motivo{display:grid;grid-template-columns:auto auto 1fr;gap:10px;align-items:center;font-size:11.5px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--borda3d)}
 .d3-motivo b{white-space:nowrap}.d3-motivo em{font-style:normal;color:var(--muted)}
+.d3-bids-tab{overflow-x:auto;max-height:290px;overflow-y:auto}
+.d3-bid{--c:#3b8cff;display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(160px,1.8fr) 120px 110px 120px 80px 130px;gap:10px;align-items:center;min-width:860px;
+  padding:9px 12px;margin-bottom:6px;border-radius:10px;font-size:11.5px;cursor:pointer;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--c) 18%,transparent),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-left:4px solid var(--c)}
+.d3-bid:hover{filter:brightness(1.15)}
+.d3-bid.cab{background:none;border:none;cursor:default;font-size:8.5px;color:var(--muted);letter-spacing:.8px;padding:0 12px 2px;margin:0}
+.d3-bid .num{text-align:right;white-space:nowrap}
+.d3-bid .st{justify-self:end;font-size:9.5px;font-weight:800;padding:4px 9px;border-radius:8px;background:var(--c);color:#fff;box-shadow:0 0 10px var(--c);white-space:nowrap}
+.d3-bids-status{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding-bottom:16px}
+.d3-bst{--c:#3b8cff;padding:10px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--c) 50%,transparent);border-top:3px solid var(--c);background:linear-gradient(150deg,color-mix(in srgb,var(--c) 22%,transparent),rgba(255,255,255,.02))}
+.d3-bst span{font-size:10px;letter-spacing:1px;font-weight:700;color:#dbe6ff}
+.d3-bst b{display:block;font-size:24px;font-weight:800;margin:2px 0;text-shadow:0 0 14px var(--c)}
+.d3-bst small{font-size:10px;color:var(--muted)}
 .d3-bids{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:10px 18px 18px}
 .d3-funil{display:grid;grid-template-columns:215px 1fr auto;gap:10px;align-items:center;font-size:11px;padding:5px 0}
 .d3-funil .tr{height:12px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
@@ -373,10 +386,13 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
           <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
           <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
+          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Em ativos, para ganhar os bids</small></div>
         </div>
-        <div class="d3-bids">
-          <div><div class="d3-barras-tit">Por status</div><div id="bids-funil"></div></div>
-          <div><div class="d3-barras-tit">Negociações em andamento</div><div id="bids-prazos"></div></div>
+        <div style="padding:10px 18px 4px">
+          <div class="d3-barras-tit">Negociações em andamento</div>
+          <div id="bids-prazos" class="d3-bids-tab"></div>
+          <div class="d3-barras-tit" style="margin-top:14px">Por status</div>
+          <div id="bids-funil" class="d3-bids-status"></div>
         </div>
       </div>
 
@@ -1385,7 +1401,7 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente_id, valor_total, valor_mensal, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('cliente_id, escopo, valor_total, valor_mensal, investimento, prazo_meses, etapa');
   const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const andamento = bids;   // todo bid cadastrado esta em negociacao (quando fechar, exclua ou mude o cliente para Ativo)
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
@@ -1393,23 +1409,28 @@ async function renderBidsDashboard() {
   set('bids-qtd', andamento.length); set('bids-qtd-sub', andamento.length === 1 ? 'negociação' : 'negociações');
   set('bids-total', reaisBid(soma(andamento, 'valor_total')));
   set('bids-mensal', reaisBid(soma(andamento, 'valor_mensal')));
-  // quantidade e valor em cada status
+  set('bids-invest', reaisBid(soma(andamento, 'investimento')));
   const cores = CORES_ETAPA_BID;
-  const etapas = ETAPAS_BID;
-  const maxV = Math.max(1, ...etapas.map(e => soma(andamento.filter(b => b.etapa === e), 'valor_total')));
-  document.getElementById('bids-funil').innerHTML = etapas.map(e => {
-    const l = andamento.filter(b => b.etapa === e), v = soma(l, 'valor_total');
-    return '<div class="d3-funil" style="--c:' + cores[e] + '"><span>' + e + '<small> · ' + l.length + '</small></span><div class="tr"><i style="width:' + Math.max(v / maxV * 100, 2) + '%"></i></div><b>' + reaisBid(v) + '</b></div>';
+  const abrir = 'onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))"';
+  // tabela: cliente, escopo, faturamento (global e mensal), investimento, prazo e status com a cor da fase
+  const ordem = b => ETAPAS_BID.indexOf(b.etapa);
+  const lista = andamento.slice().sort((a, b) => ordem(a) - ordem(b) || (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0));
+  const val = v => v != null ? reaisBid(v) : '-';
+  document.getElementById('bids-prazos').innerHTML = lista.length ?
+    '<div class="d3-bid cab"><span>Cliente</span><span>Escopo</span><span class="num">Faturamento Global</span><span class="num">Mensal</span><span class="num">Investimento</span><span class="num">Prazo</span><span class="num">Status</span></div>' +
+    lista.map(b =>
+      '<div class="d3-bid" style="--c:' + (cores[b.etapa] || '#64748b') + '" ' + abrir + '>' +
+      '<b>' + esc(b.cliente) + '</b><span>' + esc(b.escopo || '-') + '</span>' +
+      '<b class="num" style="color:var(--accent2)">' + val(b.valor_total) + '</b><span class="num">' + val(b.valor_mensal) + '</span>' +
+      '<span class="num" style="color:#fca5a5">' + val(b.investimento) + '</span>' +
+      '<span class="num">' + (b.prazo_meses ? b.prazo_meses + (Number(b.prazo_meses) === 1 ? ' mês' : ' meses') : '-') + '</span>' +
+      '<span class="st">' + esc(b.etapa || '-') + '</span></div>'
+    ).join('') : '<div class="d3-vazio" style="padding:16px">Cadastre os bids na tela Bids / Concorrências</div>';
+  // embaixo: quantos bids e quanto valor em cada status, nas mesmas cores
+  document.getElementById('bids-funil').innerHTML = ETAPAS_BID.map(e => {
+    const l = andamento.filter(b => b.etapa === e);
+    return '<div class="d3-bst" style="--c:' + cores[e] + '"><span>' + e + '</span><b>' + l.length + '</b><small>' + (l.length === 1 ? 'bid' : 'bids') + ' · ' + reaisBid(soma(l, 'valor_total')) + '</small></div>';
   }).join('');
-  // negociacoes em andamento: cliente, status, prazo e valor (maiores primeiro)
-  const lista = andamento.slice().sort((a, b) => (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0)).slice(0, 5);
-  document.getElementById('bids-prazos').innerHTML = lista.length ? lista.map(b =>
-    '<div class="d3-motivo" style="grid-template-columns:1fr auto;cursor:pointer;margin-bottom:6px" onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))">' +
-      '<div><b>' + esc(b.cliente) + '</b><em style="display:block;font-size:10px;color:' + (cores[b.etapa] || 'var(--muted)') + '">' + esc(b.etapa || '-') +
-      (b.prazo_meses ? ' · ' + b.prazo_meses + (Number(b.prazo_meses) === 1 ? ' mês' : ' meses') : '') + '</em></div>' +
-      '<div style="text-align:right"><b style="color:var(--accent2)">' + (b.valor_total != null ? reaisBid(b.valor_total) : '-') + '</b>' +
-      (b.valor_mensal != null ? '<em style="display:block;font-size:10px">' + reaisBid(b.valor_mensal) + ' / mês</em>' : '') + '</div></div>'
-  ).join('') : '<div class="d3-vazio" style="padding:16px">' + (bids.length ? 'Nenhuma negociação em andamento' : 'Cadastre os bids na tela Bids / Concorrências') + '</div>';
 }
 
 async function marcarFeriasConcedidas(id) {
@@ -2994,10 +3015,13 @@ const MODULOS = {
     tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'data_limite', crescente: true,
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
+      { id:'escopo', label:'Escopo (ex.: 15 empilhadeiras 2,5t)', tipo:'text', full:true },
       { id:'valor_total', label:'Valor Global (R$)', tipo:'number', naTabela:false },
       { id:'valor_mensal', label:'Valor Mensal (R$)', tipo:'number', naTabela:false },
+      { id:'investimento', label:'Investimento no Ativo (R$)', tipo:'number', naTabela:false },
       { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
       { id:'_mensal', label:'Valor Mensal', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
+      { id:'_invest', label:'Investimento', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
       { id:'prazo_meses', label:'Prazo (meses)', tipo:'number' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID }
     ]
