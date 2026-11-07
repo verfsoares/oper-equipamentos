@@ -257,7 +257,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-motivo{display:grid;grid-template-columns:auto auto 1fr;gap:10px;align-items:center;font-size:11.5px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--borda3d)}
 .d3-motivo b{white-space:nowrap}.d3-motivo em{font-style:normal;color:var(--muted)}
 .d3-bids-tab{overflow-x:auto;max-height:290px;overflow-y:auto}
-.d3-bid{--c:#3b8cff;display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(160px,1.8fr) 120px 110px 120px 80px 130px;gap:10px;align-items:center;min-width:860px;
+.d3-bid{--c:#3b8cff;display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(100px,1fr) minmax(160px,1.6fr) 120px 110px 120px 80px 130px;gap:10px;align-items:center;min-width:980px;
   padding:9px 12px;margin-bottom:6px;border-radius:10px;font-size:11.5px;cursor:pointer;
   background:linear-gradient(90deg,color-mix(in srgb,var(--c) 18%,transparent),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-left:4px solid var(--c)}
 .d3-bid:hover{filter:brightness(1.15)}
@@ -1401,7 +1401,7 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente_id, escopo, valor_total, valor_mensal, investimento, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('cliente_id, empresa_grupo, escopo, valor_total, valor_mensal, investimento, prazo_meses, etapa');
   const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const andamento = bids;   // todo bid cadastrado esta em negociacao (quando fechar, exclua ou mude o cliente para Ativo)
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
@@ -1417,10 +1417,10 @@ async function renderBidsDashboard() {
   const lista = andamento.slice().sort((a, b) => ordem(a) - ordem(b) || (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0));
   const val = v => v != null ? reaisBid(v) : '-';
   document.getElementById('bids-prazos').innerHTML = lista.length ?
-    '<div class="d3-bid cab"><span>Cliente</span><span>Escopo</span><span class="num">Faturamento Global</span><span class="num">Mensal</span><span class="num">Investimento</span><span class="num">Prazo</span><span class="num">Status</span></div>' +
+    '<div class="d3-bid cab"><span>Cliente</span><span>Empresa do Grupo</span><span>Escopo</span><span class="num">Faturamento Global</span><span class="num">Mensal</span><span class="num">Investimento</span><span class="num">Prazo</span><span class="num">Status</span></div>' +
     lista.map(b =>
       '<div class="d3-bid" style="--c:' + (cores[b.etapa] || '#64748b') + '" ' + abrir + '>' +
-      '<b>' + esc(b.cliente) + '</b><span>' + esc(b.escopo || '-') + '</span>' +
+      '<b>' + esc(b.cliente) + '</b><span>' + esc(b.empresa_grupo || '-') + '</span><span>' + esc(b.escopo || '-') + '</span>' +
       '<b class="num" style="color:var(--accent2)">' + val(b.valor_total) + '</b><span class="num">' + val(b.valor_mensal) + '</span>' +
       '<span class="num" style="color:#fca5a5">' + val(b.investimento) + '</span>' +
       '<span class="num">' + (b.prazo_meses ? b.prazo_meses + (Number(b.prazo_meses) === 1 ? ' mês' : ' meses') : '-') + '</span>' +
@@ -3032,9 +3032,10 @@ const MODULOS = {
     ]
   },
   bids: {
-    tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'data_limite', crescente: true,
+    tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'criado_em',
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
+      { id:'empresa_grupo', label:'Empresa do Grupo (por onde entramos)', tipo:'text' },
       { id:'escopo', label:'Escopo (ex.: 15 empilhadeiras 2,5t)', tipo:'text', full:true },
       // valores aceitam sigla contabil: 16K, 4,3MM, 1,2BI
       { id:'valor_total', label:'Valor Global (R$) - ex.: 4,3MM', tipo:'valor', naTabela:false },
