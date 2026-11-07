@@ -6,7 +6,7 @@
 <title>OPER - ERP Operacional</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Biblioteca 3D (Three.js) usada no mapa da tela Região e KPIs -->
+<!-- Biblioteca 3D (Three.js) usada no mapa da tela Dashboard -->
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -184,7 +184,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 /* sino de alertas no topo */
 .sino{position:relative;font-size:19px;cursor:pointer}
 .sino i{position:absolute;top:-6px;right:-9px;font-style:normal;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:10px;min-width:16px;height:16px;padding:0 4px;display:grid;place-items:center;box-shadow:0 0 10px var(--red)}
-/* ---- Tela Regiao e KPIs ---- */
+/* ---- Tela Dashboard ---- */
 .k3-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px}
 .k3{--cor:#3b8cff;padding:16px 16px 14px;border-radius:18px;overflow:hidden;position:relative;transition:transform .15s ease-out,box-shadow .3s;
   border:1px solid color-mix(in srgb,var(--cor) 70%,transparent);background:linear-gradient(150deg,color-mix(in srgb,var(--cor) 38%,#071535),#071535 75%);
@@ -275,7 +275,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
     <div><div class="brand-name">OPER</div><div class="brand-sub">UN - Movimentação de Carga</div></div>
   </div>
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 12 12 4l9 8M5 10v10h14V10"/></svg></span><span>Região e KPIs</span></div>
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 12 12 4l9 8M5 10v10h14V10"/></svg></span><span>Dashboard</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg></span><span>Cadastro de Equipamento</span></div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5M9 8h.01M15 8h.01M9 12h.01M15 12h.01"/></svg></span><span>Cadastro de Clientes</span></div>
@@ -304,7 +304,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 
 <div id="main">
   <div id="topbar">
-    <div class="page-title" id="pageTitle">Região e KPIs</div>
+    <div class="page-title" id="pageTitle">Dashboard</div>
     <div style="font-size:12px;color:var(--muted)" id="topDate"></div>
     <span class="sino" id="top-sino" style="display:none" title="Alertas de vencimento" onclick="nav('colaboradores', document.querySelector('.nav-item[onclick*=&quot;colaboradores&quot;]'))">&#128276;<i id="top-sino-n"></i></span>
     <button class="btn btn-primary" id="mainBtn" onclick="mainAction()" style="display:none">+ Novo</button>
@@ -964,7 +964,7 @@ async function initApp() {
 }
 
 const pageMap = {
-  dashboard:        { title: 'Região e KPIs', loader: carregarDashboard },
+  dashboard:        { title: 'Dashboard', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
