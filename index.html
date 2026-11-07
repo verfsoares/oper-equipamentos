@@ -2926,7 +2926,27 @@ const VERDE = 'var(--green)', AMARELO = 'var(--amber)', VERMELHO = 'var(--red)',
 const ETAPAS_BID = ['Proposta', 'Leilão', 'Supply Cliente'];
 const CORES_ETAPA_BID = { 'Proposta':'#3b8cff', 'Leilão':'#a855f7', 'Supply Cliente':'#f97316' };
 const COR_ETAPA_BID = CORES_ETAPA_BID;
-const reaisBid = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+// Valores dos Bids em linguagem contabil: 16K = 16 mil, 4,3MM = 4,3 milhoes, 1,2BI = 1,2 bilhao
+function siglaContabil(n) {
+  n = Number(n); if (!isFinite(n)) return '';
+  const a = Math.abs(n), f = (x, s) => x.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + s;
+  if (a >= 1e9) return f(n / 1e9, 'BI');
+  if (a >= 1e6) return f(n / 1e6, 'MM');
+  if (a >= 1e3) return f(n / 1e3, 'K');
+  return f(n, '');
+}
+const reaisBid = v => 'R$ ' + siglaContabil(v);
+// Le o que foi digitado: "16K", "16 mil", "4,3MM", "1.5MI", "2BI", "1.500.000" ou "16000"
+function lerValorContabil(txt) {
+  const s = String(txt).toUpperCase().replace(/R\$|\s/g, '');
+  const m = s.match(/^(-?[\d.,]+)(K|MIL|MM|MI|M|BI|B|BB)?$/);
+  if (!m) return NaN;
+  let num = m[1];
+  if (num.includes(',')) num = num.replace(/\./g, '').replace(',', '.');
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(num)) num = num.replace(/\./g, '');
+  const mult = { K: 1e3, MIL: 1e3, M: 1e6, MM: 1e6, MI: 1e6, B: 1e9, BI: 1e9, BB: 1e9 }[m[2]] || 1;
+  return Number(num) * mult;
+}
 const MODULOS = {
   colaboradores: {
     tabela: 'colaboradores', titulo: 'Colaboradores', botao: '+ Novo Colaborador', ordem: 'nome', crescente: true,
@@ -3016,9 +3036,10 @@ const MODULOS = {
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
       { id:'escopo', label:'Escopo (ex.: 15 empilhadeiras 2,5t)', tipo:'text', full:true },
-      { id:'valor_total', label:'Valor Global (R$)', tipo:'number', naTabela:false },
-      { id:'valor_mensal', label:'Valor Mensal (R$)', tipo:'number', naTabela:false },
-      { id:'investimento', label:'Investimento no Ativo (R$)', tipo:'number', naTabela:false },
+      // valores aceitam sigla contabil: 16K, 4,3MM, 1,2BI
+      { id:'valor_total', label:'Valor Global (R$) - ex.: 4,3MM', tipo:'valor', naTabela:false },
+      { id:'valor_mensal', label:'Valor Mensal (R$) - ex.: 120K', tipo:'valor', naTabela:false },
+      { id:'investimento', label:'Investimento no Ativo (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
       { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
       { id:'_mensal', label:'Valor Mensal', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
       { id:'_invest', label:'Investimento', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
@@ -3144,7 +3165,8 @@ async function abrirFormModulo(chave, id) {
       campo = '<textarea class="form-input" id="mod-f-' + c.id + '">' + esc(v) + '</textarea>';
     } else {
       const t = c.tipo === 'number' ? 'number' : c.tipo === 'date' ? 'date' : 'text';
-      campo = '<input class="form-input" type="' + t + '"' + (t === 'number' ? ' step="any"' : '') + ' id="mod-f-' + c.id + '" value="' + esc(c.tipo === 'date' ? String(v).slice(0, 10) : v) + '" />';
+      const mostra = c.tipo === 'date' ? String(v).slice(0, 10) : (c.tipo === 'valor' && v !== '' && v != null) ? siglaContabil(v) : v;
+      campo = '<input class="form-input" type="' + t + '"' + (t === 'number' ? ' step="any"' : '') + ' id="mod-f-' + c.id + '" value="' + esc(mostra) + '" />';
     }
     return '<div class="form-group' + (c.full ? ' full' : '') + '">' + label + campo + '</div>';
   }).join('') +
@@ -3162,6 +3184,10 @@ async function salvarModulo() {
     let v = document.getElementById('mod-f-' + c.id).value.trim();
     if (v === '') v = null;
     else if (c.tipo === 'number') v = Number(v);
+    else if (c.tipo === 'valor') {
+      v = lerValorContabil(v);
+      if (isNaN(v)) return showToast(c.label.split(' - ')[0] + ': valor inválido. Use números com K, MM ou BI (ex.: 16K, 4,3MM)', true);
+    }
     if (c.obrig && v === null) return showToast('Preencha: ' + c.label, true);
     dados[c.id] = v;
   }
