@@ -371,9 +371,8 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
           <div><h2>Bids / Concorrências</h2><small>Negociações em andamento</small></div></div>
         <div class="d3-horas">
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
-          <div class="d3-hora" style="--c:#facc15"><span>Valor Estimado em Negociação</span><b id="bids-total">R$ 0</b><small id="bids-mensal">Soma dos bids em andamento</small></div>
-          <div class="d3-hora" style="--c:#22c55e"><span>Ganhos</span><b id="bids-ganhos">R$ 0</b><small id="bids-ganhos-sub">0 contratos</small></div>
-          <div class="d3-hora" style="--c:#a855f7"><span>Taxa de Conversão</span><b id="bids-conv">-</b><small>Ganhos ÷ (ganhos + perdidos)</small></div>
+          <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
+          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
         </div>
         <div class="d3-bids">
           <div><div class="d3-barras-tit">Por status</div><div id="bids-funil"></div></div>
@@ -1386,20 +1385,17 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente_id, valor_total, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('cliente_id, valor_total, valor_mensal, prazo_meses, etapa');
   const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
-  const fechado = b => b.etapa === 'Ganho' || b.etapa === 'Perdido';
-  const andamento = bids.filter(b => !fechado(b));
+  const andamento = bids;   // todo bid cadastrado esta em negociacao (quando fechar, exclua ou mude o cliente para Ativo)
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
-  const ganhos = bids.filter(b => b.etapa === 'Ganho'), perdidos = bids.filter(b => b.etapa === 'Perdido');
   const set = (id, t) => { document.getElementById(id).textContent = t; };
   set('bids-qtd', andamento.length); set('bids-qtd-sub', andamento.length === 1 ? 'negociação' : 'negociações');
   set('bids-total', reaisBid(soma(andamento, 'valor_total')));
-  set('bids-ganhos', reaisBid(soma(ganhos, 'valor_total'))); set('bids-ganhos-sub', ganhos.length + (ganhos.length === 1 ? ' contrato ganho' : ' contratos ganhos'));
-  set('bids-conv', ganhos.length + perdidos.length ? Math.round(ganhos.length / (ganhos.length + perdidos.length) * 100) + '%' : '-');
-  // quantidade e valor em cada status em andamento
+  set('bids-mensal', reaisBid(soma(andamento, 'valor_mensal')));
+  // quantidade e valor em cada status
   const cores = CORES_ETAPA_BID;
-  const etapas = ETAPAS_BID.filter(e => e !== 'Ganho' && e !== 'Perdido');
+  const etapas = ETAPAS_BID;
   const maxV = Math.max(1, ...etapas.map(e => soma(andamento.filter(b => b.etapa === e), 'valor_total')));
   document.getElementById('bids-funil').innerHTML = etapas.map(e => {
     const l = andamento.filter(b => b.etapa === e), v = soma(l, 'valor_total');
@@ -1411,7 +1407,8 @@ async function renderBidsDashboard() {
     '<div class="d3-motivo" style="grid-template-columns:1fr auto;cursor:pointer;margin-bottom:6px" onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))">' +
       '<div><b>' + esc(b.cliente) + '</b><em style="display:block;font-size:10px;color:' + (cores[b.etapa] || 'var(--muted)') + '">' + esc(b.etapa || '-') +
       (b.prazo_meses ? ' · ' + b.prazo_meses + (Number(b.prazo_meses) === 1 ? ' mês' : ' meses') : '') + '</em></div>' +
-      '<b style="color:var(--accent2)">' + (b.valor_total != null ? reaisBid(b.valor_total) : '-') + '</b></div>'
+      '<div style="text-align:right"><b style="color:var(--accent2)">' + (b.valor_total != null ? reaisBid(b.valor_total) : '-') + '</b>' +
+      (b.valor_mensal != null ? '<em style="display:block;font-size:10px">' + reaisBid(b.valor_mensal) + ' / mês</em>' : '') + '</div></div>'
   ).join('') : '<div class="d3-vazio" style="padding:16px">' + (bids.length ? 'Nenhuma negociação em andamento' : 'Cadastre os bids na tela Bids / Concorrências') + '</div>';
 }
 
@@ -2904,9 +2901,9 @@ const OPC_CLI   = () => allClientes.map(c => [c.id, c.razao_social]);
 const OPC_COLAB = () => allColaboradores.map(c => [c.id, c.nome]);
 const VERDE = 'var(--green)', AMARELO = 'var(--amber)', VERMELHO = 'var(--red)', CINZA = '#64748b', AZUL = 'var(--accent2)';
 
-// Status dos bids: os 5 primeiros sao "em andamento"; Ganho e Perdido encerram a negociacao
-const ETAPAS_BID = ['Proposta Técnica Enviada', 'Proposta Enviada', 'Leilão', 'Negociação com Suprimentos', 'Supply Cliente', 'Ganho', 'Perdido'];
-const CORES_ETAPA_BID = { 'Proposta Técnica Enviada':'#94a3b8', 'Proposta Enviada':'#3b8cff', 'Leilão':'#a855f7', 'Negociação com Suprimentos':'#facc15', 'Supply Cliente':'#f97316', 'Ganho':'#22c55e', 'Perdido':'#ef4444' };
+// Status (fase) dos bids
+const ETAPAS_BID = ['Proposta', 'Leilão', 'Supply Cliente'];
+const CORES_ETAPA_BID = { 'Proposta':'#3b8cff', 'Leilão':'#a855f7', 'Supply Cliente':'#f97316' };
 const COR_ETAPA_BID = CORES_ETAPA_BID;
 const reaisBid = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 const MODULOS = {
@@ -2997,9 +2994,11 @@ const MODULOS = {
     tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'data_limite', crescente: true,
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
-      { id:'valor_total', label:'Valor Estimado (R$)', tipo:'number', obrig:true, naTabela:false },
-      { id:'_estimado', label:'Valor Estimado', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
-      { id:'prazo_meses', label:'Prazo do Contrato (meses)', tipo:'number' },
+      { id:'valor_total', label:'Valor Global (R$)', tipo:'number', naTabela:false },
+      { id:'valor_mensal', label:'Valor Mensal (R$)', tipo:'number', naTabela:false },
+      { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
+      { id:'_mensal', label:'Valor Mensal', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
+      { id:'prazo_meses', label:'Prazo (meses)', tipo:'number' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID }
     ]
   }
