@@ -936,6 +936,9 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
       <div class="form-group"><div class="form-label">UF</div>
         <select class="form-select" id="cl-uf"><option>RJ</option><option>MG</option><option>GO</option><option>ES</option><option>SP</option><option>DF</option></select>
       </div>
+      <div class="form-group"><div class="form-label">Tipo de Cliente *</div>
+        <select class="form-select" id="cl-tipo"><option value="Ativo">Cliente Ativo</option><option value="Bid">Cliente de Bid</option></select>
+      </div>
     </div>
     <input type="hidden" id="cl-id" value="" />
     <div class="modal-footer">
@@ -1078,7 +1081,9 @@ function renderMapaAtuacao() {
   allClientes.forEach(c => { if (c.uf) ufCliente[c.id] = c.uf.trim().toUpperCase(); });
   const cont = {};
   const soma = (uf, campo) => { if (!uf || !MAPA_BR.estados[uf]) return; cont[uf] = cont[uf] || { clientes: 0, equipamentos: 0, colaboradores: 0 }; cont[uf][campo]++; };
-  allClientes.forEach(c => soma((c.uf || '').trim().toUpperCase(), 'clientes'));
+  // clientes de Bid (ainda em negociacao) nao entram no mapa de atuacao
+  const clientesAtivos = allClientes.filter(c => c.tipo_cliente !== 'Bid');
+  clientesAtivos.forEach(c => soma((c.uf || '').trim().toUpperCase(), 'clientes'));
   allEquipamentos.forEach(e => soma((e.uf || ufCliente[e.cliente_id] || '').trim().toUpperCase(), 'equipamentos'));
   // colaboradores ativos (nao desligados), no estado do cliente onde trabalham
   const colabAtivos = allColaboradores.filter(c => c.status !== 'Desligado');
@@ -1099,7 +1104,7 @@ function renderMapaAtuacao() {
   };
   const ehBaseKway = c => /KWAY/i.test(c.setor || '') || /^GALP[ÃA]O/i.test(c.razao_social || '');
   const marcasPorUf = {}, baseUf = new Set();
-  allClientes.forEach(c => {
+  clientesAtivos.forEach(c => {
     const uf = (c.uf || '').trim().toUpperCase();
     if (!MAPA_BR.estados[uf]) return;
     if (ehBaseKway(c)) { baseUf.add(uf); return; }
@@ -1381,8 +1386,8 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente, valor_total, prazo_meses, etapa');
-  const bids = error ? [] : (data || []);
+  const { data, error } = await db.from('bids').select('cliente_id, valor_total, prazo_meses, etapa');
+  const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const fechado = b => b.etapa === 'Ganho' || b.etapa === 'Perdido';
   const andamento = bids.filter(b => !fechado(b));
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
@@ -2140,9 +2145,10 @@ async function carregarClientes() {
   const el = document.getElementById('cliente-table-body');
   if (!el) return;
   el.innerHTML = allClientes.length ?
-    '<table><thead><tr><th>Razao Social</th><th>CNPJ</th><th>Setor</th><th>UF</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Razao Social</th><th>CNPJ</th><th>Setor</th><th>UF</th><th>Tipo</th><th></th></tr></thead><tbody>' +
     allClientes.map(c =>
-      '<tr><td><strong>' + c.razao_social + '</strong></td><td>' + (c.cnpj||'-') + '</td><td>' + (c.setor||'-') + '</td><td>' + (c.uf||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCliente(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCliente(\'' + c.id + '\',\'' + c.razao_social + '\')">&#128465;&#65039;</button></td></tr>'
+      '<tr><td><strong>' + c.razao_social + '</strong></td><td>' + (c.cnpj||'-') + '</td><td>' + (c.setor||'-') + '</td><td>' + (c.uf||'-') + '</td>' +
+      '<td>' + (c.tipo_cliente === 'Bid' ? '<span style="color:#facc15;font-weight:600">Cliente de Bid</span>' : '<span style="color:var(--green);font-weight:600">Cliente Ativo</span>') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCliente(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCliente(\'' + c.id + '\',\'' + c.razao_social + '\')">&#128465;&#65039;</button></td></tr>'
     ).join('') + '</tbody></table>' :
     '<div class="loading">Nenhum cliente cadastrado</div>';
   popularSelectClientes();
@@ -2161,7 +2167,8 @@ async function salvarCliente() {
     razao_social: nome,
     cnpj: document.getElementById('cl-cnpj').value,
     setor: document.getElementById('cl-setor').value,
-    uf: document.getElementById('cl-uf').value
+    uf: document.getElementById('cl-uf').value,
+    tipo_cliente: document.getElementById('cl-tipo').value
   };
   let error;
   if (id) {
@@ -2183,6 +2190,7 @@ async function editarCliente(id) {
   document.getElementById('cl-cnpj').value = c.cnpj || '';
   document.getElementById('cl-setor').value = c.setor || '';
   document.getElementById('cl-uf').value = c.uf || '';
+  document.getElementById('cl-tipo').value = c.tipo_cliente === 'Bid' ? 'Bid' : 'Ativo';
   document.getElementById('modal-cliente-title').textContent = 'Editar Cliente';
   openModal('modal-cliente');
 }
@@ -2190,6 +2198,7 @@ async function editarCliente(id) {
 
 function fecharCliente() {
   document.getElementById('cl-id').value = '';
+  document.getElementById('cl-tipo').value = 'Ativo';
   document.getElementById('modal-cliente-title').textContent = 'Novo Cliente';
   closeModal('modal-cliente');
 }
@@ -2987,7 +2996,7 @@ const MODULOS = {
   bids: {
     tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'data_limite', crescente: true,
     campos: [
-      { id:'cliente', label:'Cliente', tipo:'text', obrig:true, negrito:true },
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
       { id:'valor_total', label:'Valor Estimado (R$)', tipo:'number', obrig:true, naTabela:false },
       { id:'_estimado', label:'Valor Estimado', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
       { id:'prazo_meses', label:'Prazo do Contrato (meses)', tipo:'number' },
