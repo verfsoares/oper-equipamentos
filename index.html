@@ -388,12 +388,6 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
             <div><h2>Férias</h2><small id="ferias-prog-sub">Saídas nos próximos 30 dias</small></div></div>
           <div id="ferias-prog-lista" class="d3-alertas"></div>
         </div>
-        <!-- CONCEDER FERIAS: periodo limite do colaborador chegando (ou vencido) -->
-        <div class="p3">
-          <div class="p3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg></div>
-            <div><h2>Conceder Férias</h2><small id="ferias-conc-sub">Período limite em até 30 dias</small></div></div>
-          <div id="ferias-conc-lista" class="d3-alertas"></div>
-        </div>
         <!-- RENOVACAO DE EPI: de 4 em 4 meses a contar da ultima entrega -->
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M3 17h18M5 17v-3a7 7 0 0 1 14 0v3M10 8V5h4v3"/></svg></div>
@@ -1319,7 +1313,7 @@ const diasAte = v => Math.round((new Date(String(v).slice(0, 10)) - new Date(hoj
 
 async function renderFeriasDashboard() {
   const progEl = document.getElementById('ferias-prog-lista'), concEl = document.getElementById('ferias-conc-lista');
-  if (!progEl || !concEl) return;
+  if (!progEl) return;
   const hoje = hojeLocal(), em30 = hojeLocal(30);
   const nomeColab = id => (allColaboradores.find(c => c.id === id) || {}).nome || '-';
   // ferias programadas que comecam nos proximos 30 dias
@@ -1335,7 +1329,8 @@ async function renderFeriasDashboard() {
       '<div><b>' + esc(nomeColab(f.colaborador_id)) + '</b><small>' + fmtData(f.data_inicio) + ' a ' + fmtData(f.data_fim) + (f.dias ? ' · ' + f.dias + ' dias' : '') + '</small></div>' +
       '<span class="tag">' + (d === 0 ? 'Hoje' : 'Em ' + d + (d === 1 ? ' dia' : ' dias')) + '</span></div>';
   }).join('') : '<div class="d3-vazio">Ninguém sai de férias nos próximos 30 dias</div>';
-  // periodo limite chegando: precisa conceder (botao marca como concedida)
+  // periodo limite chegando: precisa conceder (quadro retirado por enquanto; volta quando a tela de Ferias for refeita)
+  if (!concEl) return;
   const pend = feriasAConceder();
   document.getElementById('ferias-conc-sub').textContent = pend.length ? pend.length + (pend.length === 1 ? ' colaborador' : ' colaboradores') + ' com período limite em até 30 dias' : 'Período limite em até 30 dias';
   const icCal = '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
@@ -1438,8 +1433,8 @@ function renderAlertasVencimento() {
     else if (v <= em30) alertas.push({ vencido: false, pessoa: c.nome, nome, v });
   }));
   const vencidosColab = alertas.filter(a => a.vencido).length;
-  // contador no menu Colaboradores (vencimentos + ferias a conceder)
-  const conceder = feriasAConceder();
+  // contador no menu Colaboradores (vencimentos; ferias a conceder so quando o quadro existir)
+  const conceder = document.getElementById('ferias-conc-lista') ? feriasAConceder() : [];
   const totalColab = alertas.length + conceder.length;
   const algumVencido = vencidosColab || conceder.some(c => String(c.venc_ferias).slice(0, 10) < hoje);
   const badge = document.getElementById('badge-colab');
