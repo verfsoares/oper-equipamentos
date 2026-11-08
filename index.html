@@ -228,14 +228,17 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-vazio{color:var(--muted);font-size:12px;text-align:center;padding:30px 10px}
 .d3-filtro{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 18px 0;font-size:11px;color:var(--muted)}
 .d3-filtro .form-input,.d3-filtro .form-select{padding:6px 9px;font-size:12px}
-.d3-frota{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;padding:14px 20px 22px}
-.d3-anel{position:relative;width:132px;height:132px}
+.d3-frota{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px;align-items:center;padding:10px 20px 14px}
+.d3-anel{position:relative;width:104px;height:104px}
 .d3-anel svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 0 8px rgba(34,197,94,.7))}
 .d3-anel>div{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
-.d3-anel b{font-size:30px;font-weight:800;line-height:1;display:block}.d3-anel small{font-size:9px;color:var(--muted);display:block;margin-top:4px}
-.d3-leg{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:9px;font-size:11px;padding:5px 0}
-.d3-leg i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
-.d3-leg small{color:var(--muted);font-size:9px;display:block}
+.d3-anel b{font-size:24px;font-weight:800;line-height:1;display:block}.d3-anel small{font-size:9px;color:var(--muted);display:block;margin-top:4px}
+.d3-legs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.d3-leg{display:flex;flex-direction:column;gap:3px;padding:7px 8px;border-radius:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 16%,transparent),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-top:3px solid var(--c)}
+.d3-leg .nm{font-size:9px;font-weight:700;letter-spacing:.3px;display:flex;align-items:flex-start;gap:5px;line-height:1.2;min-height:22px}
+.d3-leg b{font-size:22px;font-weight:800;line-height:1.1;text-shadow:0 0 12px color-mix(in srgb,var(--c) 70%,transparent)}
+.d3-leg i{flex-shrink:0;margin-top:2px;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.d3-leg small{color:var(--muted);font-size:8.5px;display:block;line-height:1.3}
 .d3-graf{min-height:160px}
 .d3-leg-graf{display:flex;gap:14px;justify-content:center;font-size:9.5px;color:var(--muted);margin-top:2px}
 .d3-leg-graf i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;box-shadow:0 0 6px currentColor}
@@ -278,7 +281,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-funil .tr{height:12px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
 .d3-funil .tr i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 45%,#000),var(--c));box-shadow:0 0 10px var(--c)}
 .d3-funil b{white-space:nowrap;text-align:right}.d3-funil small{color:var(--muted);font-size:9.5px}
-@media(max-width:1100px){.d3-bids{grid-template-columns:1fr}.d3-linha{grid-template-columns:1fr}.d3-mapa,.d3-frota{grid-template-columns:1fr}}
+@media(max-width:1100px){.d3-legs{grid-template-columns:repeat(2,minmax(0,1fr))}.d3-bids{grid-template-columns:1fr}.d3-linha{grid-template-columns:1fr}.d3-mapa,.d3-frota{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -396,12 +399,13 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
               <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.6"/>
               <circle id="anel-ocupacao" cx="18" cy="18" r="15" fill="none" stroke="url(#grad-anel)" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="0 94.25" style="transition:stroke-dasharray .8s"/></svg>
               <div><span><b id="kpi-util">-%</b><small>Ocupação</small></span></div></div>
-            <div>
-              <div class="d3-leg" style="--c:#22c55e"><i></i><div>Atuando<small id="kpi-util-sub">Equipamentos atuando</small></div><b id="leg-util">-%</b></div>
-              <div class="d3-leg" style="--c:#a855f7"><i></i><div>Parada no Cliente<small id="kpi-pc-sub">Equipamentos</small></div><b id="kpi-pc">-</b></div>
-              <div class="d3-leg" style="--c:#facc15"><i></i><div>Preventiva<small id="kpi-prev-sub">Equipamentos</small></div><b id="kpi-prev">-</b></div>
-              <div class="d3-leg" style="--c:#ef4444"><i></i><div>Corretiva<small id="kpi-corr-sub">Equipamentos</small></div><b id="kpi-corr">-</b></div>
-              <div class="d3-leg" style="--c:#3b8cff"><i></i><div>Total Apontados<small id="kpi-total-sub">No período selecionado</small></div><b id="kpi-total">-</b></div>
+            <!-- legenda lado a lado: nome, percentual embaixo e detalhe -->
+            <div class="d3-legs">
+              <div class="d3-leg" style="--c:#22c55e"><span class="nm"><i></i>Atuando</span><b id="leg-util">-%</b><small id="kpi-util-sub">Equipamentos atuando</small></div>
+              <div class="d3-leg" style="--c:#a855f7"><span class="nm"><i></i>Parada no Cliente</span><b id="kpi-pc">-</b><small id="kpi-pc-sub">Equipamentos</small></div>
+              <div class="d3-leg" style="--c:#facc15"><span class="nm"><i></i>Preventiva</span><b id="kpi-prev">-</b><small id="kpi-prev-sub">Equipamentos</small></div>
+              <div class="d3-leg" style="--c:#ef4444"><span class="nm"><i></i>Corretiva</span><b id="kpi-corr">-</b><small id="kpi-corr-sub">Equipamentos</small></div>
+              <div class="d3-leg" style="--c:#3b8cff"><span class="nm"><i></i>Total Apontados</span><b id="kpi-total">-</b><small id="kpi-total-sub">No período selecionado</small></div>
             </div>
             <div style="grid-column:1/-1"><div class="d3-barras-tit">Ocupação por dia</div><div class="d3-graf" id="barras-ocupacao"></div></div>
           </div>
@@ -1846,7 +1850,7 @@ function desenharGraficoOcupacao() {
   for (let d = new Date(inicio + 'T12:00'); d <= new Date(final + 'T12:00') && dias.length < 400; d.setDate(d.getDate() + 1))
     dias.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
   if (dias.length > 62) dias = comDado.slice(-62);   // periodo muito longo: so os dias com apontamento
-  const W = Math.max(el.clientWidth || 420, 260), H = 160, pE = 30, pD = 8, pT = 10, pB = 24;
+  const W = Math.max(el.clientWidth || 420, 260), H = 132, pE = 30, pD = 10, pT = 8, pB = 34;
   const n = dias.length, larg = W - pE - pD, alt = H - pT - pB;
   const x = i => pE + (n === 1 ? larg / 2 : i * larg / (n - 1));
   const pct = d => porDia[d] ? (porDia[d].A || 0) / porDia[d].tot * 100 : null;
@@ -1882,9 +1886,15 @@ function desenharGraficoOcupacao() {
     const dica = fmtData(d) + ': ' + Math.round(p) + '% atuando' + (c ? ' · ' + c + ' corretiva' + (c > 1 ? 's' : '') : '') + (pv ? ' · ' + pv + ' preventiva' + (pv > 1 ? 's' : '') : '') + (pc ? ' · ' + pc + ' parada' + (pc > 1 ? 's' : '') + ' no cliente' : '');
     svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p).toFixed(1) + '" r="' + raio + '" fill="' + cor + '" stroke="' + ((c && pv) ? '#facc15' : '#071535') + '" stroke-width="' + ((c && pv) ? 2 : 1) + '" style="filter:drop-shadow(0 0 ' + ((c || pv) ? 5 : 2) + 'px ' + cor + ')"><title>' + dica + '</title></circle>';
   });
-  // dias no eixo X (1 a 30)
+  // linha do tempo do mes (1 a 30/31): trilho com uma marca por dia; dias com apontamento acesos e o dia de hoje em destaque
+  const yT = H - 20, hojeTxt = hojeLocal();
+  const ultimoComDado = dias.reduce((u, d, i) => porDia[d] ? i : u, -1);
+  svg += '<line x1="' + x(0) + '" x2="' + x(n - 1) + '" y1="' + yT + '" y2="' + yT + '" stroke="rgba(120,170,255,.25)" stroke-width="3" stroke-linecap="round"/>';
+  if (ultimoComDado >= 0) svg += '<line x1="' + x(0) + '" x2="' + x(ultimoComDado) + '" y1="' + yT + '" y2="' + yT + '" stroke="#3b8cff" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 4px #3b8cff)"/>';
   dias.forEach((d, i) => {
-    svg += '<text x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="' + (n > 40 ? 6.5 : 8) + '" fill="' + (porDia[d] ? '#c7d4f0' : '#5b6b8f') + '">' + Number(d.slice(8)) + '</text>';
+    const eHoje = d === hojeTxt, tem = !!porDia[d];
+    svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + yT + '" r="' + (eHoje ? 4 : 2) + '" fill="' + (eHoje ? '#fff' : tem ? '#93c5fd' : '#33456e') + '"' + (eHoje ? ' style="filter:drop-shadow(0 0 5px #fff)"' : '') + '/>' +
+      '<text x="' + x(i).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="' + (n > 40 ? 6.5 : 8) + '" font-weight="' + (eHoje ? 800 : 500) + '" fill="' + (eHoje ? '#fff' : tem ? '#c7d4f0' : '#5b6b8f') + '">' + Number(d.slice(8)) + '</text>';
   });
   el.innerHTML = svg + '</svg>' +
     '<div class="d3-leg-graf"><span><i style="background:#22c55e"></i>Atuando (%)</span><span><i style="background:#ef4444"></i>Corretiva</span><span><i style="background:#facc15"></i>Preventiva</span></div>';
