@@ -228,7 +228,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-vazio{color:var(--muted);font-size:12px;text-align:center;padding:30px 10px}
 .d3-filtro{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 18px 0;font-size:11px;color:var(--muted)}
 .d3-filtro .form-input,.d3-filtro .form-select{padding:6px 9px;font-size:12px}
-.d3-frota{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:center;padding:14px 20px 22px}
+.d3-frota{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;padding:14px 20px 22px}
 .d3-anel{position:relative;width:132px;height:132px}
 .d3-anel svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 0 8px rgba(34,197,94,.7))}
 .d3-anel>div{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
@@ -236,6 +236,9 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .d3-leg{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:9px;font-size:11px;padding:5px 0}
 .d3-leg i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
 .d3-leg small{color:var(--muted);font-size:9px;display:block}
+.d3-graf{min-height:160px}
+.d3-leg-graf{display:flex;gap:14px;justify-content:center;font-size:9.5px;color:var(--muted);margin-top:2px}
+.d3-leg-graf i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;box-shadow:0 0 6px currentColor}
 .d3-barras-tit{font-size:9.5px;color:var(--muted);letter-spacing:1px;margin-bottom:4px}
 .d3-barras{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:16px}
 .d3-barras div{flex:1;min-width:3px;border-radius:5px 5px 2px 2px;background:linear-gradient(to top,#1e40af,#60a5fa);box-shadow:0 0 10px rgba(59,140,255,.6),inset 0 1px 0 rgba(255,255,255,.4);position:relative}
@@ -353,10 +356,10 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
       <div class="k3-grid">
         <div class="k3 tilt" style="--cor:#22c55e"><div class="k3-cab"><div class="ic3d" style="--c1:#4ade80;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
           <div><div class="k3-tit">Taxa de Ocupação</div><div class="k3-val" id="dia-util">-%</div></div></div><div class="k3-sub" id="dia-util-sub">-</div><svg class="spark" id="spark-A" data-cor="#4ade80"></svg></div>
-        <div class="k3 tilt" style="--cor:#facc15"><div class="k3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg></div>
-          <div><div class="k3-tit">Parada no Cliente</div><div class="k3-val" id="dia-pc">-%</div></div></div><div class="k3-sub" id="dia-pc-sub">-</div><svg class="spark" id="spark-PC" data-cor="#fde047"></svg></div>
-        <div class="k3 tilt" style="--cor:#f59e0b"><div class="k3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg></div>
-          <div><div class="k3-tit">Preventiva</div><div class="k3-val" id="dia-prev">-%</div></div></div><div class="k3-sub" id="dia-prev-sub">-</div><svg class="spark" id="spark-P" data-cor="#fdba74"></svg></div>
+        <div class="k3 tilt" style="--cor:#a855f7"><div class="k3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg></div>
+          <div><div class="k3-tit">Parada no Cliente</div><div class="k3-val" id="dia-pc">-%</div></div></div><div class="k3-sub" id="dia-pc-sub">-</div><svg class="spark" id="spark-PC" data-cor="#c4b5fd"></svg></div>
+        <div class="k3 tilt" style="--cor:#facc15"><div class="k3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg></div>
+          <div><div class="k3-tit">Preventiva</div><div class="k3-val" id="dia-prev">-%</div></div></div><div class="k3-sub" id="dia-prev-sub">-</div><svg class="spark" id="spark-P" data-cor="#fde047"></svg></div>
         <div class="k3 tilt" style="--cor:#ef4444"><div class="k3-cab"><div class="ic3d" style="--c1:#f87171;--c2:#991b1b"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg></div>
           <div><div class="k3-tit">Corretiva</div><div class="k3-val" id="dia-corr">-%</div></div></div><div class="k3-sub" id="dia-corr-sub">-</div><svg class="spark" id="spark-C" data-cor="#f87171"></svg></div>
         <div class="k3 tilt" style="--cor:#3b8cff"><div class="k3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h4"/></svg></div>
@@ -395,12 +398,12 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
               <div><span><b id="kpi-util">-%</b><small>Ocupação</small></span></div></div>
             <div>
               <div class="d3-leg" style="--c:#22c55e"><i></i><div>Atuando<small id="kpi-util-sub">Equipamentos atuando</small></div><b id="leg-util">-%</b></div>
-              <div class="d3-leg" style="--c:#facc15"><i></i><div>Parada no Cliente<small id="kpi-pc-sub">Equipamentos</small></div><b id="kpi-pc">-</b></div>
-              <div class="d3-leg" style="--c:#f59e0b"><i></i><div>Preventiva<small id="kpi-prev-sub">Equipamentos</small></div><b id="kpi-prev">-</b></div>
+              <div class="d3-leg" style="--c:#a855f7"><i></i><div>Parada no Cliente<small id="kpi-pc-sub">Equipamentos</small></div><b id="kpi-pc">-</b></div>
+              <div class="d3-leg" style="--c:#facc15"><i></i><div>Preventiva<small id="kpi-prev-sub">Equipamentos</small></div><b id="kpi-prev">-</b></div>
               <div class="d3-leg" style="--c:#ef4444"><i></i><div>Corretiva<small id="kpi-corr-sub">Equipamentos</small></div><b id="kpi-corr">-</b></div>
               <div class="d3-leg" style="--c:#3b8cff"><i></i><div>Total Apontados<small id="kpi-total-sub">No período selecionado</small></div><b id="kpi-total">-</b></div>
             </div>
-            <div><div class="d3-barras-tit">Ocupação por dia</div><div class="d3-barras" id="barras-ocupacao"></div></div>
+            <div style="grid-column:1/-1"><div class="d3-barras-tit">Ocupação por dia</div><div class="d3-graf" id="barras-ocupacao"></div></div>
           </div>
         </div>
         <!-- CUSTO OPERACIONAL DO MES VIGENTE -->
@@ -474,7 +477,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6M12 2v3"/></svg></div>
           <div><h2>Horas Paradas em Manutenção</h2><small id="manut-horas-periodo">Da saída até o retorno do equipamento</small></div></div>
         <div class="d3-horas">
-          <div class="d3-hora" style="--c:#f59e0b"><span>Preventiva</span><b id="horas-prev">0h</b><small id="horas-prev-sub">0 manutenções</small></div>
+          <div class="d3-hora" style="--c:#facc15"><span>Preventiva</span><b id="horas-prev">0h</b><small id="horas-prev-sub">0 manutenções</small></div>
           <div class="d3-hora" style="--c:#ef4444"><span>Corretiva</span><b id="horas-corr">0h</b><small id="horas-corr-sub">0 manutenções</small></div>
           <div class="d3-hora" style="--c:#3b8cff"><span>Total Parado</span><b id="horas-total">0h</b><small id="horas-total-sub">Preventiva + corretiva</small></div>
           <div class="d3-hora" style="--c:#facc15"><span>Em Andamento</span><b id="horas-abertas">0</b><small>Sem data de retorno</small></div>
@@ -1818,14 +1821,75 @@ function desenharTendencias(movs) {
   };
   spark('spark-A', serie('A')); spark('spark-PC', serie('PC')); spark('spark-P', serie('P')); spark('spark-C', serie('C'));
   spark('spark-T', dias.map(d => porDia[d].tot));
-  const el = document.getElementById('barras-ocupacao');
-  if (!el) return;
-  const ocup = serie('A');
-  el.innerHTML = dias.length ? dias.map((d, i) => {
-    const mostra = dias.length <= 12 || i % 5 === 0 || i === dias.length - 1;
-    return '<div style="height:' + Math.max(ocup[i], 2) + '%" title="' + fmtData(d) + ': ' + Math.round(ocup[i]) + '% atuando">' + (mostra ? '<span>' + d.slice(8) + '</span>' : '') + '</div>';
-  }).join('') : '<div class="d3-vazio" style="background:none;box-shadow:none;flex:1;align-self:center">Sem apontamentos no período</div>';
+  ultimoGrafico = { porDia, ini: (document.getElementById('dash-ini') || {}).value, fim: (document.getElementById('dash-fim') || {}).value };
+  desenharGraficoOcupacao();
 }
+
+// GRAFICO DE LINHA DA OCUPACAO: dias do mes (1 a 30/31) no eixo; a linha mostra o % atuando de cada dia.
+// Ponto vermelho = dia com corretiva; ponto amarelo = dia com preventiva.
+let ultimoGrafico = null;
+function desenharGraficoOcupacao() {
+  const el = document.getElementById('barras-ocupacao');
+  if (!el || !ultimoGrafico) return;
+  const { porDia } = ultimoGrafico;
+  const comDado = Object.keys(porDia).sort();
+  let inicio = ultimoGrafico.ini || comDado[0], final = ultimoGrafico.fim || comDado[comDado.length - 1];
+  if (!inicio || !comDado.length) { el.innerHTML = '<div class="d3-vazio">Sem apontamentos no período</div>'; return; }
+  if (!final) final = inicio;
+  // periodo dentro de um mes: mostra o mes inteiro (1 ate o ultimo dia)
+  if (inicio.slice(0, 7) === final.slice(0, 7)) {
+    const [y, m] = inicio.split('-').map(Number);
+    inicio = inicio.slice(0, 8) + '01';
+    final = inicio.slice(0, 8) + String(new Date(y, m, 0).getDate()).padStart(2, '0');
+  }
+  let dias = [];
+  for (let d = new Date(inicio + 'T12:00'); d <= new Date(final + 'T12:00') && dias.length < 400; d.setDate(d.getDate() + 1))
+    dias.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+  if (dias.length > 62) dias = comDado.slice(-62);   // periodo muito longo: so os dias com apontamento
+  const W = Math.max(el.clientWidth || 420, 260), H = 160, pE = 30, pD = 8, pT = 10, pB = 24;
+  const n = dias.length, larg = W - pE - pD, alt = H - pT - pB;
+  const x = i => pE + (n === 1 ? larg / 2 : i * larg / (n - 1));
+  const pct = d => porDia[d] ? (porDia[d].A || 0) / porDia[d].tot * 100 : null;
+  // escala do eixo Y comeca um pouco abaixo do menor valor, para as quedas ficarem visiveis
+  const menor = Math.min(...dias.map(pct).filter(v => v !== null));
+  const yMin = Math.max(0, Math.floor((menor - 10) / 10) * 10);
+  const y = p => pT + (1 - (p - yMin) / (100 - yMin)) * alt;
+  // grade e eixo Y (0%, 50%, 100%)
+  let svg = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block">' +
+    '<defs><linearGradient id="g-ocup" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22c55e" stop-opacity=".35"/><stop offset="1" stop-color="#22c55e" stop-opacity="0"/></linearGradient></defs>';
+  [yMin, Math.round((yMin + 100) / 2), 100].forEach(p => {
+    svg += '<line x1="' + pE + '" x2="' + (W - pD) + '" y1="' + y(p) + '" y2="' + y(p) + '" stroke="rgba(255,255,255,' + (p === yMin ? '.18' : '.07') + ')" stroke-dasharray="' + (p === yMin ? '' : '3 4') + '"/>' +
+      '<text x="' + (pE - 6) + '" y="' + (y(p) + 3) + '" text-anchor="end" font-size="8" fill="#9fb0d3">' + p + '%</text>';
+  });
+  // linha (interrompida nos dias sem apontamento) e area
+  let caminho = '', area = '', seg = [];
+  const fechaSeg = () => {
+    if (seg.length) {
+      area += 'M' + seg[0][0] + ',' + y(yMin) + seg.map(p => 'L' + p[0] + ',' + p[1]).join('') + 'L' + seg[seg.length - 1][0] + ',' + y(yMin) + 'Z';
+      caminho += seg.map((p, i) => (i ? 'L' : 'M') + p[0] + ',' + p[1]).join('');
+    }
+    seg = [];
+  };
+  dias.forEach((d, i) => { const p = pct(d); if (p === null) fechaSeg(); else seg.push([x(i).toFixed(1), y(p).toFixed(1)]); });
+  fechaSeg();
+  svg += '<path d="' + area + '" fill="url(#g-ocup)"/>' +
+    '<path d="' + caminho + '" fill="none" stroke="#22c55e" stroke-width="2.2" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px #22c55e)"/>';
+  // pontos: verde normal, vermelho com corretiva, amarelo com preventiva
+  dias.forEach((d, i) => {
+    const p = pct(d); if (p === null) return;
+    const r = porDia[d], c = r.C || 0, pv = r.P || 0, pc = r.PC || 0;
+    const cor = c ? '#ef4444' : pv ? '#facc15' : '#22c55e', raio = (c || pv) ? 4.5 : 2.4;
+    const dica = fmtData(d) + ': ' + Math.round(p) + '% atuando' + (c ? ' · ' + c + ' corretiva' + (c > 1 ? 's' : '') : '') + (pv ? ' · ' + pv + ' preventiva' + (pv > 1 ? 's' : '') : '') + (pc ? ' · ' + pc + ' parada' + (pc > 1 ? 's' : '') + ' no cliente' : '');
+    svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p).toFixed(1) + '" r="' + raio + '" fill="' + cor + '" stroke="' + ((c && pv) ? '#facc15' : '#071535') + '" stroke-width="' + ((c && pv) ? 2 : 1) + '" style="filter:drop-shadow(0 0 ' + ((c || pv) ? 5 : 2) + 'px ' + cor + ')"><title>' + dica + '</title></circle>';
+  });
+  // dias no eixo X (1 a 30)
+  dias.forEach((d, i) => {
+    svg += '<text x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="' + (n > 40 ? 6.5 : 8) + '" fill="' + (porDia[d] ? '#c7d4f0' : '#5b6b8f') + '">' + Number(d.slice(8)) + '</text>';
+  });
+  el.innerHTML = svg + '</svg>' +
+    '<div class="d3-leg-graf"><span><i style="background:#22c55e"></i>Atuando (%)</span><span><i style="background:#ef4444"></i>Corretiva</span><span><i style="background:#facc15"></i>Preventiva</span></div>';
+}
+window.addEventListener('resize', () => { clearTimeout(window._tGraf); window._tGraf = setTimeout(desenharGraficoOcupacao, 200); });
 
 // Cards de KPI inclinam em 3D acompanhando o mouse
 document.querySelectorAll('.tilt').forEach(el => {
@@ -2579,7 +2643,7 @@ async function carregarManutencaoEquip() {
   if (fFim)   q = q.lte('data_manutencao', fFim);
   const { data: manuts } = await q.limit(50);
 
-  const tipoColor = { 'Manutencao Preventiva':'var(--amber)', 'Manutencao Corretiva':'var(--red)', 'Troca de Pecas':'var(--purple)', 'Revisao Geral':'var(--teal)', 'Borracharia':'var(--green)', 'Eletrica':'var(--accent2)', 'Hidraulica':'var(--blue)', 'Outro':'var(--muted)' };
+  const tipoColor = { 'Manutencao Preventiva':'#facc15', 'Manutencao Corretiva':'var(--red)', 'Troca de Pecas':'var(--purple)', 'Revisao Geral':'var(--teal)', 'Borracharia':'var(--green)', 'Eletrica':'var(--accent2)', 'Hidraulica':'var(--blue)', 'Outro':'var(--muted)' };
 
   document.getElementById('manut-equip-table-body').innerHTML = manuts && manuts.length ?
     '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Horímetro</th><th>Tipo</th><th>Tempo Parado</th><th>Observação</th><th>Laudo</th><th>Usuario</th><th></th></tr></thead><tbody>' +
