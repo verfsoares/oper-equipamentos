@@ -357,7 +357,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 
 <div id="main">
   <div id="topbar">
-    <div class="page-title" id="pageTitle">Dashboard - UN. Movimentação de Carga</div>
+    <div class="page-title" id="pageTitle">Dashboard - UN. de Negócios Movimentação de Carga</div>
     <div style="font-size:12px;color:var(--muted)" id="topDate"></div>
     <span class="sino" id="top-sino" style="display:none" title="Alertas de vencimento" onclick="nav('colaboradores', document.querySelector('.nav-item[onclick*=&quot;colaboradores&quot;]'))">&#128276;<i id="top-sino-n"></i></span>
     <button class="btn btn-primary" id="mainBtn" onclick="mainAction()" style="display:none">+ Novo</button>
@@ -1074,7 +1074,7 @@ async function initApp() {
 }
 
 const pageMap = {
-  dashboard:        { title: 'Dashboard - UN. Movimentação de Carga', loader: carregarDashboard },
+  dashboard:        { title: 'Dashboard - UN. de Negócios Movimentação de Carga', loader: carregarDashboard },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
