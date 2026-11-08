@@ -1337,6 +1337,7 @@ function feriasAConceder() {
   return allColaboradores.filter(c => {
     const v = c.venc_ferias ? String(c.venc_ferias).slice(0, 10) : '';
     if (c.status === 'Desligado' || !v || v > em30) return false;
+    if (c.ferias_gozo && String(c.ferias_gozo).slice(0, 10) >= maisMeses(v, -12)) return false;   // ja gozou
     return !(c.ferias_concedidas_venc && String(c.ferias_concedidas_venc).slice(0, 10) === v);
   }).sort((a, b) => String(a.venc_ferias).localeCompare(String(b.venc_ferias)));
 }
@@ -3050,7 +3051,9 @@ const MODULOS = {
       { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true, diasAlerta:60 },
       { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true },
       { id:'venc_selo', label:'Vencimento do Selo da Máquina', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_ferias', label:'Limite para Concessão', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc' },
+      { id:'venc_ferias', label:'Limite para Concessão', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc', gozo:'ferias_gozo' },
+      // data em que o colaborador tirou (gozou) as ferias: se for dentro do periodo desse limite, o limite nao fica mais vermelho/amarelo
+      { id:'ferias_gozo', label:'Gozo Férias', tipo:'date' },
       { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
     ]
   },
@@ -3191,6 +3194,9 @@ function celulaModulo(c, r) {
   const txt = esc(valorExibicao(c, r));
   const v = r[c.id];
   if (c.cor && c.cor[v]) return '<span style="color:' + c.cor[v] + ';font-weight:600">' + txt + '</span>';
+  // ferias ja gozadas no periodo desse limite (gozo nos 12 meses antes do limite, ou depois): fica verde, sem alerta
+  if (c.gozo && v && r[c.gozo] && String(r[c.gozo]).slice(0, 10) >= maisMeses(v, -12))
+    return '<span style="color:var(--green);font-weight:600;white-space:nowrap"><span class="bolinha" style="background:var(--green)"></span>' + txt + ' (gozadas)</span>';
   // ferias ja concedidas para esse vencimento (marcado no Dashboard): fica verde
   if (c.concedida && v && r[c.concedida] && String(r[c.concedida]).slice(0, 10) === String(v).slice(0, 10))
     return '<span style="color:var(--green);font-weight:600;white-space:nowrap"><span class="bolinha" style="background:var(--green)"></span>' + txt + ' (concedida)</span>';
