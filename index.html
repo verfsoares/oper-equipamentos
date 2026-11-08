@@ -360,21 +360,6 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 
     <!-- DASHBOARD -->
     <div class="view active" id="v-dashboard">
-      <!-- STATUS DO DIA (sempre hoje) -->
-      <div class="secao-kpi" id="titulo-status-dia">Status do Dia</div>
-      <div class="k3-grid">
-        <div class="k3 tilt" style="--cor:#22c55e"><div class="k3-cab"><div class="ic3d" style="--c1:#4ade80;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
-          <div><div class="k3-tit">Taxa de Ocupação</div><div class="k3-val" id="dia-util">-%</div></div></div><div class="k3-sub" id="dia-util-sub">-</div><svg class="spark" id="spark-A" data-cor="#4ade80"></svg></div>
-        <div class="k3 tilt" style="--cor:#a855f7"><div class="k3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg></div>
-          <div><div class="k3-tit">Parada no Cliente</div><div class="k3-val" id="dia-pc">-%</div></div></div><div class="k3-sub" id="dia-pc-sub">-</div><svg class="spark" id="spark-PC" data-cor="#c4b5fd"></svg></div>
-        <div class="k3 tilt" style="--cor:#facc15"><div class="k3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg></div>
-          <div><div class="k3-tit">Preventiva</div><div class="k3-val" id="dia-prev">-%</div></div></div><div class="k3-sub" id="dia-prev-sub">-</div><svg class="spark" id="spark-P" data-cor="#fde047"></svg></div>
-        <div class="k3 tilt" style="--cor:#ef4444"><div class="k3-cab"><div class="ic3d" style="--c1:#f87171;--c2:#991b1b"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg></div>
-          <div><div class="k3-tit">Corretiva</div><div class="k3-val" id="dia-corr">-%</div></div></div><div class="k3-sub" id="dia-corr-sub">-</div><svg class="spark" id="spark-C" data-cor="#f87171"></svg></div>
-        <div class="k3 tilt" style="--cor:#3b8cff"><div class="k3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h4"/></svg></div>
-          <div><div class="k3-tit">Apontados Hoje</div><div class="k3-val" id="dia-total">-</div></div></div><div class="k3-sub" id="dia-total-sub">-</div><svg class="spark" id="spark-T" data-cor="#93c5fd"></svg></div>
-      </div>
-
       <!-- 1) mapa de atuacao + alertas (vencimentos, ferias e EPI) -->
       <div class="d3-linha">
         <!-- MAPA DE ATUACAO (3D) -->
@@ -408,26 +393,22 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         </div>
       </div>
 
-      <!-- 2) bids / concorrencias -->
-      <!-- BIDS / CONCORRENCIAS: negociacoes em andamento e valor em jogo -->
-      <div class="p3" style="margin-bottom:16px">
-        <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
-          <div><h2>Bids / Concorrências</h2><small>Negociações em andamento</small></div></div>
-        <div class="d3-horas">
-          <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
-          <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
-          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
-          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Em ativos, para ganhar os bids</small></div>
-        </div>
-        <div style="padding:10px 18px 4px">
-          <div class="d3-barras-tit">Negociações em andamento</div>
-          <div id="bids-prazos" class="d3-bids-tab"></div>
-          <div class="d3-barras-tit" style="margin-top:14px">Por status</div>
-          <div id="bids-funil" class="d3-bids-status"></div>
-        </div>
+      <!-- 2) STATUS DO DIA (sempre hoje) -->
+      <div class="secao-kpi" id="titulo-status-dia">Status do Dia</div>
+      <div class="k3-grid">
+        <div class="k3 tilt" style="--cor:#22c55e"><div class="k3-cab"><div class="ic3d" style="--c1:#4ade80;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
+          <div><div class="k3-tit">Taxa de Ocupação</div><div class="k3-val" id="dia-util">-%</div></div></div><div class="k3-sub" id="dia-util-sub">-</div><svg class="spark" id="spark-A" data-cor="#4ade80"></svg></div>
+        <div class="k3 tilt" style="--cor:#a855f7"><div class="k3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg></div>
+          <div><div class="k3-tit">Parada no Cliente</div><div class="k3-val" id="dia-pc">-%</div></div></div><div class="k3-sub" id="dia-pc-sub">-</div><svg class="spark" id="spark-PC" data-cor="#c4b5fd"></svg></div>
+        <div class="k3 tilt" style="--cor:#facc15"><div class="k3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg></div>
+          <div><div class="k3-tit">Preventiva</div><div class="k3-val" id="dia-prev">-%</div></div></div><div class="k3-sub" id="dia-prev-sub">-</div><svg class="spark" id="spark-P" data-cor="#fde047"></svg></div>
+        <div class="k3 tilt" style="--cor:#ef4444"><div class="k3-cab"><div class="ic3d" style="--c1:#f87171;--c2:#991b1b"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+          <div><div class="k3-tit">Corretiva</div><div class="k3-val" id="dia-corr">-%</div></div></div><div class="k3-sub" id="dia-corr-sub">-</div><svg class="spark" id="spark-C" data-cor="#f87171"></svg></div>
+        <div class="k3 tilt" style="--cor:#3b8cff"><div class="k3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h4"/></svg></div>
+          <div><div class="k3-tit">Apontados Hoje</div><div class="k3-val" id="dia-total">-</div></div></div><div class="k3-sub" id="dia-total-sub">-</div><svg class="spark" id="spark-T" data-cor="#93c5fd"></svg></div>
       </div>
 
-      <!-- 3) manutencao: status da frota do mes e custo operacional -->
+      <!-- 3) status da frota do mes e custo operacional -->
       <div class="d3-linha">
         <!-- STATUS DA FROTA DO MES (filtro: do dia 1 ate hoje, pode mudar o periodo) -->
         <div class="p3">
@@ -484,7 +465,26 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         </div>
       </div>
 
-      <!-- 4) horas paradas em manutencao -->
+      <!-- 4) bids / concorrencias -->
+      <!-- BIDS / CONCORRENCIAS: negociacoes em andamento e valor em jogo -->
+      <div class="p3" style="margin-bottom:16px">
+        <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
+          <div><h2>Bids / Concorrências</h2><small>Negociações em andamento</small></div></div>
+        <div class="d3-horas">
+          <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
+          <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
+          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
+          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Em ativos, para ganhar os bids</small></div>
+        </div>
+        <div style="padding:10px 18px 4px">
+          <div class="d3-barras-tit">Negociações em andamento</div>
+          <div id="bids-prazos" class="d3-bids-tab"></div>
+          <div class="d3-barras-tit" style="margin-top:14px">Por status</div>
+          <div id="bids-funil" class="d3-bids-status"></div>
+        </div>
+      </div>
+
+      <!-- 5) horas paradas em manutencao -->
       <!-- HORAS EM MANUTENCAO (saida ate retorno, no periodo do filtro da frota) -->
       <div class="p3" style="margin-bottom:16px">
         <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6M12 2v3"/></svg></div>
