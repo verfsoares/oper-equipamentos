@@ -479,8 +479,6 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div style="padding:10px 18px 4px">
           <div class="d3-barras-tit">Negociações em andamento</div>
           <div id="bids-prazos" class="d3-bids-tab"></div>
-          <div class="d3-barras-tit" style="margin-top:14px">Por status</div>
-          <div id="bids-funil" class="d3-bids-status"></div>
         </div>
       </div>
 
@@ -1448,7 +1446,8 @@ async function renderBidsDashboard() {
       '<span class="st">' + esc(b.etapa || '-') + '</span></div>'
     ).join('') : '<div class="d3-vazio" style="padding:16px">Cadastre os bids na tela Bids / Concorrências</div>';
   // embaixo: quantos bids e quanto valor em cada status, nas mesmas cores
-  document.getElementById('bids-funil').innerHTML = ETAPAS_BID.map(e => {
+  const funil = document.getElementById('bids-funil');   // quadro 'Por status' retirado (redundante com a tabela)
+  if (funil) funil.innerHTML = ETAPAS_BID.map(e => {
     const l = andamento.filter(b => b.etapa === e);
     return '<div class="d3-bst" style="--c:' + cores[e] + '"><span>' + e + '</span><b>' + l.length + '</b><small>' + (l.length === 1 ? 'bid' : 'bids') + ' · ' + reaisBid(soma(l, 'valor_total')) + '</small></div>';
   }).join('');
@@ -3051,7 +3050,7 @@ const MODULOS = {
       { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true, diasAlerta:60 },
       { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true },
       { id:'venc_selo', label:'Vencimento do Selo da Máquina', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_ferias', label:'Limite das Férias', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc' },
+      { id:'venc_ferias', label:'Limite para Concessão', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc' },
       { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
     ]
   },
