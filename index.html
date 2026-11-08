@@ -3047,11 +3047,11 @@ const MODULOS = {
       { id:'cliente_id', label:'Cliente / Local de Trabalho', tipo:'ref', ref:OPC_CLI },
       { id:'data_admissao', label:'Data de Admissão', tipo:'date', obrig:true },
       { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Afastado','Desligado'], obrig:true, cor:{ Ativo:VERDE, Afastado:AMARELO, Desligado:CINZA } },
-      // vencimentos: ficam amarelos quando faltam 30 dias ou menos e vermelhos quando vencem
-      { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true },
+      // vencimentos: ficam amarelos quando faltam 30 dias ou menos (ASO, selo e limite das ferias: 60 dias) e vermelhos quando vencem
+      { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true, diasAlerta:60 },
       { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true },
-      { id:'venc_selo', label:'Vencimento do Selo da Máquina', tipo:'date', alertaVencimento:true },
-      { id:'venc_ferias', label:'Vencimento das Férias', tipo:'date', alertaVencimento:true, concedida:'ferias_concedidas_venc' },
+      { id:'venc_selo', label:'Vencimento do Selo da Máquina', tipo:'date', alertaVencimento:true, diasAlerta:60 },
+      { id:'venc_ferias', label:'Limite das Férias', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc' },
       { id:'observacoes', label:'Observações', tipo:'textarea', full:true, naTabela:false }
     ]
   },
@@ -3197,7 +3197,7 @@ function celulaModulo(c, r) {
     return '<span style="color:var(--green);font-weight:600;white-space:nowrap"><span class="bolinha" style="background:var(--green)"></span>' + txt + ' (concedida)</span>';
   if (c.alertaVencimento && v) {
     const hoje = hojeLocal();
-    const em30 = hojeLocal(30);
+    const em30 = hojeLocal(c.diasAlerta || 30);   // bolinha amarela: vence dentro desse prazo (30 dias, ou 60 quando indicado)
     const dias = Math.round((new Date(String(v).slice(0, 10)) - new Date(hoje)) / 864e5);
     const info = c.mostrarDias
       ? (dias < 0 ? ' (vencido há ' + (-dias) + ' dia' + (dias === -1 ? '' : 's') + ')' : dias === 0 ? ' (vence hoje)' : ' (faltam ' + dias + ' dia' + (dias === 1 ? '' : 's') + ')')
