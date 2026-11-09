@@ -516,9 +516,10 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
           <div><h2>Bids / Concorrências</h2><small>Negociações em andamento</small></div></div>
         <div class="d3-horas">
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
-          <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
-          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal Fixo em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
-          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Equipamentos fixos (terceiros são sublocados)</small></div>
+          <div class="d3-hora" style="--c:#facc15"><span>Valor Global da Negociação</span><b id="bids-total">R$ 0</b><small>Total dos contratos em negociação</small></div>
+          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal Fixo</span><b id="bids-mensal">R$ 0</b><small>Soma por mês</small></div>
+          <div class="d3-hora" style="--c:#22d3ee"><span>Valor Mensal Spot</span><b id="bids-spot">R$ 0</b><small>Soma por mês</small></div>
+          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Fixo</span><b id="bids-invest">R$ 0</b><small>Equipamentos fixos (terceiros são sublocados)</small></div>
         </div>
         <div style="height:12px"></div>
       </div>
@@ -1619,7 +1620,7 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente_id, empresa_grupo, escopo, valor_total, valor_mensal, investimento, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('cliente_id, empresa_grupo, escopo, valor_total, valor_mensal, valor_spot, investimento, prazo_meses, etapa');
   const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const andamento = bids;   // todo bid cadastrado esta em negociacao (quando fechar, exclua ou mude o cliente para Ativo)
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
@@ -1627,6 +1628,7 @@ async function renderBidsDashboard() {
   set('bids-qtd', andamento.length); set('bids-qtd-sub', andamento.length === 1 ? 'negociação' : 'negociações');
   set('bids-total', reaisBid(soma(andamento, 'valor_total')));
   set('bids-mensal', reaisBid(soma(andamento, 'valor_mensal')));
+  set('bids-spot', reaisBid(soma(andamento, 'valor_spot')));
   set('bids-invest', reaisBid(soma(andamento, 'investimento')));
   const cores = CORES_ETAPA_BID;
   const abrir = 'onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))"';
@@ -3407,16 +3409,18 @@ const MODULOS = {
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
       { id:'empresa_grupo', label:'Empresa do Grupo (por onde entramos)', tipo:'text' },
       { id:'escopo', label:'Escopo (ex.: 15 empilhadeiras 2,5t)', tipo:'text', full:true },
-      // valores aceitam sigla contabil: 16K, 4,3MM, 1,2BI
-      { id:'valor_total', label:'Valor Global (R$) - ex.: 4,3MM', tipo:'valor', naTabela:false },
+      // valores aceitam sigla contabil: 16K, 4,3MM, 1,2BI (formulario nesta ordem)
+      { id:'valor_total', label:'Valor Global da Negociação (R$) - ex.: 4,3MM', tipo:'valor', naTabela:false },
       { id:'valor_mensal', label:'Valor Mensal Fixo (R$) - ex.: 120K', tipo:'valor', naTabela:false },
-      { id:'valor_spot', label:'Valores Spot (R$) - ex.: 35K', tipo:'valor', naTabela:false },
-      { id:'investimento', label:'Investimento Equipamentos Fixos (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
+      { id:'prazo_meses', label:'Prazo Equipamentos Fixos (meses)', tipo:'number', naTabela:false },
+      { id:'valor_spot', label:'Valor Mensal Spot (R$) - ex.: 35K', tipo:'valor', naTabela:false },
+      { id:'investimento', label:'Investimento Fixo (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
+      // colunas da lista, na mesma ordem
       { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
       { id:'_mensal', label:'Valor Mensal Fixo', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
-      { id:'_spot', label:'Valores Spot', tipo:'calc', calc: r => r.valor_spot != null ? reaisBid(r.valor_spot) : '-' },
-      { id:'_invest', label:'Investimento Equipamentos Fixos', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
-      { id:'prazo_meses', label:'Prazo Equipamentos Fixos (meses)', tipo:'number' },
+      { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
+      { id:'_spot', label:'Valor Mensal Spot', tipo:'calc', calc: r => r.valor_spot != null ? reaisBid(r.valor_spot) : '-' },
+      { id:'_invest', label:'Investimento Fixo', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID }
     ]
   }
