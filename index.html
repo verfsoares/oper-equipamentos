@@ -1196,13 +1196,33 @@ async function montarQuadroContato() {
   texto('VERÔNICA SOARES', 490, '700 56px Cinzel', '#ffffff', 3);
   texto('UNIDADE DE NEGÓCIOS MOVIMENTAÇÃO DE CARGA', 540, '500 28px Inter', '#c7d4f0', 1);
   // contatos
-  const itens = [['TELEFONE', ['(21) 96867-2379'], '#22c55e', 98], ['E-MAILS PARA CONTATO', ['veronica.soares@kway.com.br', 'comercial@kway.com.br'], '#3b8cff', 142], ['SITE', ['kway.com.br'], '#ef4444', 98]];
+  const itens = [['TELEFONE', ['(21) 96867-2379'], 'wa', 98], ['E-MAILS PARA CONTATO', ['veronica.soares@kway.com.br', 'comercial@kway.com.br'], 'mail', 142], ['SITE', ['kway.com.br'], 'kway', 98]];
+  const coresIc = { wa: ['#4ade80', '#15803d'], mail: ['#60a5fa', '#1d4ed8'], kway: ['#1e4fa8', '#0a1a40'] };
+  // desenha o mesmo icone em relevo usado na tela
+  const icone = (tipo, x, y, s) => {
+    const gr = g.createLinearGradient(x, y, x + s, y + s); gr.addColorStop(0, coresIc[tipo][0]); gr.addColorStop(1, coresIc[tipo][1]);
+    g.shadowColor = coresIc[tipo][0]; g.shadowBlur = 16; ret(x, y, s, s, 18); g.fillStyle = gr; g.fill(); g.shadowBlur = 0;
+    const br = g.createLinearGradient(0, y, 0, y + s / 2); br.addColorStop(0, 'rgba(255,255,255,.38)'); br.addColorStop(1, 'rgba(255,255,255,0)');
+    ret(x + 3, y + 3, s - 6, s / 2, 15); g.fillStyle = br; g.fill();
+    if (tipo === 'wa') {
+      const d = document.querySelector('.ct-item[href*="wa.me"] path').getAttribute('d'), e = (s * .62) / 24;
+      g.save(); g.translate(x + s * .19, y + s * .19); g.scale(e, e); g.fillStyle = '#ffffff'; g.fill(new Path2D(d)); g.restore();
+    } else if (tipo === 'mail') {
+      const m = s * .22, l = s - 2 * m, a = l * .74, y0 = y + (s - a) / 2;
+      g.strokeStyle = '#ffffff'; g.lineWidth = 4; g.lineJoin = 'round'; g.lineCap = 'round';
+      ret(x + m, y0, l, a, 6); g.stroke();
+      g.beginPath(); g.moveTo(x + m + 2, y0 + 7); g.lineTo(x + s / 2, y0 + a * .58); g.lineTo(x + s - m - 2, y0 + 7); g.stroke();
+    } else {
+      const im = document.querySelector('.ct-ic-kway img'), lw2 = s * .72, lh2 = lw2 * im.naturalHeight / im.naturalWidth;
+      g.drawImage(im, x + (s - lw2) / 2, y + (s - lh2) / 2, lw2, lh2);
+    }
+  };
   let yItem = 580;
-  itens.forEach(([rot, vals, cor, alt]) => {
+  itens.forEach(([rot, vals, tipo, alt]) => {
     ret(120, yItem, W - 240, alt, 22); g.fillStyle = 'rgba(255,255,255,.07)'; g.fill(); g.strokeStyle = 'rgba(120,170,255,.4)'; g.lineWidth = 2; g.stroke();
-    ret(120, yItem, 10, alt, 5); g.fillStyle = cor; g.fill();
-    g.textAlign = 'left'; g.font = '700 21px Inter'; g.fillStyle = '#9fb0d3'; g.fillText(rot, 160, yItem + 36);
-    g.font = '700 36px Inter'; g.fillStyle = '#ffffff'; vals.forEach((v, i) => g.fillText(v, 160, yItem + 79 + i * 44));
+    icone(tipo, 142, yItem + (alt - 66) / 2, 66);
+    g.textAlign = 'left'; g.font = '700 21px Inter'; g.fillStyle = '#9fb0d3'; g.fillText(rot, 232, yItem + 36);
+    g.font = '700 36px Inter'; g.fillStyle = '#ffffff'; vals.forEach((v, i) => g.fillText(v, 232, yItem + 79 + i * 44));
     yItem += alt + 14;
   });
   // avaliacao
