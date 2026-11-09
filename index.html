@@ -186,7 +186,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .brand-vf{flex-direction:column;align-items:center;gap:8px;padding:20px 14px 14px}
 .brand-vf .vf-escudo{height:64px;width:auto;filter:drop-shadow(0 0 14px rgba(212,175,95,.45)) drop-shadow(0 6px 10px rgba(0,0,0,.4))}
 .brand-vf .vf-texto{width:100%;max-width:190px;height:auto}
-.obs-bids{font-style:italic;font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin:4px 6px 20px;line-height:1.5}
+.obs-bids{font-style:italic;font-size:12.5px;color:#e2ebff;letter-spacing:.4px;margin:6px 6px 22px;padding:10px 14px;line-height:1.5;border-left:3px solid #facc15;background:rgba(250,204,21,.07);border-radius:0 10px 10px 0;text-shadow:0 0 10px rgba(120,180,255,.35)}.obs-bids b{color:#facc15}
 .ct-unico{max-width:370px;margin:0 auto}
 .ct-emails a{display:block;font-size:13px;font-weight:700;color:var(--text);text-decoration:none;text-transform:none;line-height:1.45;overflow-wrap:anywhere}
 .ct-emails a:hover{color:#67e8f9}
@@ -518,6 +518,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="d3-horas">
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
           <div class="d3-hora" style="--c:#facc15"><span>Valor Global da Negociação</span><b id="bids-total">R$ 0</b><small>Total dos contratos em negociação</small></div>
+          <div class="d3-hora" style="--c:#38bdf8"><span>Valor Global Fixo</span><b id="bids-globalfixo">R$ 0</b><small>Mensal fixo x prazo dos fixos</small></div>
           <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal Fixo</span><b id="bids-mensal">R$ 0</b><small>Soma por mês</small></div>
           <div class="d3-hora" style="--c:#ef4444"><span>Investimento Fixo</span><b id="bids-invest">R$ 0</b><small>Equipamentos fixos (terceiros são sublocados)</small></div>
         </div>
@@ -1628,6 +1629,7 @@ async function renderBidsDashboard() {
   set('bids-qtd', andamento.length); set('bids-qtd-sub', andamento.length === 1 ? 'negociação' : 'negociações');
   set('bids-total', reaisBid(soma(andamento, 'valor_total')));
   set('bids-mensal', reaisBid(soma(andamento, 'valor_mensal')));
+  set('bids-globalfixo', reaisBid(andamento.reduce((t, b) => t + ((Number(b.valor_mensal) || 0) * (Number(b.prazo_meses) || 0)), 0)));
   set('bids-invest', reaisBid(soma(andamento, 'investimento')));
   const cores = CORES_ETAPA_BID;
   const abrir = 'onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))"';
@@ -3415,6 +3417,8 @@ const MODULOS = {
       { id:'investimento', label:'Investimento Fixo (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
       // colunas da lista, na mesma ordem
       { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
+      // valor global fixo = valor mensal fixo x prazo dos equipamentos fixos (calculado sozinho)
+      { id:'_globalfixo', label:'Valor Global Fixo', tipo:'calc', calc: r => (r.valor_mensal != null && r.prazo_meses != null) ? reaisBid(r.valor_mensal * r.prazo_meses) : '-' },
       { id:'_mensal', label:'Valor Mensal Fixo', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
       { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
       { id:'_invest', label:'Investimento Fixo', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
@@ -3606,7 +3610,7 @@ async function deletarModulo(chave, id) {
   await carregarModulo(chave);
 }
 
-montarTelasModulos(); document.getElementById('v-bids').prepend(document.getElementById('painel-bids')); document.getElementById('v-bids').insertAdjacentHTML('beforeend', '<p class="obs-bids">Observação: a diferença entre o Valor Global e o Valor Mensal Fixo refere-se à mobilização e aos equipamentos em formato de contratação SPOT.</p>');   // resumo dos bids fica na tela BID's
+montarTelasModulos(); document.getElementById('v-bids').prepend(document.getElementById('painel-bids')); document.getElementById('v-bids').insertAdjacentHTML('beforeend', '<p class="obs-bids"><b>Considerações:</b> a diferença entre o Valor Global e o Valor Global Fixo refere-se à mobilização e aos equipamentos em formato de contratação SPOT.</p>');   // resumo dos bids fica na tela BID's
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
