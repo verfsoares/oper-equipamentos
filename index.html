@@ -767,7 +767,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="ct-qr" id="contato-qr"></div>
         <a class="ct-avaliar" id="contato-link" target="_blank" rel="noopener">&#9733; Clique aqui para avaliar</a>
       </div>
-      <div class="ct-acoes"><a class="btn ct-zap" id="contato-zap" target="_blank" rel="noopener">Enviar link da avaliação pelo WhatsApp</a><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
+      <div class="ct-acoes"><a class="btn ct-zap" id="contato-zap" target="_blank" rel="noopener">Enviar cartão com link pelo WhatsApp</a><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
     </div>
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
@@ -1174,7 +1174,7 @@ function nav(page, el) {
 const LINK_AVALIACAO_GOOGLE = 'https://search.google.com/local/writereview?placeid=ChIJ9ZJbs0DamwAR2_3I4WHJtag';
 function desenharQrAvaliacao() {
   document.getElementById('contato-link').href = LINK_AVALIACAO_GOOGLE;
-  document.getElementById('contato-zap').href = 'https://wa.me/?text=' + encodeURIComponent('Avalie a KWAY no Google: ' + LINK_AVALIACAO_GOOGLE);
+  document.getElementById('contato-zap').href = 'https://wa.me/?text=' + encodeURIComponent('Contatos da gestora e avaliação da KWAY no Google: https://oper-equipamentos.pages.dev/cartao');
   const el = document.getElementById('contato-qr');
   if (el.dataset.pronto) return;
   try {
