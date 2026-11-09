@@ -79,14 +79,14 @@ body{font-family:'Helvetica Neue','Inter',Helvetica,Arial,sans-serif;background:
 .kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
 .badge-A{background:rgba(16,185,129,0.15);color:#34d399}
-.badge-P{background:rgba(245,180,0,0.15);color:#f5b400}
+.badge-P{background:rgba(250,204,21,0.15);color:#facc15}
 .badge-C{background:rgba(239,68,68,0.15);color:#f87171}
 .badge-D{background:rgba(30,111,224,0.20);color:#8ab8ff}
 .badge-T{background:rgba(139,92,246,0.15);color:#a78bfa}
 .badge-MOB{background:rgba(20,184,166,0.15);color:#2dd4bf}
 .badge-DESMOB{background:rgba(100,116,139,0.15);color:#94a3b8}
 .badge-IN{background:rgba(71,85,105,0.15);color:#64748b}
-.badge-PC{background:rgba(234,179,8,0.15);color:#facc15}
+.badge-PC{background:rgba(168,85,247,0.18);color:#c4b5fd}
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
 .table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
 .table-title{font-size:14px;font-weight:600}
@@ -216,6 +216,12 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .ct-qr{width:140px;height:140px;padding:8px;background:#fff;border-radius:12px;margin:10px 0;box-shadow:0 0 28px rgba(59,140,255,.45)}
 .ct-qr svg{display:block;width:100%;height:100%}
 .ct-aviso{font-size:10px;color:var(--muted);margin-top:12px}
+.hist-maq{position:relative}
+.hist-maq-btn{width:230px;text-align:left;cursor:pointer}
+.hist-maq-painel{position:absolute;top:calc(100% + 6px);left:0;width:320px;max-height:340px;overflow-y:auto;padding:10px;border-radius:12px;background:#0f2558;border:1px solid var(--borda3d);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.hist-maq-acoes{display:flex;gap:6px;margin-bottom:8px}
+.hist-maq-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:12px;cursor:pointer}
+.hist-maq-item:hover{background:rgba(59,140,255,.15)}
 .cliente-tag{display:flex;align-items:center;gap:8px;margin:10px 12px 2px;padding:7px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--borda3d);font-size:8.5px;color:var(--muted);letter-spacing:1.5px}
 .cliente-tag img{height:15px;width:auto;margin-left:auto;filter:drop-shadow(0 0 5px rgba(211,47,47,.5))}
 .cliente-tag b{font-size:13px;color:#fff;letter-spacing:2.5px;font-weight:800}
@@ -691,8 +697,15 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 
     <!-- HISTORICO -->
     <div class="view" id="v-historico">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:220px" id="filter-hist-equip" onchange="carregarHistorico()"><option value="">Selecione um equipamento</option></select>
+      <div style="position:relative;z-index:20;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select class="form-select" style="width:210px" id="filter-hist-cliente" onchange="histClienteMudou()"><option value="">Todos os clientes</option></select>
+        <div class="hist-maq" id="hist-maq">
+          <button type="button" class="form-select hist-maq-btn" id="hist-maq-btn" onclick="histAbrirMaquinas(event)">Selecione as máquinas</button>
+          <div class="hist-maq-painel" id="hist-maq-painel" style="display:none">
+            <div class="hist-maq-acoes"><button type="button" class="btn" onclick="histMarcarTodas(true)">Marcar todas</button><button type="button" class="btn" onclick="histMarcarTodas(false)">Desmarcar</button></div>
+            <div id="hist-maq-lista"></div>
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:12px;color:var(--muted)">De:</span>
           <input class="form-input" type="date" id="filter-hist-ini" onchange="carregarHistorico()" style="width:150px" />
@@ -716,8 +729,9 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         </select>
         <button class="btn" onclick="limparFiltrosHist()">Limpar</button>
       </div>
+      <div id="hist-resumo" style="display:none;margin-bottom:16px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="form-card"><div class="form-card-title">Linha do Tempo</div><div id="hist-timeline"><div class="loading">Selecione um equipamento</div></div></div>
+        <div class="form-card"><div class="form-card-title">Linha do Tempo</div><div id="hist-timeline" style="max-height:520px;overflow-y:auto"><div class="loading">Selecione um equipamento</div></div></div>
         <div class="form-card"><div class="form-card-title">Custos do Periodo</div><div id="hist-custos"><div class="loading">Selecione um equipamento</div></div></div>
       </div>
     </div>
@@ -2310,49 +2324,118 @@ function calcTotal() {
   document.getElementById('ct-total').value = 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 }
 
-async function carregarHistoricoSelects() {
-  const sel = document.getElementById('filter-hist-equip');
-  sel.innerHTML = '<option value="">Selecione um equipamento</option>' + allEquipamentos.map(e => '<option value="' + e.id + '">' + e.frota + ' . ' + e.equipamento + '</option>').join('');
+// ---- Historico: filtro por cliente e selecao de varias maquinas ----
+const histIds = () => [...document.querySelectorAll('#hist-maq-lista input:checked')].map(i => i.value);
+function histAtualizarBotao() {
+  const n = histIds().length;
+  document.getElementById('hist-maq-btn').textContent = n ? n + (n === 1 ? ' máquina selecionada' : ' máquinas selecionadas') : 'Selecione as máquinas';
 }
-
-function limparFiltrosHist() {
-  ['filter-hist-ini','filter-hist-fim','filter-hist-mes','filter-hist-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+function histMontarLista(marcar) {
+  const cli = document.getElementById('filter-hist-cliente').value, antes = new Set(histIds());
+  const lista = allEquipamentos.filter(e => !cli || e.cliente_id === cli);
+  document.getElementById('hist-maq-lista').innerHTML = lista.length ? lista.map(e =>
+    '<label class="hist-maq-item"><input type="checkbox" value="' + e.id + '"' + (marcar || antes.has(e.id) ? ' checked' : '') + ' onchange="histMaquinasMudaram()" /><span>' + esc(e.frota) + ' · ' + esc(e.equipamento || '') + '</span></label>'
+  ).join('') : '<div class="d3-vazio" style="padding:12px">Nenhuma máquina neste cliente</div>';
+  histAtualizarBotao();
+}
+async function carregarHistoricoSelects() {
+  const sel = document.getElementById('filter-hist-cliente'), atual = sel.value;
+  const comMaquina = new Set(allEquipamentos.map(e => e.cliente_id));
+  sel.innerHTML = '<option value="">Todos os clientes</option>' + allClientes.filter(c => comMaquina.has(c.id)).map(c => '<option value="' + c.id + '">' + esc(c.razao_social) + '</option>').join('');
+  sel.value = atual;
+  histMontarLista(false);
+}
+function histClienteMudou() {
+  // ao escolher um cliente, ja marca todas as maquinas dele
+  const cli = document.getElementById('filter-hist-cliente').value;
+  document.getElementById('hist-maq-lista').innerHTML = '';
+  histMontarLista(!!cli);
+  carregarHistorico();
+}
+function histMaquinasMudaram() { histAtualizarBotao(); carregarHistorico(); }
+function histMarcarTodas(v) { document.querySelectorAll('#hist-maq-lista input').forEach(i => { i.checked = v; }); histMaquinasMudaram(); }
+function histAbrirMaquinas(ev) {
+  ev.stopPropagation();
+  const p = document.getElementById('hist-maq-painel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', e => {
+  const c = document.getElementById('hist-maq');
+  if (c && !c.contains(e.target)) document.getElementById('hist-maq-painel').style.display = 'none';
+});
+function histLimparTelas() {
+  document.getElementById('hist-resumo').style.display = 'none';
   document.getElementById('hist-timeline').innerHTML = '<div class="loading">Selecione um equipamento</div>';
   document.getElementById('hist-custos').innerHTML = '<div class="loading">Selecione um equipamento</div>';
 }
+function limparFiltrosHist() {
+  ['filter-hist-ini','filter-hist-fim','filter-hist-mes','filter-hist-ano','filter-hist-cliente'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('hist-maq-lista').innerHTML = '';
+  histMontarLista(false);
+  histLimparTelas();
+}
+
+// Quadro de resumo: taxa de atuacao e de ociosidade (ociosidade = tudo que nao e Atuando; o total de cada status aparece aberto)
+function renderResumoHist(movs, ids, periodo) {
+  const el = document.getElementById('hist-resumo');
+  const conta = l => { const q = s => l.filter(m => m.status === s).length, t = l.length, A = q('A'), P = q('P'), C = q('C'), PC = q('PC'); return { t, A, P, C, PC, oc: t - A, outros: t - A - P - C - PC }; };
+  const pct = (n, t) => t ? Math.round(n / t * 100) + '%' : '0%';
+  const dias = n => n + (n === 1 ? ' dia' : ' dias');
+  const g = conta(movs);
+  const tile = (cor, rot, val, sub, badge) => '<div class="d3-hora" style="--c:' + cor + '"><span>' + (badge ? '<i class="badge badge-' + badge + '" style="font-style:normal;margin-right:6px">' + badge + '</i>' : '') + rot + '</span><b>' + val + '</b><small>' + sub + '</small></div>';
+  let tabela = '';
+  if (ids.length > 1) {
+    tabela = '<div style="overflow-x:auto;padding:4px 18px 16px"><table class="tabela-compacta"><thead><tr><th>Máquina</th><th style="text-align:right">Atuação</th><th style="text-align:right">Ociosidade</th><th style="text-align:right">Dias ociosa</th><th style="text-align:right">P</th><th style="text-align:right">C</th><th style="text-align:right">PC</th></tr></thead><tbody>' +
+      ids.map(id => {
+        const e = allEquipamentos.find(x => x.id === id) || {}, s = conta(movs.filter(m => m.equipamento_id === id));
+        return '<tr><td><strong>' + esc(e.frota || '-') + '</strong></td><td style="text-align:right;color:#4ade80;font-weight:700">' + pct(s.A, s.t) + '</td><td style="text-align:right;color:#fb923c;font-weight:700">' + pct(s.oc, s.t) + '</td><td style="text-align:right">' + s.oc + '</td><td style="text-align:right">' + s.P + '</td><td style="text-align:right">' + s.C + '</td><td style="text-align:right">' + s.PC + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  el.innerHTML = '<div class="p3"><div class="p3-cab"><div class="ic3d" style="--c1:#4ade80;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 16V9M11 16V5M16 16v-6M21 16V8"/></svg></div><div><h2>Atuação x Ociosidade</h2><small>' + ids.length + (ids.length === 1 ? ' máquina' : ' máquinas') + (periodo ? ' · ' + periodo : '') + '</small></div></div>' +
+    '<div class="d3-horas" style="padding-bottom:14px">' +
+    tile('#22c55e', 'Taxa de Atuação', pct(g.A, g.t), g.A + ' de ' + g.t + ' apontamentos') +
+    tile('#f97316', 'Taxa de Ociosidade', pct(g.oc, g.t), dias(g.oc) + ' de ociosidade' + (ids.length > 1 ? ' (soma das máquinas)' : '')) +
+    tile('#facc15', 'Preventiva', pct(g.P, g.t), dias(g.P), 'P') +
+    tile('#ef4444', 'Corretiva', pct(g.C, g.t), dias(g.C), 'C') +
+    tile('#a855f7', 'Parada no Cliente', pct(g.PC, g.t), dias(g.PC), 'PC') +
+    (g.outros ? tile('#94a3b8', 'Outros Status', pct(g.outros, g.t), dias(g.outros)) : '') +
+    '</div>' + tabela + '</div>';
+  el.style.display = '';
+}
 
 async function carregarHistorico() {
-  const equipId = document.getElementById('filter-hist-equip').value;
-  if (!equipId) return;
+  const ids = histIds();
+  if (!ids.length) { histLimparTelas(); return; }
   const ini = document.getElementById('filter-hist-ini').value;
   const fim = document.getElementById('filter-hist-fim').value;
   const mes = document.getElementById('filter-hist-mes').value;
   const ano = document.getElementById('filter-hist-ano').value;
 
-  // Monta filtro de data
-  let qm = db.from('movimentacoes').select('*').eq('equipamento_id', equipId).order('data', { ascending: false });
-  let qc = db.from('custos').select('*').eq('equipamento_id', equipId);
-
-  if (ini && fim) { qm = qm.gte('data', ini).lte('data', fim); qc = qc.gte('data', ini).lte('data', fim); }
-  else if (ini) { qm = qm.gte('data', ini); qc = qc.gte('data', ini); }
-  else if (fim) { qm = qm.lte('data', fim); qc = qc.lte('data', fim); }
-  else if (ano && mes) {
-    qm = qm.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31');
-    qc = qc.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31');
-  } else if (ano) {
-    qm = qm.gte('data', ano+'-01-01').lte('data', ano+'-12-31');
-    qc = qc.gte('data', ano+'-01-01').lte('data', ano+'-12-31');
-  } else if (mes) {
-    const y = new Date().getFullYear();
-    qm = qm.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31');
-    qc = qc.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31');
+  // Filtro de periodo (o mesmo para apontamentos e custos)
+  const periodo = q => {
+    if (ini && fim) return q.gte('data', ini).lte('data', fim);
+    if (ini) return q.gte('data', ini);
+    if (fim) return q.lte('data', fim);
+    if (ano && mes) return q.gte('data', ano+'-'+mes+'-01').lte('data', ano+'-'+mes+'-31');
+    if (ano) return q.gte('data', ano+'-01-01').lte('data', ano+'-12-31');
+    if (mes) { const y = new Date().getFullYear(); return q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
+    return q;
+  };
+  const movsTodos = [];
+  for (let pagina = 0; pagina < 50; pagina++) {
+    const { data: lote, error } = await periodo(db.from('movimentacoes').select('*').in('equipamento_id', ids).order('data', { ascending: false })).range(pagina * 1000, pagina * 1000 + 999);
+    if (error || !lote) break;
+    movsTodos.push(...lote);
+    if (lote.length < 1000) break;
   }
-
-  const { data: movs } = await qm.limit(50);
-  const { data: custos } = await qc;
+  const { data: custos } = await periodo(db.from('custos').select('*').in('equipamento_id', ids));
+  const txtPeriodo = (ini || fim) ? (ini ? fmtData(ini) : 'início') + ' a ' + (fim ? fmtData(fim) : 'hoje') : (ano && mes) ? mes + '/' + ano : ano ? 'ano ' + ano : mes ? 'mês ' + mes : 'todo o período';
+  renderResumoHist(movsTodos, ids, txtPeriodo);
+  const movs = movsTodos.slice(0, 200);
+  const frotaDe = id => (allEquipamentos.find(e => e.id === id) || {}).frota || '-';
 
   const bc = s => ({ A:'badge-A', P:'badge-P', C:'badge-C', D:'badge-D', T:'badge-T', MOB:'badge-MOB', DESMOB:'badge-DESMOB', IN:'badge-IN', PC:'badge-PC' }[s] || 'badge-D');
-  const statusColors = { A:'var(--green)', C:'var(--red)', P:'var(--amber)', D:'var(--accent)', T:'var(--purple)', MOB:'var(--teal)', IN:'#64748b', PC:'#facc15' };
+  const statusColors = { A:'var(--green)', C:'var(--red)', P:'#facc15', D:'var(--accent)', T:'var(--purple)', MOB:'var(--teal)', IN:'#64748b', PC:'#a855f7' };
 
   // Linha do tempo
   document.getElementById('hist-timeline').innerHTML = movs && movs.length ?
@@ -2363,7 +2446,7 @@ async function carregarHistorico() {
       (i < movs.length-1 ? '<div style="width:2px;flex:1;background:var(--border2);margin-top:4px"></div>' : '') +
       '</div>' +
       '<div style="flex:1;padding-bottom:4px">' +
-      '<div style="font-size:13px;font-weight:500">Status: <span class="badge '+bc(m.status)+'">'+m.status+'</span></div>' +
+      '<div style="font-size:13px;font-weight:500">'+(ids.length > 1 ? '<strong>'+esc(frotaDe(m.equipamento_id))+'</strong> · ' : '')+'Status: <span class="badge '+bc(m.status)+'">'+m.status+'</span></div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:2px">'+m.data+(usuarioVisivel(m) ? ' · '+usuarioVisivel(m) : '')+'</div>' +
       (comentarioVisivel(m) ? '<div style="font-size:12px;color:var(--muted);margin-top:3px">'+comentarioVisivel(m)+'</div>' : '') +
       '</div></div>'
