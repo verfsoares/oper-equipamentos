@@ -218,7 +218,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .ct-aviso{font-size:10px;color:var(--muted);margin-top:12px}
 .hist-maq{position:relative}
 .hist-maq-btn{width:230px;text-align:left;cursor:pointer}
-.hist-maq-painel{position:absolute;top:calc(100% + 6px);left:0;width:320px;max-height:340px;overflow-y:auto;padding:10px;border-radius:12px;background:#0f2558;border:1px solid var(--borda3d);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.hist-maq-painel{position:absolute;top:calc(100% + 6px);left:0;width:380px;max-height:340px;overflow-y:auto;padding:10px;border-radius:12px;background:#0f2558;border:1px solid var(--borda3d);box-shadow:0 18px 40px rgba(0,0,0,.6)}
 .hist-maq-acoes{display:flex;gap:6px;margin-bottom:8px}
 .hist-maq-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:12px;cursor:pointer}
 .hist-maq-item:hover{background:rgba(59,140,255,.15)}
@@ -698,9 +698,15 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
     <!-- HISTORICO -->
     <div class="view" id="v-historico">
       <div style="position:relative;z-index:20;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:210px" id="filter-hist-cliente" onchange="histClienteMudou()"><option value="">Todos os clientes</option></select>
+        <div class="hist-maq" id="hist-cli">
+          <button type="button" class="form-select hist-maq-btn" id="hist-cli-btn" onclick="histAbrir(event,'hist-cli-painel')">Todos os clientes</button>
+          <div class="hist-maq-painel" id="hist-cli-painel" style="display:none">
+            <div class="hist-maq-acoes"><button type="button" class="btn" onclick="histMarcarClientes(true)">Marcar todos</button><button type="button" class="btn" onclick="histMarcarClientes(false)">Desmarcar</button></div>
+            <div id="hist-cli-lista"></div>
+          </div>
+        </div>
         <div class="hist-maq" id="hist-maq">
-          <button type="button" class="form-select hist-maq-btn" id="hist-maq-btn" onclick="histAbrirMaquinas(event)">Selecione as máquinas</button>
+          <button type="button" class="form-select hist-maq-btn" id="hist-maq-btn" onclick="histAbrir(event,'hist-maq-painel')">Selecione as máquinas</button>
           <div class="hist-maq-painel" id="hist-maq-painel" style="display:none">
             <div class="hist-maq-acoes"><button type="button" class="btn" onclick="histMarcarTodas(true)">Marcar todas</button><button type="button" class="btn" onclick="histMarcarTodas(false)">Desmarcar</button></div>
             <div id="hist-maq-lista"></div>
@@ -767,7 +773,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="ct-qr" id="contato-qr"></div>
         <a class="ct-avaliar" id="contato-link" target="_blank" rel="noopener">&#9733; Clique aqui para avaliar</a>
       </div>
-      <div class="ct-acoes"><a class="btn ct-zap" id="contato-zap" target="_blank" rel="noopener">Enviar cartão com link pelo WhatsApp</a><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
+      <div class="ct-acoes"><a class="btn ct-zap" id="contato-zap" target="_blank" rel="noopener">Enviar cartão com link pelo WhatsApp</a><button class="btn btn-primary" onclick="baixarPdfContato()">&#128196; Baixar cartão em PDF (com link clicável)</button><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
     </div>
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
@@ -1188,9 +1194,9 @@ function desenharQrAvaliacao() {
   }
 }
 // Monta o quadro de contato como imagem (1080x1590) para enviar pelo WhatsApp
-async function montarQuadroContato() {
+async function montarQuadroContato(comBotao) {
   try { await Promise.all([document.fonts.load('700 60px Cinzel'), document.fonts.load('700 30px Inter'), document.fonts.load('500 26px Inter')]); } catch (e) {}
-  const W = 1080, H = 1590, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const W = 1080, H = comBotao ? 1690 : 1590, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
   const ret = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   const texto = (s, y, fonte, cor, esp) => { g.font = fonte; g.fillStyle = cor; g.textAlign = 'center'; if ('letterSpacing' in g) g.letterSpacing = (esp || 0) + 'px'; g.fillText(s, W / 2, y); if ('letterSpacing' in g) g.letterSpacing = '0px'; };
@@ -1251,7 +1257,37 @@ async function montarQuadroContato() {
   g.fillStyle = '#000000';
   for (let l = 0; l < n; l++) for (let k = 0; k < n; k++) if (qr.isDark(l, k)) g.fillRect(Math.floor(xq + m + k * cel), Math.floor(yq + m + l * cel), Math.ceil(cel), Math.ceil(cel));
   texto('APONTE A CÂMERA DO CELULAR PARA AVALIAR', 1532, '600 28px Inter', '#c7d4f0', 1);
+  if (comBotao) {   // botao amarelo: no PDF esta area e clicavel
+    const gb = g.createLinearGradient(120, 1570, W - 120, 1660); gb.addColorStop(0, '#fde047'); gb.addColorStop(1, '#f59e0b');
+    g.shadowColor = '#facc15'; g.shadowBlur = 30; ret(120, 1570, W - 240, 90, 22); g.fillStyle = gb; g.fill(); g.shadowBlur = 0;
+    texto('★ CLIQUE AQUI PARA AVALIAR', 1630, '800 38px Inter', '#111111', 1);
+  }
   return c;
+}
+// Cartao em PDF: diferente da imagem, o PDF aceita areas clicaveis (funciona ao abrir o arquivo no WhatsApp ou no celular)
+function carregarJsPdf() {
+  if (window.jspdf) return Promise.resolve();
+  return new Promise((ok, erro) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'; s.onload = ok; s.onerror = erro; document.head.appendChild(s); });
+}
+async function montarPdfContato() {
+  await carregarJsPdf();
+  const c = await montarQuadroContato(true);
+  const doc = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: [c.width, c.height], compress: true });
+  doc.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, c.width, c.height);
+  doc.link(120, 580, 840, 98, { url: 'https://wa.me/5521968672379' });
+  doc.link(120, 692, 840, 87, { url: 'mailto:veronica.soares@kway.com.br' });
+  doc.link(120, 779, 840, 55, { url: 'mailto:comercial@kway.com.br' });
+  doc.link(120, 848, 840, 98, { url: 'https://kway.com.br/' });
+  doc.link(360, 1116, 360, 360, { url: LINK_AVALIACAO_GOOGLE });
+  doc.link(120, 1570, 840, 90, { url: LINK_AVALIACAO_GOOGLE });
+  return doc;
+}
+async function baixarPdfContato() {
+  try {
+    const doc = await montarPdfContato();
+    doc.save('cartao-veronica-soares-kway.pdf');
+    showToast('PDF baixado! É só enviar para a equipe.');
+  } catch (e) { showToast('Não foi possível gerar o PDF', true); }
 }
 async function baixarQuadroContato() {
   try {
@@ -2325,43 +2361,50 @@ function calcTotal() {
 }
 
 // ---- Historico: filtro por cliente e selecao de varias maquinas ----
+const histClis = () => [...document.querySelectorAll('#hist-cli-lista input:checked')].map(i => i.value);
 const histIds = () => [...document.querySelectorAll('#hist-maq-lista input:checked')].map(i => i.value);
 function histAtualizarBotao() {
   const n = histIds().length;
   document.getElementById('hist-maq-btn').textContent = n ? n + (n === 1 ? ' máquina selecionada' : ' máquinas selecionadas') : 'Selecione as máquinas';
 }
 function histMontarLista(marcar) {
-  const cli = document.getElementById('filter-hist-cliente').value, antes = new Set(histIds());
-  const lista = allEquipamentos.filter(e => !cli || e.cliente_id === cli);
+  const clis = histClis(), antes = new Set(histIds());
+  const lista = allEquipamentos.filter(e => !clis.length || clis.includes(e.cliente_id));
   document.getElementById('hist-maq-lista').innerHTML = lista.length ? lista.map(e =>
     '<label class="hist-maq-item"><input type="checkbox" value="' + e.id + '"' + (marcar || antes.has(e.id) ? ' checked' : '') + ' onchange="histMaquinasMudaram()" /><span>' + esc(e.frota) + ' · ' + esc(e.equipamento || '') + '</span></label>'
   ).join('') : '<div class="d3-vazio" style="padding:12px">Nenhuma máquina neste cliente</div>';
   histAtualizarBotao();
 }
 async function carregarHistoricoSelects() {
-  const sel = document.getElementById('filter-hist-cliente'), atual = sel.value;
+  const antes = new Set(histClis());
   const comMaquina = new Set(allEquipamentos.map(e => e.cliente_id));
-  sel.innerHTML = '<option value="">Todos os clientes</option>' + allClientes.filter(c => comMaquina.has(c.id)).map(c => '<option value="' + c.id + '">' + esc(c.razao_social) + '</option>').join('');
-  sel.value = atual;
+  document.getElementById('hist-cli-lista').innerHTML = allClientes.filter(c => comMaquina.has(c.id)).map(c =>
+    '<label class="hist-maq-item"><input type="checkbox" value="' + c.id + '"' + (antes.has(c.id) ? ' checked' : '') + ' onchange="histClienteMudou()" /><span>' + esc(c.razao_social) + '</span></label>'
+  ).join('');
+  histAtualizarBotaoCli();
   histMontarLista(false);
 }
+function histAtualizarBotaoCli() {
+  const n = histClis().length;
+  document.getElementById('hist-cli-btn').textContent = n ? n + (n === 1 ? ' cliente selecionado' : ' clientes selecionados') : 'Todos os clientes';
+}
 function histClienteMudou() {
-  // ao escolher um cliente, ja marca todas as maquinas dele
-  const cli = document.getElementById('filter-hist-cliente').value;
+  // ao escolher clientes, ja marca todas as maquinas deles
+  const temCliente = histClis().length > 0;
+  histAtualizarBotaoCli();
   document.getElementById('hist-maq-lista').innerHTML = '';
-  histMontarLista(!!cli);
+  histMontarLista(temCliente);
   carregarHistorico();
 }
+function histMarcarClientes(v) { document.querySelectorAll('#hist-cli-lista input').forEach(i => { i.checked = v; }); histClienteMudou(); }
 function histMaquinasMudaram() { histAtualizarBotao(); carregarHistorico(); }
 function histMarcarTodas(v) { document.querySelectorAll('#hist-maq-lista input').forEach(i => { i.checked = v; }); histMaquinasMudaram(); }
-function histAbrirMaquinas(ev) {
+function histAbrir(ev, id) {
   ev.stopPropagation();
-  const p = document.getElementById('hist-maq-painel');
-  p.style.display = p.style.display === 'none' ? '' : 'none';
+  ['hist-cli-painel', 'hist-maq-painel'].forEach(p => { const el = document.getElementById(p); el.style.display = (p === id && el.style.display === 'none') ? '' : 'none'; });
 }
 document.addEventListener('click', e => {
-  const c = document.getElementById('hist-maq');
-  if (c && !c.contains(e.target)) document.getElementById('hist-maq-painel').style.display = 'none';
+  [['hist-cli', 'hist-cli-painel'], ['hist-maq', 'hist-maq-painel']].forEach(([c, p]) => { const box = document.getElementById(c); if (box && !box.contains(e.target)) document.getElementById(p).style.display = 'none'; });
 });
 function histLimparTelas() {
   document.getElementById('hist-resumo').style.display = 'none';
@@ -2369,7 +2412,9 @@ function histLimparTelas() {
   document.getElementById('hist-custos').innerHTML = '<div class="loading">Selecione um equipamento</div>';
 }
 function limparFiltrosHist() {
-  ['filter-hist-ini','filter-hist-fim','filter-hist-mes','filter-hist-ano','filter-hist-cliente'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['filter-hist-ini','filter-hist-fim','filter-hist-mes','filter-hist-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.querySelectorAll('#hist-cli-lista input').forEach(i => { i.checked = false; });
+  histAtualizarBotaoCli();
   document.getElementById('hist-maq-lista').innerHTML = '';
   histMontarLista(false);
   histLimparTelas();
