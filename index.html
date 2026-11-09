@@ -517,8 +517,8 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="d3-horas">
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
           <div class="d3-hora" style="--c:#facc15"><span>Valor Global em Negociação</span><b id="bids-total">R$ 0</b><small>Soma dos bids</small></div>
-          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
-          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Em ativos, para ganhar os bids</small></div>
+          <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal Fixo em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
+          <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Equipamentos fixos (terceiros são sublocados)</small></div>
         </div>
         <div style="height:12px"></div>
       </div>
@@ -3409,12 +3409,14 @@ const MODULOS = {
       { id:'escopo', label:'Escopo (ex.: 15 empilhadeiras 2,5t)', tipo:'text', full:true },
       // valores aceitam sigla contabil: 16K, 4,3MM, 1,2BI
       { id:'valor_total', label:'Valor Global (R$) - ex.: 4,3MM', tipo:'valor', naTabela:false },
-      { id:'valor_mensal', label:'Valor Mensal (R$) - ex.: 120K', tipo:'valor', naTabela:false },
-      { id:'investimento', label:'Investimento no Ativo (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
+      { id:'valor_mensal', label:'Valor Mensal Fixo (R$) - ex.: 120K', tipo:'valor', naTabela:false },
+      { id:'valor_spot', label:'Valores Spot (R$) - ex.: 35K', tipo:'valor', naTabela:false },
+      { id:'investimento', label:'Investimento Equipamentos Fixos (R$) - ex.: 2,2MM', tipo:'valor', naTabela:false },
       { id:'_global', label:'Valor Global', tipo:'calc', calc: r => r.valor_total != null ? reaisBid(r.valor_total) : '-' },
-      { id:'_mensal', label:'Valor Mensal', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
-      { id:'_invest', label:'Investimento', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
-      { id:'prazo_meses', label:'Prazo (meses)', tipo:'number' },
+      { id:'_mensal', label:'Valor Mensal Fixo', tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
+      { id:'_spot', label:'Valores Spot', tipo:'calc', calc: r => r.valor_spot != null ? reaisBid(r.valor_spot) : '-' },
+      { id:'_invest', label:'Investimento Equipamentos Fixos', tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
+      { id:'prazo_meses', label:'Prazo Equipamentos Fixos (meses)', tipo:'number' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID }
     ]
   }
