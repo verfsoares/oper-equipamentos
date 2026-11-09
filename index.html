@@ -510,10 +510,7 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
           <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal em Negociação</span><b id="bids-mensal">R$ 0</b><small>Soma dos bids, por mês</small></div>
           <div class="d3-hora" style="--c:#ef4444"><span>Investimento Necessário</span><b id="bids-invest">R$ 0</b><small>Em ativos, para ganhar os bids</small></div>
         </div>
-        <div style="padding:10px 18px 4px">
-          <div class="d3-barras-tit">Negociações em andamento</div>
-          <div id="bids-prazos" class="d3-bids-tab"></div>
-        </div>
+        <div style="height:12px"></div>
       </div>
 
       <!-- 5) horas paradas em manutencao -->
@@ -1582,7 +1579,8 @@ async function renderBidsDashboard() {
   const ordem = b => ETAPAS_BID.indexOf(b.etapa);
   const lista = andamento.slice().sort((a, b) => ordem(a) - ordem(b) || (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0));
   const val = v => v != null ? reaisBid(v) : '-';
-  document.getElementById('bids-prazos').innerHTML = lista.length ?
+  const tabBids = document.getElementById('bids-prazos');   // tabela retirada do resumo (a lista completa fica logo abaixo)
+  if (tabBids) tabBids.innerHTML = lista.length ?
     '<div class="d3-bid cab"><span>Cliente</span><span>Empresa do Grupo</span><span>Escopo</span><span class="num">Faturamento Global</span><span class="num">Mensal</span><span class="num">Investimento</span><span class="num">Prazo</span><span class="num">Status</span></div>' +
     lista.map(b =>
       '<div class="d3-bid" style="--c:' + (cores[b.etapa] || '#64748b') + '" ' + abrir + '>' +
