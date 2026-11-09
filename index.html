@@ -193,7 +193,10 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
 .ct-logo{height:34px;width:auto;margin-bottom:12px}
 .ct-sep{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(120,170,255,.6),transparent);margin:14px 0 10px}
 .ct-menor{font-size:15px;margin-top:2px}
-.ct-acoes{text-align:center;margin:12px 0 20px}
+.ct-acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 20px}
+.ct-zap{text-decoration:none;background:linear-gradient(145deg,#22c55e,#15803d);border-color:rgba(74,222,128,.7);color:#fff;font-weight:700}
+.ct-avaliar{display:block;width:100%;padding:11px 14px;border-radius:12px;text-decoration:none;color:#111;font-size:13px;font-weight:800;letter-spacing:.5px;background:linear-gradient(145deg,#fde047,#f59e0b);box-shadow:0 0 18px rgba(250,204,21,.5)}
+.ct-avaliar:hover{filter:brightness(1.08)}
 .ct-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;max-width:1000px;margin:0 auto}
 .ct-card{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 18px 16px}
 .ct-foto{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-family:'Cinzel',serif;font-size:42px;font-weight:700;color:#fff;background:linear-gradient(145deg,#3b8cff,#1e3a8a);border:3px solid rgba(120,180,255,.7);box-shadow:0 0 18px rgba(59,140,255,.55);overflow:hidden;margin-bottom:8px}
@@ -747,9 +750,9 @@ body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:radial-gra
         <div class="ct-nome ct-menor">Avalie a KWAY no Google</div>
         <div class="ct-unidade">Aponte a câmera do celular para o QR Code</div>
         <div class="ct-qr" id="contato-qr"></div>
-        <a class="btn btn-primary" id="contato-link" target="_blank" rel="noopener">Abrir avaliação</a>
+        <a class="ct-avaliar" id="contato-link" target="_blank" rel="noopener">&#9733; Clique aqui para avaliar</a>
       </div>
-      <div class="ct-acoes"><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
+      <div class="ct-acoes"><a class="btn ct-zap" id="contato-zap" target="_blank" rel="noopener">Enviar link da avaliação pelo WhatsApp</a><button class="btn" onclick="baixarQuadroContato()">&#11015;&#65039; Baixar imagem para enviar à equipe</button></div>
     </div>
     <!-- USUARIOS -->
     <div class="view" id="v-usuarios">
@@ -1156,6 +1159,7 @@ function nav(page, el) {
 const LINK_AVALIACAO_GOOGLE = 'https://search.google.com/local/writereview?placeid=ChIJ9ZJbs0DamwAR2_3I4WHJtag';
 function desenharQrAvaliacao() {
   document.getElementById('contato-link').href = LINK_AVALIACAO_GOOGLE;
+  document.getElementById('contato-zap').href = 'https://wa.me/?text=' + encodeURIComponent('Avalie a KWAY no Google: ' + LINK_AVALIACAO_GOOGLE);
   const el = document.getElementById('contato-qr');
   if (el.dataset.pronto) return;
   try {
