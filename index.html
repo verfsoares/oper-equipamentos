@@ -3423,9 +3423,9 @@ const MODULOS = {
       { id:'_mensal', label:'Valor Mensal Fixo', total: l => reaisBid(l.reduce((s, r) => s + (Number(r.valor_mensal) || 0), 0)) , tipo:'calc', calc: r => r.valor_mensal != null ? reaisBid(r.valor_mensal) : '-' },
       { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
       { id:'_invest', label:'Investimento Fixo', total: l => reaisBid(l.reduce((s, r) => s + (Number(r.investimento) || 0), 0)) , tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
-      { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' },
-      { id:'inicio_previsto', label:'Início Previsto (mobilização) - ex.: MAR/2026', tipo:'text' },
-      { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID }
+      { id:'inicio_previsto', label:'Início Previsto', tipo:'text' },
+      { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID },
+      { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' }
     ]
   }
 };
