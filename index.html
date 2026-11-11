@@ -1671,11 +1671,15 @@ async function marcarFeriasConcedidas(id) {
 function renderAlertasVencimento() {
   const hoje = hojeLocal(), em30 = hojeLocal(30);
   const alertas = [];
-  allColaboradores.filter(c => c.status !== 'Desligado').forEach(c => VENCIMENTOS_COLAB.forEach(([campo, nome]) => {
-    const v = c[campo] ? String(c[campo]).slice(0, 10) : '';
+  // todos os vencimentos do cadastro do colaborador (ASO, Crachá, Opacidade, RCM04, RCM08, Máquina),
+  // no mesmo prazo que a tela de Colaboradores usa para pintar de amarelo (30 ou 60 dias); ferias ficam no quadro proprio
+  const camposVenc = MODULOS.colaboradores.campos.filter(f => f.alertaVencimento && !f.concedida);
+  allColaboradores.filter(c => c.status !== 'Desligado').forEach(c => camposVenc.forEach(f => {
+    const v = c[f.id] ? String(c[f.id]).slice(0, 10) : '';
     if (!v) return;
+    const nome = f.label.replace(/^Vencimento d[oa] /, '');
     if (v < hoje) alertas.push({ vencido: true, pessoa: c.nome, nome, v });
-    else if (v <= em30) alertas.push({ vencido: false, pessoa: c.nome, nome, v });
+    else if (v <= hojeLocal(f.diasAlerta || 30)) alertas.push({ vencido: false, pessoa: c.nome, nome, v });
   }));
   const vencidosColab = alertas.filter(a => a.vencido).length;
   // contador no menu Colaboradores (vencimentos; ferias a conceder so quando o quadro existir)
@@ -1705,7 +1709,7 @@ function renderAlertasVencimento() {
   if (!painel) return;
   document.getElementById('titulo-alertas').textContent = alertas.length ?
     (vencidos ? vencidos + (vencidos === 1 ? ' vencido' : ' vencidos') : '') + (vencidos && aVencer ? ' · ' : '') +
-    (aVencer ? aVencer + ' a vencer' : '') : 'Colaboradores (30 dias) e contratos (90 dias)';
+    (aVencer ? aVencer + ' a vencer' : '') : 'Colaboradores e contratos';
   const dias = v => Math.round((new Date(v) - new Date(hoje)) / 864e5);
   const icVencido = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/></svg>';
   const icAVencer = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
@@ -1713,8 +1717,9 @@ function renderAlertasVencimento() {
   document.getElementById('alertas-lista').innerHTML = alertas.length ? alertas.map(a => {
     const d = dias(a.v);
     // cor: vermelho = vencido, amarelo = ate 30 dias, azul = contrato entre 31 e 90 dias
-    const cor = a.vencido ? '#ef4444' : d <= 30 ? '#f59e0b' : '#3b8cff';
-    const ic = a.vencido ? '--c1:#f87171;--c2:#991b1b' : d <= 30 ? '--c1:#fde047;--c2:#a16207' : '--c1:#93c5fd;--c2:#1d4ed8';
+    const amarelo = d <= 30 || !a.contrato;   // colaborador a vencer: sempre amarelo
+    const cor = a.vencido ? '#ef4444' : amarelo ? '#f59e0b' : '#3b8cff';
+    const ic = a.vencido ? '--c1:#f87171;--c2:#991b1b' : amarelo ? '--c1:#fde047;--c2:#a16207' : '--c1:#93c5fd;--c2:#1d4ed8';
     const tela = a.contrato ? 'vencimentos' : 'colaboradores';
     return '<div class="d3-alerta" style="--c:' + cor + '" onclick="nav(\'' + tela + '\', document.querySelector(\'.nav-item[onclick*=&quot;' + tela + '&quot;]\'))" title="Abrir ' + (a.contrato ? 'Vencimento de Contratos' : 'Colaboradores') + '">' +
       '<div class="ic3d" style="' + ic + '">' + (a.contrato ? icContrato : a.vencido ? icVencido : icAVencer) + '</div>' +
@@ -2886,17 +2891,7 @@ async function verInspecao(id) {
     (i.descricao ? '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">DESCRICAO</div><div style="font-size:13px">' + i.descricao + '</div></div>' : '') +
     '</div>' +
     '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos Anexados (' + arqs.length + ')</div>' +
-    (arqs.length > 0 ?
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
-      arqs.map(a =>
-        '<a href="' + a.url_arquivo + '" target="_blank" style="text-decoration:none">' +
-        (isImg(a.url_arquivo) ?
-          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="' + a.url_arquivo + '" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.nome_arquivo + '</div></div>' :
-          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">' + (a.nome_arquivo?.endsWith('.pdf') ? '📄' : '📄') + '</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir arquivo</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">' + a.nome_arquivo + '</div></div>'
-        ) + '</a>'
-      ).join('') + '</div>' :
-      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo encontrado</div>'
-    );
+    gradeAnexos('inspecao', id, arqs);
   openModal('modal-ver-inspecao');
 }
 
@@ -3118,16 +3113,7 @@ async function verManutencao(id) {
     '<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">OBSERVAÇÃO</div><div style="font-weight:600">'+(m.descricao ? esc(m.descricao) : '-')+'</div></div>' +
     '</div>' +
     '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Laudos ('+(arqs?.length||0)+')</div>' +
-    ((arqs && arqs.length) ?
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
-      arqs.map(a => '<a href="'+a.url_arquivo+'" target="_blank" style="text-decoration:none">' +
-        (isImg(a.url_arquivo) ?
-          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="'+a.url_arquivo+'" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.nome_arquivo+'</div></div>' :
-          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">'+a.nome_arquivo+'</div></div>'
-        ) + '</a>'
-      ).join('') + '</div>' :
-      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>'
-    );
+    gradeAnexos('manut', id, arqs);
   openModal('modal-ver-manut');
 }
 
@@ -3242,17 +3228,68 @@ async function verVisita(id) {
     (v.conclusao?'<div style="background:var(--surface2);border-radius:8px;padding:12px;grid-column:span 2"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">CONCLUSÃO / PRÓXIMOS PASSOS</div><div style="font-size:13px">'+v.conclusao+'</div></div>':'') +
     '</div>' +
     '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Arquivos ('+(arqs?.length||0)+')</div>' +
-    ((arqs && arqs.length) ?
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
-      arqs.map(a => '<a href="'+a.url_arquivo+'" target="_blank" style="text-decoration:none">' +
-        (isImg(a.url_arquivo) ?
-          '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="'+a.url_arquivo+'" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.nome_arquivo+'</div></div>' :
-          '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">'+a.nome_arquivo+'</div></div>'
-        ) + '</a>'
-      ).join('') + '</div>' :
-      '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>'
-    );
+    gradeAnexos('visita', id, arqs);
   openModal('modal-ver-visita');
+}
+
+// ---- ANEXOS (inspecao, manutencao e visita): excluir so um anexo ou adicionar outro, sem mexer no lancamento ----
+const ANEXOS_REG = {
+  inspecao: { tabela: 'inspecao_arquivos', fk: 'inspecao_id', pasta: id => id + '/', reabrir: id => verInspecao(id), recarregar: () => carregarInspecoes() },
+  manut:    { tabela: 'manut_arquivos', fk: 'manut_id', pasta: id => 'manutencao/' + id + '/', reabrir: id => verManutencao(id), recarregar: () => carregarManutencaoEquip() },
+  visita:   { tabela: 'visita_arquivos', fk: 'visita_id', pasta: id => 'visitas/' + id + '/', reabrir: id => verVisita(id), recarregar: () => carregarVisitas() }
+};
+function gradeAnexos(tipo, paiId, arqs) {
+  arqs = arqs || [];
+  const isImg = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url || '');
+  const grade = arqs.length ?
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">' +
+    arqs.map(a => '<div style="position:relative">' +
+      '<a href="' + esc(a.url_arquivo) + '" target="_blank" style="text-decoration:none">' +
+      (isImg(a.url_arquivo) ?
+        '<div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden"><img src="' + esc(a.url_arquivo) + '" style="width:100%;height:100px;object-fit:cover"/><div style="padding:6px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(a.nome_arquivo) + '</div></div>' :
+        '<div style="border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-size:11px;color:var(--accent2);font-weight:600">Abrir</div><div style="font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all">' + esc(a.nome_arquivo) + '</div></div>'
+      ) + '</a>' +
+      '<button type="button" title="Excluir só este anexo" onclick="excluirAnexo(\'' + tipo + '\',\'' + a.id + '\',\'' + paiId + '\')" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(239,68,68,0.5);background:rgba(15,23,42,0.85);color:var(--red);font-size:13px;cursor:pointer;line-height:1">&#128465;</button>' +
+      '</div>'
+    ).join('') + '</div>' :
+    '<div style="text-align:center;padding:20px;color:var(--muted)">Nenhum arquivo anexado</div>';
+  return grade +
+    '<div style="margin-top:12px"><label class="btn" style="cursor:pointer;display:inline-block">&#128206; Adicionar anexo' +
+    '<input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="adicionarAnexos(\'' + tipo + '\',\'' + paiId + '\', this)" /></label></div>';
+}
+async function excluirAnexo(tipo, arqId, paiId) {
+  const t = ANEXOS_REG[tipo];
+  if (!confirm('Excluir só este anexo?\n\nO lançamento continua salvo. O arquivo não poderá ser recuperado.')) return;
+  const { data: a } = await db.from(t.tabela).select('url_arquivo').eq('id', arqId).single();
+  const { data: apagados, error } = await db.from(t.tabela).delete().eq('id', arqId).select('id');
+  if (error) return showToast('Erro ao excluir o anexo: ' + error.message, true);
+  if (!apagados || !apagados.length) return showToast('Não foi possível excluir o anexo (sem permissão no banco)', true);
+  const caminho = a?.url_arquivo ? a.url_arquivo.split('/inspecoes/')[1] : null;
+  if (caminho) await db.storage.from('inspecoes').remove([decodeURIComponent(caminho)]);
+  showToast('Anexo excluído!');
+  await t.reabrir(paiId);
+  t.recarregar();
+}
+async function adicionarAnexos(tipo, paiId, input) {
+  const t = ANEXOS_REG[tipo];
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  showToast('Enviando ' + files.length + ' arquivo(s)...');
+  let ok = 0;
+  for (const file of files) {
+    try {
+      const path = t.pasta(paiId) + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+      if (upErr) { showToast('Erro no arquivo ' + file.name + ': ' + upErr.message, true); continue; }
+      const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+      const { error } = await db.from(t.tabela).insert({ [t.fk]: paiId, nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type || 'application/octet-stream' });
+      if (!error) ok++;
+    } catch (e) {}
+  }
+  if (ok < files.length) showToast(ok + ' de ' + files.length + ' arquivo(s) anexados', true);
+  else showToast(ok + ' arquivo(s) anexado(s)!');
+  await t.reabrir(paiId);
+  t.recarregar();
 }
 
 async function deletarVisita(id) {
@@ -3558,8 +3595,34 @@ async function abrirFormModulo(chave, id) {
   }).join('') +
   (m.arquivos ? '<div class="form-group full"><div class="form-label">' + esc(m.rotuloArquivos || 'Anexar arquivos (fotos, PDF, Word)') + '</div>' +
     '<input class="form-input" type="file" id="mod-files" multiple accept="' + (m.aceitaArquivos || '.jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx') + '" />' +
-    ((r.arquivos || []).length ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">Já anexados: ' + r.arquivos.map(a => esc(a.nome)).join(', ') + '</div>' : '') + '</div>' : '');
+    '<div id="mod-anexados">' + listaAnexadosModulo(chave, id, r.arquivos) + '</div></div>' : '');
   openModal('modal-mod');
+}
+// arquivos ja anexados no cadastro, cada um com botao para excluir so ele
+function listaAnexadosModulo(chave, id, arqs) {
+  if (!id || !(arqs || []).length) return '';
+  return '<div style="font-size:12px;color:var(--muted);margin-top:8px">Já anexados:</div>' + arqs.map((a, i) =>
+    '<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:4px">' +
+    '<a href="' + esc(a.url) + '" target="_blank" style="color:var(--accent2)">&#128206; ' + esc(a.nome) + '</a>' +
+    '<button type="button" class="btn" title="Excluir só este anexo" style="padding:2px 7px;font-size:12px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="excluirAnexoModulo(\'' + chave + '\',\'' + id + '\',' + i + ')">&#128465;&#65039;</button></div>'
+  ).join('');
+}
+async function excluirAnexoModulo(chave, id, idx) {
+  const m = MODULOS[chave];
+  const reg = (m.registros || []).find(x => x.id === id);
+  const a = reg && (reg.arquivos || [])[idx];
+  if (!a) return;
+  if (!confirm('Excluir só o anexo "' + a.nome + '"?\n\nO cadastro continua salvo. O arquivo não poderá ser recuperado.')) return;
+  const nova = reg.arquivos.filter((_, i) => i !== idx);
+  const { data, error } = await db.from(m.tabela).update({ arquivos: nova }).eq('id', id).select('id');
+  if (error) return showToast('Erro ao excluir o anexo: ' + error.message, true);
+  if (!data || !data.length) return showToast('Não foi possível excluir o anexo (sem permissão no banco)', true);
+  const caminho = a.url ? a.url.split('/inspecoes/')[1] : null;
+  if (caminho) await db.storage.from('inspecoes').remove([decodeURIComponent(caminho)]);
+  reg.arquivos = nova;
+  document.getElementById('mod-anexados').innerHTML = listaAnexadosModulo(chave, id, nova);
+  renderModulo(chave);
+  showToast('Anexo excluído!');
 }
 
 async function salvarModulo() {
