@@ -493,6 +493,8 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .pc-tab td{padding:7px 8px;text-align:right;border-top:1px solid var(--border);font-variant-numeric:tabular-nums}
 .pc-tab td small{display:block;font-size:9.5px;color:var(--muted)}
 .pc-tab tr.pc-novos td{color:#86efac}
+.pc-tab tr.pc-menos td{color:#fca5a5}.pc-tab tr.pc-menos td:first-child{color:var(--muted)}
+.pc-tab tr.pc-sub td{font-weight:700}
 .pc-tab tr.pc-total td{font-weight:700;color:#fff;background:rgba(59,140,255,.08)}
 .pc-tab tr.pc-total td:first-child{background:#11244f}
 .pc-resumo{margin-top:10px;font-size:12px;color:var(--muted)}.pc-resumo b{color:#fff}.pc-resumo b.pc-up{color:#22c55e}
@@ -677,12 +679,6 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="dre-aviso" id="dred-aviso" style="display:none"></div>
       <div class="dre-frase" id="dred-frase"></div>
       <div class="k3-grid" id="dred-kpis"></div>
-      <!-- projecao de crescimento: contratos existentes (DRE) + contratos novos do pipeline, mes a mes -->
-      <div class="p3" style="margin-bottom:16px">
-        <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div>
-          <div><h2>Projeção de Crescimento</h2><small id="dred-proj-sub">Contratos existentes (DRE) + contratos novos do Pipeline</small></div></div>
-        <div id="dred-proj" class="proj-cresc"></div>
-      </div>
       <!-- duas colunas: esquerda (quadro comparativo, fatos relevantes) | direita (ranking, custos, pessoas) -->
       <div class="d3-linha" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-bottom:16px">
         <div class="d3-coluna">
@@ -716,6 +712,12 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
             <div id="dred-pessoas" class="dre-regioes"></div>
           </div>
         </div>
+      </div>
+      <!-- projecao de crescimento: contratos existentes (DRE) + contratos novos do pipeline, mes a mes (logo acima do pipeline) -->
+      <div class="p3" style="margin-bottom:16px">
+        <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div>
+          <div><h2>Projeção de Crescimento</h2><small id="dred-proj-sub">Contratos existentes (DRE) + contratos novos do Pipeline</small></div></div>
+        <div id="dred-proj" class="proj-cresc"></div>
       </div>
       <!-- pipeline de bids (investimento) + produtividade dos equipamentos -->
       <div class="d3-linha" style="grid-template-columns:minmax(0,1fr);margin-bottom:16px">
@@ -1897,7 +1899,7 @@ async function renderProjecaoCrescimento(per) {
   // contratos existentes que saem: a partir do mes de saida, a unidade deixa de contar (receita e custos)
   const ativas = m => l => !SAIDAS_PROJECAO.some(([u, desde]) => l.unidade === u && m >= desde);
   const calcExistente = (m, mesDados) => dreCalcular(dreLinhasUnidade('CONSOLIDADO', mesDados.slice(0, 4)).filter(l => l._mes === mesDados).filter(ativas(m)));
-  const mcPctBase = base.receita ? base.mc / base.receita : 0, finPctBase = base.receita ? base.fin / base.receita : 0;
+  const mcPctBase = base.receita ? base.mc / base.receita : 0, finPctBase = base.receita ? base.fin / base.receita : 0, impPctBase = base.receita ? base.imposto / base.receita : 0;
   const natDe = m => { const ls = dreDados.filter(l => l._mes === m); return !ls.length ? 'proj' : ls.some(l => !l._prv) ? 'real' : 'prv'; };
   const col = meses.map(m => {
     const nat = m <= ultimoDRE ? natDe(m) : 'proj';
@@ -1909,8 +1911,11 @@ async function renderProjecaoCrescimento(per) {
       const ini = r.a * 12 + (r.m - 1);
       return s + (k >= ini && (!prazo || k <= ini + prazo - 1) ? mensal : 0);
     }, 0);
-    const rec = ex.receita + recNova, mc = ex.mc + recNova * mcPctBase, gpm = ex.gpm + recNova * (mcPctBase - finPctBase);
-    return { m, nat, recEx: ex.receita, recNova, rec, mc, gpm, mcPct: rec ? mc / rec * 100 : null, gpmPct: rec ? gpm / rec * 100 : null };
+    // existentes: valores da DRE; novos: mesma estrutura de hoje (impostos, MC e antecipacao em % da receita; fixo nao muda)
+    const rec = ex.receita + recNova, imp = ex.imposto + recNova * impPctBase, rl = rec - imp;
+    const mc = ex.mc + recNova * mcPctBase, adm = ex.adm, fin = ex.fin + recNova * finPctBase, gpm = mc - adm - fin;
+    const pc = x => rec ? x / rec * 100 : null;
+    return { m, nat, recEx: ex.receita, recNova, rec, imp, rl, mc, adm, fin, gpm, impPct: pc(imp), mcPct: pc(mc), finPct: pc(fin), gpmPct: pc(gpm) };
   });
   const rot = m => DRE_MESES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4);
   // regua: blocos realizado / provisao (DRE) / projecao
@@ -1928,8 +1933,12 @@ async function renderProjecaoCrescimento(per) {
     '<tr><td>Receita contratos existentes</td>' + col.map(c => '<td>' + v(c.recEx) + '</td>').join('') + '</tr>' +
     '<tr class="pc-novos"><td>Receita contratos novos</td>' + col.map(c => '<td>' + (c.recNova ? '+' + dreKn(c.recNova) : '<span style="opacity:.35">–</span>') + '</td>').join('') + '</tr>' +
     '<tr class="pc-total"><td>Receita total</td>' + col.map(c => '<td>' + v(c.rec) + '</td>').join('') + '</tr>' +
-    '<tr><td>Margem de contribuição</td>' + col.map(c => '<td>' + v(c.mc) + p(c.mcPct) + '</td>').join('') + '</tr>' +
-    '<tr><td>Margem GPM</td>' + col.map(c => '<td>' + v(c.gpm) + p(c.gpmPct) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-menos"><td>(−) Impostos</td>' + col.map(c => '<td>' + v(c.imp) + p(c.impPct) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-sub"><td>(=) Receita líquida</td>' + col.map(c => '<td>' + v(c.rl) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-sub"><td>(=) Margem de contribuição</td>' + col.map(c => '<td>' + v(c.mc) + p(c.mcPct) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-menos"><td>(−) Custo fixo e administrativo</td>' + col.map(c => '<td>' + v(c.adm) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-menos"><td>(−) Antecipação de recebíveis</td>' + col.map(c => '<td>' + v(c.fin) + p(c.finPct) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-total"><td>(=) Margem GPM</td>' + col.map(c => '<td>' + v(c.gpm) + p(c.gpmPct) + '</td>').join('') + '</tr>' +
     '</tbody></table></div>' +
     '<div class="pc-resumo">Receita mensal sai de <b>' + dreK(primeiro.rec) + '</b> (' + rot(primeiro.m) + ') para <b>' + dreK(ultimo.rec) + '</b> (' + rot(ultimo.m) + ')' +
     (cresc !== null ? ' · <b class="' + (cresc < 0 ? 'dre-neg' : 'pc-up') + '">' + (cresc >= 0 ? '+' : '') + drePct(cresc) + '</b>' : '') +
@@ -1937,7 +1946,7 @@ async function renderProjecaoCrescimento(per) {
     '<div class="pipe-obs"><b>Premissas:</b> contratos existentes = DRE ' + esc(dreVersao || '') + ' até ' + rot(ultimoDRE) + '; depois, o mesmo valor de ' + rot(ultimoDRE) + ' (mesmo cenário de hoje)' +
     SAIDAS_PROJECAO.map(([u, desde]) => ', sem ' + (DRE_NOME_UN[u] || u) + ' a partir de ' + rot(desde) + ' (saída do contrato)').join('') + '. ' +
     'Contratos novos = bids marcados como <b>Novo</b> no Pipeline (continuidade não entra), pelo valor mensal fixo, a partir da <b>antecipação do título</b> e durante o prazo dos equipamentos fixos. ' +
-    'Margens dos novos com a mesma estrutura de custos de hoje: MC ' + drePct(mcPctBase * 100) + ' e GPM ' + drePct((mcPctBase - finPctBase) * 100) + ' da receita (base ' + rot(ultimoDRE) + '; o custo fixo não aumenta).' +
+    'Contratos novos com a mesma estrutura de hoje (base ' + rot(ultimoDRE) + '), calculada sobre a receita nova: impostos ' + drePct(impPctBase * 100) + ', margem de contribuição ' + drePct(mcPctBase * 100) + ' e antecipação de recebíveis ' + drePct(finPctBase * 100) + '; o custo fixo e administrativo não aumenta. A antecipação dos contratos existentes é a da DRE (entra uma vez só).' +
     (semTipo ? ' <span style="color:var(--amber)">' + semTipo + ' bid(s) sem "Novo ou Continuidade" estão sendo considerados como novos.</span>' : '') + '</div>';
 }
 
