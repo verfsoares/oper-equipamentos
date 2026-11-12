@@ -566,7 +566,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
         </div>
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6"/></svg></div>
-            <div><h2>Pessoas por Unidade</h2><small id="dred-pessoas-sub">Colaboradores ativos (cadastro de Colaboradores)</small></div></div>
+            <div><h2>Pessoas por Região</h2><small id="dred-pessoas-sub">Colaboradores ativos (cadastro de Colaboradores)</small></div></div>
           <div id="dred-pessoas" class="dre-barras"></div>
         </div>
       </div>
@@ -1637,7 +1637,7 @@ function renderDREDashboard() {
     '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
 
   // composicao dos custos (% sobre a receita bruta)
-  const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Antecipação de Recebíveis', r.fin], ['Impostos', r.imposto]];
+  const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Antecipação de Recebíveis', r.fin], ['Impostos', r.imposto]].sort((x, y) => y[1] - x[1]);   // do maior para o menor
   const maxC = Math.max(...custos.map(c => c[1]), 1);
   document.getElementById('dred-custos').innerHTML = custos.map(([n, v]) =>
     '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreBRL(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
@@ -1657,30 +1657,30 @@ const UNIDADE_POR_CLIENTE = [
   ['CSN_MG', n => /pires|fernandinho|almox|entreposto|casa de pedra|congonhas/.test(n) || (n.includes('csn') && /\bmg\b/.test(n))]
 ];
 async function renderPessoasPorUnidade() {
+  // mesmo criterio do mapa "Nossa Atuacao" do Dashboard Operacional: estado (UF) do cliente onde o colaborador trabalha
   const el = document.getElementById('dred-pessoas');
   if (!allColaboradores.length) await carregarColaboradores();
   const ativos = allColaboradores.filter(c => c.status !== 'Desligado');
   const grupos = {};
   ativos.forEach(c => {
-    const nomeCli = (allClientes.find(x => x.id === c.cliente_id) || {}).razao_social || '';
-    const n = semAcento(nomeCli);
-    const u = nomeCli ? ((UNIDADE_POR_CLIENTE.find(([, teste]) => teste(n)) || ['OUTROS'])[0]) : 'SEM_LOCAL';
-    const g = grupos[u] || (grupos[u] = { qtd: 0, afast: 0, locais: new Set() });
+    const cli = allClientes.find(x => x.id === c.cliente_id) || {};
+    const uf = (cli.uf || '').trim().toUpperCase();
+    const k = (uf && MAPA_BR.estados[uf]) ? uf : 'SEM_UF';
+    const g = grupos[k] || (grupos[k] = { qtd: 0, afast: 0, locais: new Set() });
     g.qtd++; if (c.status === 'Afastado') g.afast++;
-    if (nomeCli) g.locais.add(nomeCli);
+    if (cli.razao_social) g.locais.add(cli.razao_social);
   });
-  const nomes = { ...DRE_NOME_UN, OUTROS: 'Outros locais', SEM_LOCAL: 'Sem local cadastrado' };
-  const ordem = DRE_UN.slice(1).map(u => u[0]).concat(['OUTROS', 'SEM_LOCAL']).filter(u => grupos[u]);
-  const max = Math.max(...ordem.map(u => grupos[u].qtd), 1);
-  document.getElementById('dred-pessoas-sub').textContent = ativos.length + ' colaborador' + (ativos.length === 1 ? '' : 'es') + ' (ativos e afastados) · cadastro de Colaboradores';
-  el.innerHTML = ordem.length ? ordem.map(u => {
-    const g = grupos[u];
-    return '<div class="dre-barra" title="' + esc([...g.locais].join(' · ')) + '"><span>' + esc(nomes[u]) + '</span>' +
+  const nome = k => k === 'SEM_UF' ? 'Sem estado cadastrado' : MAPA_BR.estados[k].nome;
+  const ordem = Object.keys(grupos).sort((a, b) => (a === 'SEM_UF') - (b === 'SEM_UF') || grupos[b].qtd - grupos[a].qtd || nome(a).localeCompare(nome(b)));
+  const max = Math.max(...ordem.map(k => grupos[k].qtd), 1);
+  document.getElementById('dred-pessoas-sub').textContent = ativos.length + ' colaborador' + (ativos.length === 1 ? '' : 'es') + ' (ativos e afastados) · por estado, como no Dashboard Operacional';
+  el.innerHTML = ordem.length ? ordem.map(k => {
+    const g = grupos[k];
+    return '<div class="dre-barra" title="' + esc([...g.locais].join(' · ')) + '"><span>' + esc(nome(k)) + '</span>' +
       '<div class="trilho"><i style="width:' + (g.qtd / max * 100) + '%;background:linear-gradient(90deg,#065f46,#10b981,#6ee7b7);box-shadow:0 0 14px rgba(16,185,129,.45)"></i><em>' + (g.afast ? g.afast + ' afastado' + (g.afast > 1 ? 's' : '') : '') + '</em></div>' +
       '<b>' + g.qtd + '</b></div>';
   }).join('') : '<div class="dre-vazio">Nenhum colaborador cadastrado</div>';
 }
-
 // CONSIDERACOES DO MES (Diretoria > Considerações)
 async function renderConsideracoesVisao(per, rotPer) {
   const el = document.getElementById('dred-consideracoes');
