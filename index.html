@@ -1863,13 +1863,13 @@ async function renderPipelineVisao() {
     '<div class="pipe-invest"><div><small>NECESSIDADE DE INVESTIMENTO ATÉ O MOMENTO</small><b>' + reaisBid(soma('investimento')) + '</b></div>' +
     '<span>' + comInvest + ' de ' + bids.length + ' bids<br>exigem investimento</span></div>' +
     '<div class="pipe-nums"><div><small>VALOR GLOBAL</small><b>' + reaisBid(soma('valor_total')) + '</b></div><div><small>GLOBAL FIXO</small><b>' + reaisBid(soma('valor_global_fixo')) + '</b></div><div><small>MENSAL FIXO</small><b>' + reaisBid(soma('valor_mensal')) + '</b></div></div>' +
-    '<div class="pipe-tab-wrap"><table class="pipe-tab"><thead><tr><th>Cliente</th><th>Empresa</th><th>Escopo</th><th class="n">Valor global</th><th class="n">Global fixo</th><th class="n">Mensal fixo</th><th class="n">Prazo</th><th class="n">Investimento</th><th>Início</th><th>Status</th></tr></thead><tbody>' +
+    '<div class="pipe-tab-wrap"><table class="pipe-tab"><thead><tr><th>Cliente</th><th>Empresa</th><th>Escopo</th><th class="n">Valor global</th><th class="n">Global fixo</th><th class="n">Mensal fixo</th><th class="n">Prazo</th><th class="n">Investimento</th><th>Início</th><th>Antecip. do título</th><th>Status</th></tr></thead><tbody>' +
     bids.map(b => '<tr onclick="nav(\'bids\', document.querySelector(\'#menu-dir .nav-item[onclick*=&quot;bids&quot;]\'))">' +
       '<td><b>' + esc(b.cliente) + '</b></td><td>' + esc(b.empresa_grupo || '-') + '</td><td class="esc">' + esc(b.escopo || '-') + '</td>' +
       '<td class="n">' + v(b.valor_total) + '</td><td class="n">' + v(b.valor_global_fixo) + '</td><td class="n">' + v(b.valor_mensal) + '</td>' +
       '<td class="n">' + (b.prazo_meses ? b.prazo_meses + 'm' : '-') + '</td><td class="n inv">' + (Number(b.investimento) ? reaisBid(b.investimento) : '-') + '</td>' +
-      '<td>' + esc(b.inicio_previsto || '-') + '</td><td><span class="et" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '">' + esc(b.etapa || '-') + '</span></td></tr>').join('') +
-    '</tbody><tfoot><tr><td colspan="3">TOTAL</td><td class="n">' + reaisBid(soma('valor_total')) + '</td><td class="n">' + reaisBid(soma('valor_global_fixo')) + '</td><td class="n">' + reaisBid(soma('valor_mensal')) + '</td><td></td><td class="n inv">' + reaisBid(soma('investimento')) + '</td><td colspan="2"></td></tr></tfoot></table></div>' +
+      '<td>' + esc(b.inicio_previsto || '-') + '</td><td>' + esc(b.antecipacao_prevista || '-') + '</td><td><span class="et" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '">' + esc(b.etapa || '-') + '</span></td></tr>').join('') +
+    '</tbody><tfoot><tr><td colspan="3">TOTAL</td><td class="n">' + reaisBid(soma('valor_total')) + '</td><td class="n">' + reaisBid(soma('valor_global_fixo')) + '</td><td class="n">' + reaisBid(soma('valor_mensal')) + '</td><td></td><td class="n inv">' + reaisBid(soma('investimento')) + '</td><td colspan="3"></td></tr></tfoot></table></div>' +
     '<div class="pipe-obs"><b>Considerações:</b> a diferença entre o Valor Global e o Valor Global Fixo refere-se aos equipamentos em formato de contratação SPOT.</div>';
 }// EXPORTAR PDF: abre a impressao do navegador (escolha "Salvar como PDF" ou a impressora)
 function exportarVisaoPDF() {
@@ -2409,9 +2409,8 @@ function mesInicioBid(txt) {
   return null;
 }
 function primeiroRecebimentoBid(b) {
-  // a receita entra no caixa na 1a antecipacao dos recebiveis; sem ela, no 1o recebimento; sem os dois, estimativa
+  // a receita entra no caixa na antecipacao do titulo; sem ela preenchida, estimativa pelo inicio previsto
   const ant = mesInicioBid(b.antecipacao_prevista); if (ant) return { ...ant, origem: 'antecipação' };
-  const rec = mesInicioBid(b.recebimento_previsto); if (rec) return { ...rec, origem: 'recebimento' };
   const ini = mesInicioBid(b.inicio_previsto);
   if (!ini) return null;
   const csn = /CSN/i.test(b.cliente || '');
@@ -2439,12 +2438,12 @@ function renderProjecaoBids(bids) {
     '<div class="proj-bids"><div class="proj-cab"><b>Projeção ' + ANO_PROJ_BIDS + ' · Receita mensal fixa dos bids (visão de caixa)</b>' +
     '<span>Total ' + ANO_PROJ_BIDS + ': <strong>' + reaisBid(total) + '</strong></span></div>' +
     '<div class="proj-wrap"><table class="proj-tab"><thead><tr><th>Cliente</th><th>Entra a partir de</th>' + nomes.map(n => '<th>' + n + '/' + String(ANO_PROJ_BIDS).slice(2) + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
-    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha a 1ª antecipação, o 1º recebimento ou o início previsto') + '">' +
-      (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + ' <small style="color:var(--muted)">' + (l.r.origem === 'antecipação' ? 'antecip.' : l.r.origem === 'recebimento' ? 'receb.' : '') + '</small>' + (l.r.origem !== 'antecipação' && l.r.origem !== 'recebimento' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
+    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha a antecipação do título ou o início previsto') + '">' +
+      (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + ' <small style="color:var(--muted)">' + (l.r.origem === 'antecipação' ? 'antecip.' : '') + '</small>' + (l.r.origem !== 'antecipação' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
       l.meses.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n"><b>' + cel(l.total) + '</b></td></tr>').join('') +
     '</tbody><tfoot><tr><td colspan="2">TOTAL</td>' + totMes.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n">' + cel(total) + '</td></tr></tfoot></table></div>' +
-    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir da <b>1ª antecipação prevista</b> (quando a receita entra no caixa); sem ela, a partir do <b>1º recebimento previsto</b>. Vale durante o prazo dos equipamentos fixos. ' +
-    '<i>*</i> = sem as duas datas: estimado pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha as datas no bid para usar as reais.' +
+    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir da <b>antecipação do título</b> (quando o dinheiro entra no caixa), durante o prazo dos equipamentos fixos. ' +
+    '<i>*</i> = antecipação não preenchida: estimada pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha a antecipação do título no bid para usar a data real.' +
     (semData ? ' <span style="color:var(--amber)">' + semData + ' bid(s) sem data não entram na projeção.</span>' : '') + '</div></div>';
 }
 
@@ -4311,9 +4310,8 @@ const MODULOS = {
       { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
       { id:'_invest', label:'Investimento Fixo', total: l => reaisBid(l.reduce((s, r) => s + (Number(r.investimento) || 0), 0)) , tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
       { id:'inicio_previsto', label:'Início Previsto', tipo:'text' },
-      // texto livre, como o inicio previsto: "dezembro de 2026", "DEZ/2026", "12/2026"
-      { id:'recebimento_previsto', label:'1º Recebimento Previsto', tipo:'text' },
-      { id:'antecipacao_prevista', label:'1ª Antecipação Prevista', tipo:'text' },
+      // quando o dinheiro entra no caixa; texto livre como o inicio previsto: "dezembro de 2026", "DEZ/2026", "12/2026"
+      { id:'antecipacao_prevista', label:'Antecipação do Título', tipo:'text' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID },
       { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' }
     ]
