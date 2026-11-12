@@ -460,6 +460,8 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .pct-pill{justify-self:end;box-sizing:border-box;min-width:62px;text-align:center;font-size:10.5px;font-weight:700;padding:3px 8px;line-height:1.2;border-radius:8px;color:#cbd5e1;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.3);white-space:nowrap}
 .dre-linha-res small.pct-pill{min-width:62px;max-width:100%}
 .pct-pill.atual{color:#7dd3fc;background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.45)}
+.dre-col-estica>.p3{flex:1;display:flex;flex-direction:column}
+.dre-col-estica .dre-barras{flex:1;justify-content:space-evenly;gap:10px}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -557,7 +559,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
     <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE – Consolidado</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('ANGLO_GO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Anglo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CSN_MG',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN MG</span></div>
-    <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN São Paulo</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN SP</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
     <div class="nav-item" onclick="nav('bids',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></span><span>Bids / Concorrências</span></div>
@@ -633,7 +635,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
             <div id="dred-consideracoes" class="d3-alertas" style="max-height:none;flex:1"></div>
           </div>
         </div>
-        <div class="d3-coluna">
+        <div class="d3-coluna dre-col-estica">
           <div class="p3">
             <div class="p3-cab"><div class="ic3d" style="--c1:#67e8f9;--c2:#0e7490"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></div>
               <div><h2>Ranking de Faturamento</h2><small id="dred-un-sub">Receita bruta por unidade, do maior para o menor · clique para abrir a DRE</small></div></div>
