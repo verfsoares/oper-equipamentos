@@ -1128,6 +1128,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
         </div>
         <input type="file" id="manut-files" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mostrarArquivosManut()" />
         <div id="manut-files-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div id="manut-laudos-atuais" style="margin-top:12px"></div>
       </div>
     </div>
     <input type="hidden" id="manut-id" value="" />
@@ -3740,10 +3741,24 @@ function preencherFormManut(m) {
   set('manut-obs', m.descricao || '');
   document.getElementById('manut-files').value = '';
   document.getElementById('manut-files-preview').innerHTML = '';
+  document.getElementById('manut-laudos-atuais').innerHTML = '';
+  if (m.id) laudosNoFormManut(m.id);
   document.getElementById('modal-manut-title').textContent = m.id ? 'Editar Manutenção' : 'Nova Manutencao';
   atualizarTempoManutForm();
 }
 function novaManutencao() { preencherFormManut({}); openModal('modal-manut-equip'); }
+// laudos ja lancados, dentro do formulario de edicao: cada um com a lixeira (exclui so o arquivo)
+async function laudosNoFormManut(id) {
+  const box = document.getElementById('manut-laudos-atuais');
+  const { data: arqs } = await db.from('manut_arquivos').select('*').eq('manut_id', id);
+  if (document.getElementById('manut-id').value !== String(id)) return;
+  box.innerHTML = arqs && arqs.length ?
+    '<div class="form-label" style="margin-bottom:6px">Laudos já lançados (' + arqs.length + ')</div>' +
+    arqs.map(a => '<div class="anexo-venc-item"><a class="anexo-venc-link" href="' + esc(a.url_arquivo) + '" target="_blank">&#128206; ' + esc(a.nome_arquivo) + '</a>' +
+      '<button type="button" class="btn" title="Excluir só este arquivo" style="padding:2px 8px;font-size:12px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="excluirAnexo(\'manut\',\'' + a.id + '\',\'' + id + '\',true)">&#128465;</button></div>').join('') :
+    '<div style="font-size:12px;color:var(--muted)">Nenhum laudo lançado ainda.</div>';
+}
+
 async function editarManutencao(id) {
   const { data: m, error } = await db.from('manutencao_equipamentos').select('*').eq('id', id).single();
   if (error || !m) return showToast('Não foi possível abrir a manutenção', true);
@@ -3973,7 +3988,7 @@ function gradeAnexos(tipo, paiId, arqs) {
     '<div style="margin-top:12px"><label class="btn" style="cursor:pointer;display:inline-block">&#128206; Adicionar anexo' +
     '<input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="adicionarAnexos(\'' + tipo + '\',\'' + paiId + '\', this)" /></label></div>';
 }
-async function excluirAnexo(tipo, arqId, paiId) {
+async function excluirAnexo(tipo, arqId, paiId, noFormulario) {
   const t = ANEXOS_REG[tipo];
   if (!confirm('Excluir só este anexo?\n\nO lançamento continua salvo. O arquivo não poderá ser recuperado.')) return;
   const { data: a } = await db.from(t.tabela).select('url_arquivo').eq('id', arqId).single();
@@ -3983,7 +3998,8 @@ async function excluirAnexo(tipo, arqId, paiId) {
   const caminho = a?.url_arquivo ? a.url_arquivo.split('/inspecoes/')[1] : null;
   if (caminho) await db.storage.from('inspecoes').remove([decodeURIComponent(caminho)]);
   showToast('Anexo excluído!');
-  await t.reabrir(paiId);
+  if (noFormulario && tipo === 'manut') await laudosNoFormManut(paiId);
+  else await t.reabrir(paiId);
   t.recarregar();
 }
 async function adicionarAnexos(tipo, paiId, input) {
