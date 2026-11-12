@@ -449,7 +449,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
   .k3,.tilt{transform:none !important}
   .p3,.k3,.dre-frase{break-inside:avoid}
   #dred-kpis{grid-template-columns:repeat(4,1fr) !important}
-  .d3-linha{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) !important}
+  .d3-linha{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) !important}
 }
 .pct-pill{justify-self:end;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:8px;color:#cbd5e1;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.3);white-space:nowrap}
 .pct-pill.atual{color:#7dd3fc;background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.45)}
@@ -549,7 +549,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
     <div class="nav-item" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Visão 360°</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE – Consolidado</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('ANGLO_GO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Anglo</span></div>
-    <div class="nav-item" onclick="abrirDREUnidade('CSN_MG',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN Minas</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CSN_MG',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN MG</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN São Paulo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
@@ -610,8 +610,22 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="dre-aviso" id="dred-aviso" style="display:none"></div>
       <div class="dre-frase" id="dred-frase"></div>
       <div class="k3-grid" id="dred-kpis"></div>
-      <!-- duas colunas: esquerda (ranking, custos, pessoas) | direita (quadro comparativo, fatos relevantes) -->
-      <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);margin-bottom:16px">
+      <!-- duas colunas: esquerda (quadro comparativo, fatos relevantes) | direita (ranking, custos, pessoas) -->
+      <div class="d3-linha" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-bottom:16px">
+        <div class="d3-coluna">
+          <div class="p3">
+            <div class="p3-cab"><div class="ic3d" style="--c1:#fca5a5;--c2:#b91c1c"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div><h2>Quadro Comparativo</h2><small id="dred-resumo-sub">Consolidado</small></div></div>
+            <div id="dred-resumo" class="dre-resumo"></div>
+          </div>
+          <!-- fatos relevantes do mes (lancados em Diretoria > Fatos Relevantes), no estilo do quadro de alertas -->
+          <div class="p3" style="flex:1;display:flex;flex-direction:column">
+            <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg></div>
+              <div><h2>Fatos Relevantes deste Mês</h2><small id="dred-cons-sub">Lançados em Diretoria › Fatos Relevantes</small></div>
+              <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('consideracoes', document.querySelector('#menu-dir .nav-item[onclick*=&quot;consideracoes&quot;]'))">+ Lançar</button></div>
+            <div id="dred-consideracoes" class="d3-alertas" style="max-height:none;flex:1"></div>
+          </div>
+        </div>
         <div class="d3-coluna">
           <div class="p3">
             <div class="p3-cab"><div class="ic3d" style="--c1:#67e8f9;--c2:#0e7490"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></div>
@@ -629,23 +643,9 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
             <div id="dred-pessoas" class="dre-barras dre-compacta"></div>
           </div>
         </div>
-        <div class="d3-coluna">
-          <div class="p3">
-            <div class="p3-cab"><div class="ic3d" style="--c1:#fca5a5;--c2:#b91c1c"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-              <div><h2>Quadro Comparativo</h2><small id="dred-resumo-sub">Consolidado</small></div></div>
-            <div id="dred-resumo" class="dre-resumo"></div>
-          </div>
-          <!-- fatos relevantes do mes (lancados em Diretoria > Fatos Relevantes), no estilo do quadro de alertas -->
-          <div class="p3" style="flex:1;display:flex;flex-direction:column">
-            <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg></div>
-              <div><h2>Fatos Relevantes deste Mês</h2><small id="dred-cons-sub">Lançados em Diretoria › Fatos Relevantes</small></div>
-              <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('consideracoes', document.querySelector('#menu-dir .nav-item[onclick*=&quot;consideracoes&quot;]'))">+ Lançar</button></div>
-            <div id="dred-consideracoes" class="d3-alertas" style="max-height:none;flex:1"></div>
-          </div>
-        </div>
       </div>
       <!-- pipeline de bids (investimento) + produtividade dos equipamentos -->
-      <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);margin-bottom:16px">
+      <div class="d3-linha" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-bottom:16px">
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
             <div><h2>Pipeline · Bids e Concorrências</h2><small id="dred-pipe-sub">Negociações em andamento</small></div>
@@ -655,14 +655,14 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg></div>
             <div><h2>Produtividade dos Equipamentos</h2><small>Ocupação, manutenção e disponibilidade da frota</small></div>
-            <span class="tag-dev">EM DESENVOLVIMENTO</span></div>
+            <span class="tag-dev">EM DESENVOLVIMENTO · PRÓXIMO FECHAMENTO</span></div>
           <div class="dre-prod">
             <div><span>Taxa de Ocupação</span><b>—</b><small>% dos dias com a máquina atuando</small></div>
             <div><span>Máquinas em Corretiva</span><b>—</b><small>Paradas por quebra no mês</small></div>
             <div><span>Horas Paradas em Manutenção</span><b>—</b><small>Preventiva + corretiva</small></div>
             <div><span>Disponibilidade da Frota</span><b>—</b><small>Horas disponíveis / horas totais</small></div>
           </div>
-          <div class="dre-prod-nota">Os indicadores serão calculados a partir dos apontamentos diários dos equipamentos, que estão em implantação.</div>
+          <div class="dre-prod-nota">🚧 Em desenvolvimento: estes indicadores serão apresentados a partir do próximo fechamento, calculados com os apontamentos diários dos equipamentos.</div>
         </div>
       </div>
     </div>
@@ -1759,7 +1759,7 @@ function renderDREDashboard() {
     const v = f(c, fx);
     return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreKn(v) + '</b><small class="pct-pill' + (prv ? ' atual' : '') + '">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
   };
-  const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 46px 1fr 46px;font-size:11.5px';
+  const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 60px 1fr 60px;font-size:11.5px';
   document.getElementById('dred-resumo').innerHTML = (periodo.length || periodoSeg.length) ?
     '<div class="dre-linha-res" style="' + grade + ';background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right"><i class="tag-atual">' + rotPer.toUpperCase() + '</i></span><span></span><span style="text-align:right"><i class="tag-anterior">' + rotMes(perSeg).toUpperCase() + ' · MÊS ANTERIOR</i></span><span></span></div>' +
     linhasRes.map(([rot, f, forte]) => '<div class="dre-linha-res" style="' + grade + ';padding:7px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
