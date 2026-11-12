@@ -409,6 +409,14 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .dre-compacta.dre-barras>div{font-size:11.5px}
 .fato-alerta{cursor:default !important;align-items:flex-start !important}
 .fato-alerta .fato-txt{font-size:11.5px;line-height:1.45;color:#e2e8f0;margin-top:3px;white-space:normal}
+.k3-barras{position:absolute;right:14px;top:16px;width:34%;height:44px;display:flex;align-items:flex-end;gap:3px;pointer-events:none;z-index:0}
+.k3-barras i{flex:1;border-radius:3px 3px 1px 1px;min-height:3px}
+.k3 .k3-cab{position:relative;z-index:1}
+.k3-var{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:800;color:#cbd5e1;white-space:nowrap}
+.k3-var.bom{color:#4ade80}
+.k3-var.ruim{color:#f87171}
+.k3-var small{font-size:9.5px;font-weight:600;color:#94a3b8;margin-left:2px}
+.mc-pct{justify-self:end;font-size:12px;font-weight:800;color:var(--c);padding:3px 9px;border-radius:9px;background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -1626,19 +1634,37 @@ function renderDREDashboard() {
     alu: '<svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg>'
   };
   const pctRec = v => r.receita ? drePct(v / r.receita * 100) + ' da receita' : '';
-  const card = (tit, chave, valor, neg, cor, c1, c2, sub) =>
-    '<div class="k3 tilt" style="--cor:' + cor + '"><div class="k3-cab"><div class="ic3d" style="--c1:' + c1 + ';--c2:' + c2 + '">' + ic[chave] + '</div>' +
-    '<div style="min-width:0"><div class="k3-tit">' + tit + '</div><div class="k3-val dre-v' + (neg ? ' dre-neg' : '') + '">' + valor + '</div></div></div>' +
+  // serie dos ultimos meses (consolidado) ate o mes escolhido: barrinhas no fundo dos cartoes
+  const mesesSerie = [...new Set(dreDados.map(l => l._mes))].filter(m => m <= per).sort().slice(-8);
+  const calcSerie = mesesSerie.map(m => dreCalcular(dreLinhasUnidade(un, m.slice(0, 4)).filter(l => l._mes === m)));
+  const aluguelDe = c => Object.entries(c.contas).filter(([k]) => /^co\|alugu/i.test(k)).reduce((s, [, v]) => s + v, 0);
+  const barrinhas = (f, cor) => {
+    const vals = calcSerie.map(f), max = Math.max(...vals.map(v => Math.abs(v || 0)), 1e-9);
+    return '<div class="k3-barras">' + vals.map((v, i) => '<i style="height:' + Math.max(8, Math.abs(v || 0) / max * 100) + '%;background:' + ((v || 0) < 0 ? '#ef4444' : cor) + ';opacity:' + (i === vals.length - 1 ? 1 : .3 + .5 * i / vals.length) + '" title="' + mesesSerie[i] + '"></i>').join('') + '</div>';
+  };
+  // variacao contra o mes anterior: valores em %, indicadores em pontos percentuais (p.p.)
+  const temAnt = periodoSeg.length > 0, rotAnt = rotMes(perSeg);
+  const variacao = (atual, ant, pp, subirEhBom, emReais) => {
+    if (!temAnt || ant === null || ant === undefined || !isFinite(ant) || atual === null || !isFinite(atual)) return '';
+    const d = (pp || emReais) ? atual - ant : (Math.abs(ant) > 0.004 ? (atual - ant) / Math.abs(ant) * 100 : null);
+    if (d === null) return '';
+    const lim = emReais ? 0.5 : 0.05, sobe = d > lim, desce = d < -lim, bom = subirEhBom ? sobe : desce, ruim = subirEhBom ? desce : sobe;
+    return '<span class="k3-var ' + (bom ? 'bom' : ruim ? 'ruim' : '') + '">' + (sobe ? '▲' : desce ? '▼' : '■') + ' ' + (emReais ? (d > 0 ? '+' : '') + dreK(d) : (d > 0 ? '+' : '') + d.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + (pp ? ' p.p.' : '%')) + ' <small>vs ' + rotAnt + '</small></span>';
+  };
+  const card = (tit, chave, valor, neg, cor, c1, c2, sub, varHtml, barras) =>
+    '<div class="k3 tilt" style="--cor:' + cor + '">' + barras + '<div class="k3-cab"><div class="ic3d" style="--c1:' + c1 + ';--c2:' + c2 + '">' + ic[chave] + '</div>' +
+    '<div style="min-width:0"><div class="k3-tit">' + tit + '</div><div class="k3-val dre-v' + (neg ? ' dre-neg' : '') + '">' + valor + '</div>' + varHtml + '</div></div>' +
     '<div class="k3-sub">' + (ehPrv ? 'PREVISTO · ' : '') + sub + '</div></div>';
   const negG = r.gpm < -0.004;
+  const pctMO = c => c.receita ? c.mo / c.receita * 100 : null, pctAlu = c => c.receita ? aluguelDe(c) / c.receita * 100 : null;
   document.getElementById('dred-kpis').innerHTML =
-    card('Receita Bruta', 'rb', dreK(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
-    card('Receita Líquida', 'rl', dreK(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
-    card('Custo Direto Operacional', 'cd', dreK(r.co), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.co) + ' · sem mão de obra') +
-    card('Margem de Contribuição', 'mc', dreK(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita') +
-    card('Resultado GPM', 'gpm', dreK(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita') +
-    card('Mão de Obra / Receita', 'mo', drePct(r.receita ? r.mo / r.receita * 100 : null), false, '#14b8a6', '#5eead4', '#0f766e', dreK(r.mo) + ' de mão de obra') +
-    card('Aluguéis / Receita', 'alu', drePct(r.receita ? aluguel / r.receita * 100 : null), false, '#e11d48', '#fda4af', '#9f1239', dreK(aluguel) + ' em aluguéis de máquinas');
+    card('Receita Bruta', 'rb', dreK(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer, variacao(r.receita, rSeg.receita, false, true), barrinhas(c => c.receita, '#3b8cff')) +
+    card('Receita Líquida', 'rl', dreK(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl), variacao(r.rl, rSeg.rl, false, true), barrinhas(c => c.rl, '#22d3ee')) +
+    card('Custo Direto Operacional', 'cd', dreK(r.co), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.co) + ' · sem mão de obra', variacao(r.co, rSeg.co, false, false), barrinhas(c => c.co, '#f59e0b')) +
+    card('Margem de Contribuição', 'mc', dreK(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita', variacao(r.mc, rSeg.mc, false, true), barrinhas(c => c.mc, '#818cf8')) +
+    card('Resultado GPM', 'gpm', dreK(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita', variacao(r.gpm, rSeg.gpm, false, true, true), barrinhas(c => c.gpm, '#3b8cff')) +
+    card('Mão de Obra / Receita', 'mo', drePct(pctMO(r)), false, '#14b8a6', '#5eead4', '#0f766e', dreK(r.mo) + ' de mão de obra', variacao(pctMO(r), pctMO(rSeg), true, false), barrinhas(pctMO, '#14b8a6')) +
+    card('Aluguéis / Receita', 'alu', drePct(pctAlu(r)), false, '#e11d48', '#fda4af', '#9f1239', dreK(aluguel) + ' em aluguéis de máquinas', variacao(pctAlu(r), pctAlu(rSeg), true, false), barrinhas(pctAlu, '#e11d48'));
   document.querySelectorAll('#dred-kpis .tilt').forEach(el => {
     el.addEventListener('mousemove', e => { const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = 'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) translateY(-4px)'; });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
@@ -1650,12 +1676,14 @@ function renderDREDashboard() {
     .map(([u, n]) => ({ u, n, c: dreCalcular(dreDados.filter(l => l.unidade === u && l._mes === per)) }))
     .filter(x => Math.abs(x.c.receita) > 0.004)
     .sort((a, b) => b.c.receita - a.c.receita);
+  // cor da margem: verde (30% ou mais), ciano (15 a 30%), amarelo (0 a 15%), vermelho (negativa)
+  const corMargem = p => p === null ? '#94a3b8' : p < 0 ? '#f87171' : p < 15 ? '#fbbf24' : p < 30 ? '#22d3ee' : '#4ade80';
   let pos = 0;
   const maxR = Math.max(...lista.map(x => x.c.receita), 1);
   document.getElementById('dred-clientes').innerHTML = lista.length ? lista.map(x =>
     '<div class="dre-unid dre-barra clica" onclick="abrirDREUnidade(\'' + x.u + '\', document.querySelector(\'.nav-item[onclick*=&quot;' + x.u + '&quot;]\'))" title="Abrir a DRE de ' + x.n + '">' +
     '<span><b class="dre-pos-rank">' + (++pos) + 'º</b>' + esc(x.n) + '</span><div class="trilho"><i style="width:' + Math.max(2, x.c.receita / maxR * 100) + '%"></i><em>' + dreK(x.c.receita) + '</em></div>' +
-    '<b class="' + dreSinal(x.c.mc) + '" style="text-align:right">' + drePct(x.c.mcPct) + '</b></div>'
+    '<b class="mc-pct" style="--c:' + corMargem(x.c.mcPct) + '">' + drePct(x.c.mcPct) + '</b></div>'
   ).join('') + '<div class="dre-unid" style="color:var(--muted);font-size:10.5px"><span></span><span>Receita bruta</span><span style="text-align:right">Margem de contribuição %</span></div>'
     : '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
 
@@ -1734,13 +1762,13 @@ async function renderConsideracoesVisao(per, rotPer) {
   if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar os fatos relevantes: ' + esc(error.message) + '</div>'; return; }
   const frota = id => (allEquipamentos.find(e => e.id === id) || {}).frota || '';
   const cliente = id => (allClientes.find(c => c.id === id) || {}).razao_social || '';
+  // cada fato relevante como um cartao, no estilo do quadro de Alertas de Vencimento
+  const icFato = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>';
   el.innerHTML = (data || []).length ? data.map(c =>
-    '<div class="dre-cons-item"><div class="dre-cons-tags">' +
-    (c.cliente_id ? '<span class="tag-cli">' + esc(cliente(c.cliente_id)) + '</span>' : '') +
-    (c.equipamento_id ? '<span class="tag-frota">Frota ' + esc(frota(c.equipamento_id)) + '</span>' : '') +
-    (!c.cliente_id && !c.equipamento_id ? '<span class="tag-cli">Geral</span>' : '') +
-    '</div><div class="dre-cons-txt">' + esc(c.justificativa || '').replace(/\n/g, '<br>') + '</div></div>'
-  ).join('') : '<div class="dre-vazio" style="padding:14px">Nenhum fato relevante lançado para ' + rotPer + '</div>';
+    '<div class="d3-alerta fato-alerta" style="--c:#f59e0b"><div class="ic3d" style="--c1:#fde047;--c2:#c2410c">' + icFato + '</div>' +
+    '<div style="flex:1;min-width:0"><b>' + esc(c.cliente_id ? cliente(c.cliente_id) : 'Geral') + '</b><div class="fato-txt">' + esc(c.justificativa || '').replace(/\n/g, '<br>') + '</div></div>' +
+    '<span class="tag">' + rotPer + '</span></div>'
+  ).join('') : '<div class="d3-vazio">Nenhum fato relevante lançado para ' + rotPer + '<br><small>Use o botão + Lançar</small></div>';
 }
 
 // CONTATOS: QR Code que abre a avaliacao da Kway no Google
