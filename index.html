@@ -481,7 +481,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
   </div>
   <!-- MENU DO AMBIENTE DA DIRETORIA (substitui o menu das operacoes enquanto estiver na Diretoria) -->
   <div id="menu-dir" style="display:none">
-  <div class="dir-faixa"><b>DIRETORIA</b><small>Resultado · DRE · Considerações</small></div>
+  <div class="dir-faixa"><b>DIRETORIA</b><small>Resultado · DRE · Fatos Relevantes</small></div>
   <div class="nav-section">Resultado</div>
     <div class="nav-item" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Visão 360°</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE – Consolidado</span></div>
@@ -490,7 +490,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
     <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN São Paulo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
-    <div class="nav-item" onclick="nav('consideracoes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Considerações</span></div>
+    <div class="nav-item" onclick="nav('consideracoes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Fatos Relevantes</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item dir-voltar" onclick="sairDiretoria()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/><path d="M9 12h12"/></svg></span><span>Voltar às Operações</span></div>
   </div>
@@ -575,7 +575,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <!-- consideracoes do mes (lancadas em Diretoria > Considerações) -->
       <div class="p3" style="margin-bottom:16px">
         <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
-          <div><h2>Considerações do Mês</h2><small id="dred-cons-sub">Lançadas em Diretoria › Considerações</small></div></div>
+          <div><h2>Fatos Relevantes deste Mês</h2><small id="dred-cons-sub">Lançados em Diretoria › Fatos Relevantes</small></div></div>
         <div id="dred-consideracoes" class="dre-cons"></div>
       </div>
     </div>
@@ -1341,7 +1341,7 @@ const pageMap = {
   dashboard:        { title: 'Dashboard Operacional - UN. de Negócios Movimentação de Carga', loader: carregarDashboard },
   'dre-dashboard':  { title: 'Visão 360° - UN. de Negócios Movimentação de Carga', loader: () => carregarDRE('dash'), restritoDRE: true },
   dre:              { title: 'DRE - Demonstrativo de Resultado do Exercício', loader: () => carregarDRE('dre'), restritoDRE: true },
-  consideracoes:    { title: 'Considerações do Mês - Diretoria', loader: () => carregarModulo('consideracoes'), restritoDRE: true },
+  consideracoes:    { title: 'Fatos Relevantes deste Mês - Diretoria', loader: () => carregarModulo('consideracoes'), restritoDRE: true },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
@@ -1384,7 +1384,7 @@ function transicaoAmbiente(titulo, sub, depois) {
 }
 function entrarDiretoria() {
   if (!currentUser?.acessoDRE) return showToast('Acesso à Diretoria restrito', true);
-  transicaoAmbiente('DIRETORIA', 'Resultado · DRE · Considerações', () => {
+  transicaoAmbiente('DIRETORIA', 'Resultado · DRE · Fatos Relevantes', () => {
     aplicarModoDiretoria(true);
     nav('dre-dashboard', document.querySelector('#menu-dir .nav-item[onclick*="dre-dashboard"]'));
   });
@@ -1707,10 +1707,10 @@ async function renderPessoasPorUnidade() {
 // CONSIDERACOES DO MES (Diretoria > Considerações)
 async function renderConsideracoesVisao(per, rotPer) {
   const el = document.getElementById('dred-consideracoes');
-  document.getElementById('dred-cons-sub').textContent = rotPer + ' · lançadas em Diretoria › Considerações';
+  document.getElementById('dred-cons-sub').textContent = rotPer + ' · lançados em Diretoria › Fatos Relevantes';
   const { data, error } = await db.from('dre_consideracoes').select('*').eq('mes', per + '-01').order('criado_em');
   if (document.getElementById('dred-per').value !== per) return;   // trocou de mes enquanto carregava
-  if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar as considerações: ' + esc(error.message) + '</div>'; return; }
+  if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar os fatos relevantes: ' + esc(error.message) + '</div>'; return; }
   const frota = id => (allEquipamentos.find(e => e.id === id) || {}).frota || '';
   const cliente = id => (allClientes.find(c => c.id === id) || {}).razao_social || '';
   el.innerHTML = (data || []).length ? data.map(c =>
@@ -1719,7 +1719,7 @@ async function renderConsideracoesVisao(per, rotPer) {
     (c.equipamento_id ? '<span class="tag-frota">Frota ' + esc(frota(c.equipamento_id)) + '</span>' : '') +
     (!c.cliente_id && !c.equipamento_id ? '<span class="tag-cli">Geral</span>' : '') +
     '</div><div class="dre-cons-txt">' + esc(c.justificativa || '').replace(/\n/g, '<br>') + '</div></div>'
-  ).join('') : '<div class="dre-vazio" style="padding:14px">Nenhuma consideração lançada para ' + rotPer + '</div>';
+  ).join('') : '<div class="dre-vazio" style="padding:14px">Nenhum fato relevante lançado para ' + rotPer + '</div>';
 }
 
 // CONTATOS: QR Code que abre a avaliacao da Kway no Google
@@ -3899,11 +3899,11 @@ const OPC_FROTA = () => allEquipamentos.map(e => [e.id, e.frota]);
 const MODULOS = {
   // CONSIDERACOES DO MES (Diretoria): aparecem na Visao 360 do mes escolhido
   consideracoes: {
-    tabela: 'dre_consideracoes', titulo: 'Considerações do Mês', botao: '+ Nova Consideração', ordem: 'mes',
+    tabela: 'dre_consideracoes', titulo: 'Fatos Relevantes deste Mês', botao: '+ Novo Fato Relevante', ordem: 'mes',
     campos: [
       { id:'mes', label:'Mês', tipo:'mes', obrig:true, negrito:true },
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
-      { id:'justificativa', label:'Consideração / Justificativa', tipo:'textarea', full:true, obrig:true }
+      { id:'justificativa', label:'Fato relevante (o que aconteceu e o impacto)', tipo:'textarea', full:true, obrig:true }
     ]
   },
   colaboradores: {
