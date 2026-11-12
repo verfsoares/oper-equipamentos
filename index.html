@@ -1487,13 +1487,15 @@ function renderDREDashboard() {
   desenharGraficoDRE(meses.map(m => ({ ...m, gpm: dreCalcular(doAno.filter(l => l._mes === m.mes)).gpm })), per);
 
   // resumo do mes: as linhas principais da DRE consolidada, com % sobre a receita bruta
-  document.getElementById('dred-resumo-sub').textContent = 'Consolidado · ' + rotPer + (ehPrv ? ' (previsto)' : '');
+  // custo fixo (linha "Fixo (Wesley e Verônica)" do custo administrativo) aparece separado
+  const fixo = Object.entries(r.contas).filter(([k]) => /^adm\|fixo/i.test(k)).reduce((s, [, v]) => s + v, 0);
+  document.getElementById('dred-resumo-sub').textContent ='Consolidado · ' + rotPer + (ehPrv ? ' (previsto)' : '');
   const lin = (rot, v, forte) => '<div class="dre-linha-res" style="grid-template-columns:1.6fr 1fr 60px;padding:8px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
     '<b class="' + dreSinal(v) + '" style="white-space:nowrap;font-size:13px">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted)">' + (r.receita ? drePct(v / r.receita * 100) : '-') + '</small></div>';
   document.getElementById('dred-resumo').innerHTML = periodo.length ?
     lin('Receita bruta', r.receita, true) + lin('(-) Impostos', r.imposto) + lin('(=) Receita líquida', r.rl) +
     lin('(-) Custo direto operacional', r.cd) + lin('(=) Margem de contribuição', r.mc, true) +
-    lin('(-) Custo administrativo', r.adm) + lin('(-) Despesas financeiras', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
+    lin('(-) Custo fixo (Wesley e Verônica)', fixo) + lin('(-) Custo administrativo', r.adm - fixo) + lin('(-) Despesas financeiras', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
     '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
   // desempenho por unidade no periodo (no consolidado: todas; numa unidade: so ela)
   const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]]).filter(([u]) => un === 'CONSOLIDADO' || u === un)
