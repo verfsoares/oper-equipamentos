@@ -389,6 +389,8 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .dre-notas b{color:#c4b5fd}
 .dre-barra.clica{cursor:pointer}
 .dre-barra.clica:hover>span:first-child{color:#93c5fd}
+.tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
+.tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
 .tag-prv{font-style:normal;font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:10px;background:rgba(249,115,22,.2);color:#fdba74;border:1px solid rgba(249,115,22,.5);margin-left:4px}
 .dre-unid{display:grid;grid-template-columns:150px 1fr 110px 60px;gap:10px;align-items:center;font-size:12px}
@@ -1559,9 +1561,9 @@ function renderDREDashboard() {
   const rotPer = rotMes(per);
   const ehPrv = periodo.length > 0 && periodo.every(l => l._prv);
   document.getElementById('dred-mes-rot').textContent = rotPer + (ehPrv ? ' (previsto)' : '');
-  // quadro comparativo: mes escolhido (ultimo resultado) x mes seguinte (mes atual)
+  // quadro comparativo: mes escolhido (mes atual, em destaque) x mes anterior
   const [py, pm] = per.split('-').map(Number);
-  const perSeg = pm === 12 ? (py + 1) + '-01' : py + '-' + String(pm + 1).padStart(2, '0');
+  const perSeg = pm === 1 ? (py - 1) + '-12' : py + '-' + String(pm - 1).padStart(2, '0');   // mes anterior
   const periodoSeg = linhasMes(perSeg), rSeg = dreCalcular(periodoSeg);
   const segPrv = periodoSeg.length > 0 && periodoSeg.every(l => l._prv);
   const somaContas = (calc, re) => Object.entries(calc.contas).filter(([k]) => re.test(k)).reduce((s, [, v]) => s + v, 0);
@@ -1613,7 +1615,7 @@ function renderDREDashboard() {
   ).join('') + '<div class="dre-unid" style="color:var(--muted);font-size:10.5px"><span></span><span>Receita bruta</span><span style="text-align:right">GPM R$</span><span style="text-align:right">GPM %</span></div>'
     : '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
 
-  // quadro comparativo: mes escolhido x mes seguinte
+  // quadro comparativo: mes atual (escolhido) primeiro, depois o mes anterior
   document.getElementById('dred-resumo-sub').textContent = 'Consolidado · ' + rotPer + ' x ' + rotMes(perSeg);
   const linhasRes = [
     ['Receita bruta', c => c.receita, true], ['(-) Impostos', c => c.imposto], ['(=) Receita líquida', c => c.rl],
@@ -1625,13 +1627,13 @@ function renderDREDashboard() {
   const celula = ([c, fx, tem], f, prv) => {
     if (!tem) return '<b style="text-align:right;color:var(--muted)">-</b><small></small>';
     const v = f(c, fx);
-    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;font-size:13px;text-align:right' + (prv && v >= -0.004 ? ';color:#fb923c' : '') + '">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
+    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
   };
   const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 46px 1fr 46px;font-size:11.5px';
   document.getElementById('dred-resumo').innerHTML = (periodo.length || periodoSeg.length) ?
-    '<div class="dre-linha-res" style="' + grade + ';background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right;color:#93c5fd;font-weight:700">' + rotPer.toUpperCase() + (ehPrv ? ' <i class="tag-prv">PROVISÃO</i>' : '') + '</span><span></span><span style="text-align:right;color:' + (segPrv ? '#fb923c' : '#93c5fd') + ';font-weight:700">' + rotMes(perSeg).toUpperCase() + (segPrv ? ' <i class="tag-prv">PROVISÃO</i>' : '') + '</span><span></span></div>' +
+    '<div class="dre-linha-res" style="' + grade + ';background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right"><i class="tag-atual">' + rotPer.toUpperCase() + '</i></span><span></span><span style="text-align:right"><i class="tag-anterior">' + rotMes(perSeg).toUpperCase() + ' · MÊS ANTERIOR</i></span><span></span></div>' +
     linhasRes.map(([rot, f, forte]) => '<div class="dre-linha-res" style="' + grade + ';padding:7px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
-      celula(colunas[0], f, ehPrv) + celula(colunas[1], f, segPrv) + '</div>').join('') :
+      celula(colunas[0], f, true) + celula(colunas[1], f, false) + '</div>').join('') :
     '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
 
   // composicao dos custos (% sobre a receita bruta)
