@@ -1495,7 +1495,7 @@ function renderDREDashboard() {
   document.getElementById('dred-resumo').innerHTML = periodo.length ?
     lin('Receita bruta', r.receita, true) + lin('(-) Impostos', r.imposto) + lin('(=) Receita líquida', r.rl) +
     lin('(-) Custo direto operacional', r.cd) + lin('(=) Margem de contribuição', r.mc, true) +
-    lin('(-) Custo fixo (Wesley e Verônica)', fixo) + lin('(-) Custo administrativo', r.adm - fixo) + lin('(-) Despesas financeiras', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
+    lin('(-) Custos diversos administrativos', r.adm - fixo) + lin('(-) Custo fixo (Wesley e Verônica)', fixo) + lin('(-) Antecipação de recebíveis', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
     '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
   // desempenho por unidade no periodo (no consolidado: todas; numa unidade: so ela)
   const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]]).filter(([u]) => un === 'CONSOLIDADO' || u === un)
