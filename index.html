@@ -417,6 +417,42 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .k3-var.ruim{color:#f87171}
 .k3-var small{font-size:9.5px;font-weight:600;color:#94a3b8;margin-left:2px}
 .mc-pct{justify-self:end;font-size:12px;font-weight:800;color:var(--c);padding:3px 9px;border-radius:9px;background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.dre-btn-pdf{padding:5px 12px;font-size:11.5px}
+.dre-frase{margin:-4px 0 16px;padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.55;color:#e2e8f0;
+  background:linear-gradient(90deg,rgba(59,140,255,.16),rgba(211,47,47,.10));border:1px solid rgba(90,150,255,.35);border-left:4px solid #3b8cff}
+.dre-frase b{color:#fff}.dre-frase .bom{color:#4ade80;font-weight:800}.dre-frase .ruim{color:#f87171;font-weight:800}
+.dre-pipe{padding:10px 18px 16px;display:flex;flex-direction:column;gap:10px}
+.pipe-invest{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:14px;background:linear-gradient(120deg,rgba(127,29,29,.55),rgba(211,47,47,.25));border:1px solid rgba(248,113,113,.5);box-shadow:0 0 18px rgba(211,47,47,.25)}
+.pipe-invest small{display:block;font-size:10px;letter-spacing:1px;color:#fecaca;font-weight:700}
+.pipe-invest b{display:block;font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.pipe-invest span{margin-left:auto;text-align:right;font-size:11px;color:#fecaca}
+.pipe-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pipe-nums div{padding:8px 10px;border-radius:10px;background:rgba(19,40,90,.55);border:1px solid rgba(90,150,255,.18)}
+.pipe-nums small{display:block;font-size:9.5px;color:var(--muted);letter-spacing:.6px}.pipe-nums b{font-size:15px}
+.pipe-lista{display:flex;flex-direction:column;gap:5px}
+.pipe-item{display:grid;grid-template-columns:1.3fr 90px 70px 70px;gap:8px;align-items:center;font-size:11px;padding:6px 10px;border-radius:9px;background:rgba(19,40,90,.4);border-left:3px solid var(--c);cursor:pointer}
+.pipe-item b{text-align:right}.pipe-item .et{font-size:9.5px;font-weight:800;color:var(--c)}
+.tag-dev{font-size:9.5px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:10px;background:rgba(245,180,0,.14);color:#fde047;border:1px dashed rgba(245,180,0,.6);white-space:nowrap}
+.dre-prod{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 18px 8px;opacity:.55;filter:grayscale(.4)}
+.dre-prod div{padding:12px;border-radius:12px;background:rgba(19,40,90,.55);border:1px dashed rgba(148,163,184,.35)}
+.dre-prod span{display:block;font-size:10.5px;letter-spacing:.8px;color:#cbd5e1;font-weight:700}
+.dre-prod b{display:block;font-size:24px;margin:4px 0;color:#94a3b8}.dre-prod small{font-size:10px;color:var(--muted)}
+.dre-prod-nota{padding:4px 18px 16px;font-size:11px;color:#fde68a}
+/* exportar / imprimir a Visao 360 (A4 deitado, com as cores da tela) */
+@media print{
+  @page{size:A4 landscape;margin:7mm}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;animation:none !important;transition:none !important}
+  html,body{height:auto !important;overflow:visible !important;background:#07122b !important}
+  #sidebar,#topbar,#trans-amb,.dre-filtros select,.dre-filtros>span,.dre-btn-pdf,.p3-cab .btn,.toast,.modal-overlay{display:none !important}
+  #app,#main,#content{display:block !important;height:auto !important;overflow:visible !important;padding:0 !important;margin:0 !important}
+  .view{display:none !important}.view.active{display:block !important}
+  .k3,.tilt{transform:none !important}
+  .p3,.k3,.dre-frase{break-inside:avoid}
+  #dred-kpis{grid-template-columns:repeat(4,1fr) !important}
+  .d3-linha{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) !important}
+}
+.pct-pill{justify-self:end;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:8px;color:#cbd5e1;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.3);white-space:nowrap}
+.pct-pill.atual{color:#7dd3fc;background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.45)}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -517,6 +553,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
     <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN São Paulo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
+    <div class="nav-item" onclick="nav('bids',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></span><span>Bids / Concorrências</span></div>
     <div class="nav-item" onclick="nav('consideracoes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Fatos Relevantes</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item dir-voltar" onclick="sairDiretoria()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/><path d="M9 12h12"/></svg></span><span>Voltar às Operações</span></div>
@@ -524,8 +561,6 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
   <div id="menu-oper">
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 12 12 4l9 8M5 10v10h14V10"/></svg></span><span>Dashboard Operacional</span></div>
-  <div class="nav-section">BID</div>
-  <div class="nav-item" onclick="nav('bids',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></span><span>Concorrências</span></div>
   <div class="nav-section">Cadastros</div>
   <div class="nav-item" onclick="nav('equipamentos',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg></span><span>Cadastro de Equipamento</span></div>
   <div class="nav-item" onclick="nav('clientes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5M9 8h.01M15 8h.01M9 12h.01M15 12h.01"/></svg></span><span>Cadastro de Clientes</span></div>
@@ -570,8 +605,10 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
         <div class="dre-titulo-mes">Resultado do Mês <b id="dred-mes-rot"></b><small>Consolidado</small></div>
         <span>Mês:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
         <span class="dre-leg" id="dred-versao"></span>
+        <button class="btn dre-btn-pdf" onclick="exportarVisaoPDF()" title="Gera a tela para imprimir ou salvar em PDF">&#128424;&#65039; Exportar PDF</button>
       </div>
       <div class="dre-aviso" id="dred-aviso" style="display:none"></div>
+      <div class="dre-frase" id="dred-frase"></div>
       <div class="k3-grid" id="dred-kpis"></div>
       <!-- duas colunas: esquerda (ranking, custos, pessoas) | direita (quadro comparativo, fatos relevantes) -->
       <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);margin-bottom:16px">
@@ -605,6 +642,27 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
               <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('consideracoes', document.querySelector('#menu-dir .nav-item[onclick*=&quot;consideracoes&quot;]'))">+ Lançar</button></div>
             <div id="dred-consideracoes" class="d3-alertas" style="max-height:none;flex:1"></div>
           </div>
+        </div>
+      </div>
+      <!-- pipeline de bids (investimento) + produtividade dos equipamentos -->
+      <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);margin-bottom:16px">
+        <div class="p3">
+          <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
+            <div><h2>Pipeline · Bids e Concorrências</h2><small id="dred-pipe-sub">Negociações em andamento</small></div>
+            <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('bids', document.querySelector('#menu-dir .nav-item[onclick*=&quot;bids&quot;]'))">Ver bids</button></div>
+          <div id="dred-pipeline" class="dre-pipe"></div>
+        </div>
+        <div class="p3">
+          <div class="p3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg></div>
+            <div><h2>Produtividade dos Equipamentos</h2><small>Ocupação, manutenção e disponibilidade da frota</small></div>
+            <span class="tag-dev">EM DESENVOLVIMENTO</span></div>
+          <div class="dre-prod">
+            <div><span>Taxa de Ocupação</span><b>—</b><small>% dos dias com a máquina atuando</small></div>
+            <div><span>Máquinas em Corretiva</span><b>—</b><small>Paradas por quebra no mês</small></div>
+            <div><span>Horas Paradas em Manutenção</span><b>—</b><small>Preventiva + corretiva</small></div>
+            <div><span>Disponibilidade da Frota</span><b>—</b><small>Horas disponíveis / horas totais</small></div>
+          </div>
+          <div class="dre-prod-nota">Os indicadores serão calculados a partir dos apontamentos diários dos equipamentos, que estão em implantação.</div>
         </div>
       </div>
     </div>
@@ -1385,7 +1443,7 @@ const pageMap = {
   historico:    { title: 'Histórico Equips', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   vencimentos:  { title: 'Vencimento de Contratos', loader: () => carregarModulo('vencimentos') },
-  bids:         { title: 'Concorrências', loader: () => carregarModulo('bids') },
+  bids:         { title: 'Bids / Concorrências - Diretoria', loader: () => carregarModulo('bids'), restritoDRE: true },
   usuarios:     { title: 'Usuarios', loader: carregarUsuarios },
   contatos:     { title: 'Contatos', loader: desenharQrAvaliacao }
 };
@@ -1677,7 +1735,7 @@ function renderDREDashboard() {
     .filter(x => Math.abs(x.c.receita) > 0.004)
     .sort((a, b) => b.c.receita - a.c.receita);
   // cor da margem: verde (30% ou mais), ciano (15 a 30%), amarelo (0 a 15%), vermelho (negativa)
-  const corMargem = p => p === null ? '#94a3b8' : p < 0 ? '#f87171' : p < 15 ? '#fbbf24' : p < 30 ? '#22d3ee' : '#4ade80';
+  const corMargem = p => p !== null && p < 0 ? '#f87171' : '#7dd3fc';   // um tom so (azul claro, como a barra); negativo em vermelho
   let pos = 0;
   const maxR = Math.max(...lista.map(x => x.c.receita), 1);
   document.getElementById('dred-clientes').innerHTML = lista.length ? lista.map(x =>
@@ -1699,7 +1757,7 @@ function renderDREDashboard() {
   const celula = ([c, fx, tem], f, prv) => {
     if (!tem) return '<b style="text-align:right;color:var(--muted)">-</b><small></small>';
     const v = f(c, fx);
-    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreKn(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
+    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreKn(v) + '</b><small class="pct-pill' + (prv ? ' atual' : '') + '">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
   };
   const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 46px 1fr 46px;font-size:11.5px';
   document.getElementById('dred-resumo').innerHTML = (periodo.length || periodoSeg.length) ?
@@ -1712,13 +1770,56 @@ function renderDREDashboard() {
   const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Antecipação de Recebíveis', r.fin], ['Impostos', r.imposto]].sort((x, y) => y[1] - x[1]);   // do maior para o menor
   const maxC = Math.max(...custos.map(c => c[1]), 1);
   document.getElementById('dred-custos').innerHTML = custos.map(([n, v]) =>
-    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreK(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
+    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreK(v) + '</em></div><b class="mc-pct" style="--c:#fca5a5">' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
   ).join('');
 
+  // frase-resumo no topo: a conclusao do mes em uma leitura
+  const fr = document.getElementById('dred-frase');
+  if (!periodo.length) { fr.style.display = 'none'; }
+  else {
+    fr.style.display = '';
+    const difG = r.gpm - rSeg.gpm;
+    const ordMC = lista.filter(x => x.c.mcPct !== null).slice().sort((a, b) => b.c.mcPct - a.c.mcPct);
+    const melhor = ordMC[0], negativas = ordMC.filter(x => x.c.mc < -0.004);
+    fr.innerHTML = (ehPrv ? '<b>Previsão</b> · ' : '') + '<b>' + rotPer + '</b> ' + (ehPrv ? 'deve fechar' : 'fechou') + ' com Resultado GPM de <b class="' + (r.gpm < 0 ? 'ruim' : 'bom') + '">' + dreK(r.gpm) + '</b> (' + drePct(r.gpmPct) + ' da receita)' +
+      (temAnt ? ', <span class="' + (difG >= 0 ? 'bom' : 'ruim') + '">' + (difG >= 0 ? '▲ ' + dreK(difG) + ' acima' : '▼ ' + dreK(-difG) + ' abaixo') + '</span> de ' + rotMes(perSeg) : '') +
+      '. Receita bruta de <b>' + dreK(r.receita) + '</b> e margem de contribuição de <b>' + drePct(r.mcPct) + '</b>.' +
+      (melhor ? ' Destaque: <b>' + esc(melhor.n) + '</b> com <span class="bom">' + drePct(melhor.c.mcPct) + '</span> de margem.' : '') +
+      (negativas.length ? ' Atenção: <b>' + negativas.map(x => esc(x.n)).join(', ') + '</b> com margem negativa (<span class="ruim">' + negativas.map(x => drePct(x.c.mcPct)).join(', ') + '</span>).' : '');
+  }
   renderPessoasPorUnidade();
   renderConsideracoesVisao(per, rotPer);
+  renderPipelineVisao();
 }
 
+// PIPELINE: bids em negociacao e a necessidade de investimento ate o momento
+async function renderPipelineVisao() {
+  const el = document.getElementById('dred-pipeline');
+  const { data, error } = await db.from('bids').select('cliente_id, escopo, valor_total, valor_global_fixo, valor_mensal, investimento, prazo_meses, etapa');
+  if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar os bids: ' + esc(error.message) + '</div>'; return; }
+  const bids = (data || []).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
+  const soma = campo => bids.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
+  document.getElementById('dred-pipe-sub').textContent = bids.length + (bids.length === 1 ? ' negociação em andamento' : ' negociações em andamento');
+  if (!bids.length) { el.innerHTML = '<div class="dre-vazio">Nenhum bid cadastrado</div>'; return; }
+  const lista = bids.slice().sort((a, b) => (Number(b.investimento) || 0) - (Number(a.investimento) || 0) || (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0));
+  el.innerHTML =
+    '<div class="pipe-invest"><div><small>NECESSIDADE DE INVESTIMENTO ATÉ O MOMENTO</small><b>' + reaisBid(soma('investimento')) + '</b></div>' +
+    '<span>' + lista.filter(b => Number(b.investimento) > 0).length + ' de ' + bids.length + ' bids<br>exigem investimento</span></div>' +
+    '<div class="pipe-nums"><div><small>VALOR GLOBAL</small><b>' + reaisBid(soma('valor_total')) + '</b></div><div><small>GLOBAL FIXO</small><b>' + reaisBid(soma('valor_global_fixo')) + '</b></div><div><small>MENSAL FIXO</small><b>' + reaisBid(soma('valor_mensal')) + '</b></div></div>' +
+    '<div class="pipe-lista">' + lista.map(b =>
+      '<div class="pipe-item" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '" onclick="nav(\'bids\', document.querySelector(\'#menu-dir .nav-item[onclick*=&quot;bids&quot;]\'))" title="' + esc(b.escopo || '') + '">' +
+      '<span><b style="text-align:left;display:block">' + esc(b.cliente) + '</b><span class="et">' + esc(b.etapa || '-') + '</span></span>' +
+      '<b title="Valor global">' + (b.valor_total != null ? reaisBid(b.valor_total) : '-') + '</b><b title="Investimento" style="color:#fca5a5">' + (Number(b.investimento) ? reaisBid(b.investimento) : '-') + '</b>' +
+      '<b title="Prazo" style="color:var(--muted);font-weight:600">' + (b.prazo_meses ? b.prazo_meses + 'm' : '-') + '</b></div>').join('') +
+    '<div class="pipe-item" style="--c:transparent;background:none;cursor:default;color:var(--muted);font-size:9.5px"><span>Cliente / status</span><b>Valor global</b><b>Investimento</b><b>Prazo</b></div></div>';
+}
+// EXPORTAR PDF: abre a impressao do navegador (escolha "Salvar como PDF" ou a impressora)
+function exportarVisaoPDF() {
+  const titulo = document.title;
+  document.title = 'Visao 360 - Resultado ' + (document.getElementById('dred-mes-rot').textContent || '').replace('/', '-');
+  window.print();
+  setTimeout(() => { document.title = titulo; }, 1000);
+}
 // PESSOAS POR UNIDADE: colaboradores nao desligados, pelo cliente/local de trabalho do cadastro
 const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const UNIDADE_POR_CLIENTE = [
