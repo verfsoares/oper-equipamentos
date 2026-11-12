@@ -354,6 +354,18 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 .dre-faixa b{font-size:22px;font-weight:800}
 .dre-faixa span{font-size:11px;color:#c4b5fd}
 .dre-vazio{padding:30px;text-align:center;color:var(--muted)}
+.dre-notas{padding:12px 18px 18px;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.dre-notas div{display:grid;grid-template-columns:70px 1fr;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(19,40,90,.55);border:1px solid rgba(168,85,247,.25)}
+.dre-notas b{color:#c4b5fd}
+.dre-barra.clica{cursor:pointer}
+.dre-barra.clica:hover>span:first-child{color:#93c5fd}
+.dre-unid{display:grid;grid-template-columns:130px 1fr 110px 60px;gap:10px;align-items:center;font-size:12px}
+#dre-tabela th.acum,#dre-tabela td.acum{background:rgba(59,140,255,.10);font-weight:700}
+#dre-tabela th.acum.prv,#dre-tabela td.acum.prv{background:rgba(168,85,247,.14)}
+#dre-tabela th.tot,#dre-tabela td.tot{background:rgba(34,211,238,.10);font-weight:800}
+#dre-tabela tr.subgrupo td{font-weight:700;color:#bcd2ff}
+#dre-tabela tr.subgrupo td:first-child{padding-left:18px}
+#dre-tabela tr.sub td:first-child{padding-left:30px}
 #dre-tabela table{font-size:12px}
 #dre-tabela th,#dre-tabela td{white-space:nowrap;padding:7px 10px;text-align:right}
 #dre-tabela th:first-child,#dre-tabela td:first-child{text-align:left;position:sticky;left:0;background:#0c1d40;z-index:1;min-width:230px}
@@ -416,7 +428,12 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
   <div class="nav-item nav-dre-pai" style="margin-top:8px" onclick="toggleMenuDRE()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/><path d="M15 6h5v5"/></svg></span><span>DRE</span><span class="nav-seta">&#8250;</span></div>
   <div class="nav-sub" id="nav-dre-sub">
     <div class="nav-item" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Dashboard DRE</span></div>
-    <div class="nav-item" onclick="nav('dre',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>Consolidado</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('ANGLO_GO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>Anglo / GO</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CSN_MG',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>CSN / MG</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>CSN / SP</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>Correios / ES</span></div>
+    <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>Correios / DF</span></div>
   </div>
   </div>
   <div class="nav-section">Principal</div>
@@ -463,10 +480,10 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
     <!-- DASHBOARD DRE (acesso restrito) -->
     <div class="view" id="v-dre-dashboard">
       <div class="dre-filtros">
-        <span>Ano:</span><select class="form-select" id="dred-ano" onchange="renderDREDashboard()"></select>
-        <span>Mês:</span><select class="form-select" id="dred-mes" onchange="renderDREDashboard()"></select>
         <span>Unidade:</span><select class="form-select" id="dred-un" onchange="renderDREDashboard()"></select>
-        <span class="dre-leg"><i style="background:#3b8cff"></i>Realizado <i style="background:#a855f7"></i>Previsto</span>
+        <span>Período:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
+        <span class="dre-leg" id="dred-versao"></span>
+        <span class="dre-leg" style="margin-left:0"><i style="background:#3b8cff"></i>Realizado <i style="background:#a855f7"></i>Previsto</span>
       </div>
       <div class="k3-grid" id="dred-kpis"></div>
       <div class="d3-linha">
@@ -477,14 +494,14 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
         </div>
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fca5a5;--c2:#b91c1c"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-            <div><h2>Resumo Financeiro</h2><small>Realizado x Previsto</small></div></div>
+            <div><h2>Resumo Financeiro</h2><small>Realizado · Previsto · Ano</small></div></div>
           <div id="dred-resumo" class="dre-resumo"></div>
         </div>
       </div>
       <div class="d3-linha">
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#67e8f9;--c2:#0e7490"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></div>
-            <div><h2>Desempenho por Cliente</h2><small>Receita bruta realizada</small></div></div>
+            <div><h2>Desempenho por Unidade</h2><small>Receita bruta e Resultado GPM · clique para abrir a DRE</small></div></div>
           <div id="dred-clientes" class="dre-barras"></div>
         </div>
         <div class="p3">
@@ -494,17 +511,21 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
         </div>
       </div>
       <div class="p3 dre-faixa" id="dred-margens"></div>
+      <div class="p3" style="margin-bottom:16px">
+        <div class="p3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+          <div><h2>Observações do Mês</h2><small>Comentários da planilha (aba Resumo)</small></div></div>
+        <div id="dred-notas" class="dre-notas"></div>
+      </div>
     </div>
 
     <!-- DRE - DEMONSTRATIVO (acesso restrito) -->
     <div class="view" id="v-dre">
       <div class="dre-filtros">
         <span>Ano:</span><select class="form-select" id="dre-ano" onchange="renderDRETabela()"></select>
-        <span>Unidade:</span><select class="form-select" id="dre-un" onchange="renderDRETabela()"></select>
-        <span>Mostrar:</span><select class="form-select" id="dre-visao" onchange="renderDRETabela()"><option value="ambos">Realizado e Previsto</option><option value="realizado">Só Realizado</option><option value="previsto">Só Previsto</option></select>
-        <span class="dre-leg"><i style="background:#3b8cff"></i>REA = Realizado <i style="background:#a855f7"></i>PRV = Previsto</span>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="dre-ocultar-zeros" onchange="renderDRETabela()" /> Esconder contas zeradas</label>
+        <span class="dre-leg"><i style="background:#3b8cff"></i>REAL = Realizado <i style="background:#a855f7"></i>PRV = Previsto</span>
       </div>
-      <div class="table-wrap"><div class="table-header"><div class="table-title">Demonstrativo de Resultado do Exercício <span class="table-count" id="dre-count"></span></div></div>
+      <div class="table-wrap"><div class="table-header"><div class="table-title"><span id="dre-titulo-un">Consolidado</span> <span class="table-count" id="dre-count"></span></div></div>
         <div id="dre-tabela" style="overflow-x:auto"><div class="loading">Carregando...</div></div></div>
     </div>
 
@@ -1296,215 +1317,245 @@ function nav(page, el) {
 }
 
 // ============================================================
-// DRE (acesso restrito: perfis.acesso_dre) - Dashboard DRE e Demonstrativo
-// Le a tabela dre_lancamentos. Impostos calculados sobre a Receita Bruta (PIS 1,65% + COFINS 7,6% + ISS 5%).
+// DRE (acesso restrito: perfis.acesso_dre) - Dashboard DRE e DRE por unidade
+// Le a tabela dre_planilha (carregada da planilha DRE_RevXX.xlsx pelo SQL Editor do Supabase).
+// Cada linha e uma conta de uma unidade num mes, com natureza realizado/previsto.
+// CORPORATIVO = custos que so existem no consolidado (ex.: Fixo Wesley e Veronica).
 // ============================================================
-const DRE_GRUPOS = [
-  { id: 'mo', nome: 'Mão de Obra', contas: [['salarios','Salários'],['periculosidade','Periculosidade'],['bonus','Bônus'],['encargos','Encargos'],['alimentacao','Alimentação'],['transporte','Transporte'],['aux_moradia','Auxílio Moradia'],['pj_alocado','PJ Alocado'],['seguro_vida','Seguro de Vida']] },
-  { id: 'co', nome: 'Custos Operacionais', contas: [['manutencao','Manutenção'],['borracharia','Borracharia'],['combustiveis','Combustíveis'],['outros_insumos','Outros Insumos'],['alugueis','Aluguéis'],['provisionamento','Provisionamento'],['depreciacao','Depreciação'],['uniformes','Uniformes'],['servicos_terc','Serviços de Terceiros'],['fretes','Fretes']] },
-  { id: 'adm', nome: 'Custos Administrativos', contas: [['consultoria','Consultoria'],['passagens','Passagens'],['hoteis','Hotéis'],['cursos','Cursos'],['brindes','Brindes'],['deslocamento','Deslocamento']] },
-  { id: 'fin', nome: 'Despesas Financeiras', contas: [['antecipacao_recebiveis','Antecipação de Recebíveis']] }
-];
-const DRE_IMPOSTOS = [['PIS 1,65%', 0.0165], ['COFINS 7,6%', 0.076], ['ISS 5%', 0.05]];
-const DRE_ALIQ = DRE_IMPOSTOS.reduce((s, [, a]) => s + a, 0);
-// unidades: palavras procuradas no nome do cliente (lancamento sem cliente so entra em "Todas")
-const DRE_UNIDADES = [['', 'Todas'], ['anglo', 'Anglo', ['anglo']], ['csnmg', 'CSN MG', ['pires', 'fernandinho', 'almox', 'entreposto', 'casa de pedra']], ['csnsp', 'CSN SP', ['taubate', 'santo amaro']]];
+const DRE_UN = [['CONSOLIDADO', 'Consolidado'], ['ANGLO_GO', 'Anglo / GO'], ['CSN_MG', 'CSN / MG'], ['CSN_SP', 'CSN / SP'], ['CORREIOS_ES', 'Correios / ES'], ['CORREIOS_DF', 'Correios / DF']];
+const DRE_NOME_UN = Object.fromEntries(DRE_UN.concat([['CORPORATIVO', 'Custo adm. corporativo']]));
 const DRE_MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const DRE_CONTA_GRUPO = {};
-DRE_GRUPOS.forEach(g => g.contas.forEach(([c]) => { DRE_CONTA_GRUPO[c] = g.id; }));
-let dreLanc = [];
+let dreDados = [], dreNotas = [], dreVersao = '', dreUnidadeAtual = 'CONSOLIDADO';
+
+function abrirDREUnidade(un, el) { dreUnidadeAtual = un; nav('dre', el); }
 
 async function carregarDRE(tela) {
   const alvo = document.getElementById(tela === 'dash' ? 'dred-kpis' : 'dre-tabela');
   const tudo = [];
   for (let de = 0; ; de += 1000) {
-    const { data, error } = await db.from('dre_lancamentos').select('*').range(de, de + 999);
-    if (error) { alvo.innerHTML = '<div class="dre-vazio">Erro ao carregar o DRE: ' + esc(error.message) + '</div>'; return; }
+    const { data, error } = await db.from('dre_planilha').select('unidade,grupo,conta,ordem,mes,natureza,valor,versao').range(de, de + 999);
+    if (error) { alvo.innerHTML = '<div class="dre-vazio">Não foi possível carregar a DRE: ' + esc(error.message) + '<br>Confira se o arquivo de carga da DRE (SQL) já foi executado no Supabase.</div>'; return; }
     tudo.push(...(data || []));
     if (!data || data.length < 1000) break;
   }
-  dreLanc = tudo.map(l => ({ ...l, _mes: String(l.mes_referencia || '').slice(0, 7), _prv: semAcento(l.natureza).startsWith('prev'), _valor: Number(l.valor) || 0 }));
-  // filtros: anos com lancamento + ano atual
-  const anoAtual = hojeLocal().slice(0, 4);
-  const anos = [...new Set(dreLanc.map(l => l._mes.slice(0, 4)).filter(a => /^\d{4}$/.test(a)).concat(anoAtual))].sort().reverse();
-  const opAnos = anos.map(a => '<option>' + a + '</option>').join('');
-  const opUn = DRE_UNIDADES.map(([v, n]) => '<option value="' + v + '">' + n + '</option>').join('');
-  ['dred-ano', 'dre-ano'].forEach(id => { const el = document.getElementById(id), v = el.value; el.innerHTML = opAnos; el.value = anos.includes(v) ? v : anoAtual; });
-  ['dred-un', 'dre-un'].forEach(id => { const el = document.getElementById(id), v = el.value; el.innerHTML = opUn; el.value = v || ''; });
-  const em = document.getElementById('dred-mes'), vm = em.value;
-  em.innerHTML = '<option value="">Ano todo</option>' + DRE_MESES.map((m, i) => '<option value="' + String(i + 1).padStart(2, '0') + '">' + m + '</option>').join('');
-  em.value = vm;
-  if (tela === 'dash') renderDREDashboard(); else renderDRETabela();
+  const { data: notas } = await db.from('dre_notas').select('mes,texto').order('mes', { ascending: false });
+  dreNotas = notas || [];
+  dreDados = tudo.map(l => ({ ...l, _mes: String(l.mes).slice(0, 7), _prv: String(l.natureza).toLowerCase().startsWith('prev'), _valor: Number(l.valor) || 0 }));
+  dreVersao = (tudo.find(l => l.versao) || {}).versao || '';
+  const anos = [...new Set(dreDados.map(l => l._mes.slice(0, 4)))].sort().reverse();
+  if (!anos.length) anos.push(hojeLocal().slice(0, 4));
+  const ea = document.getElementById('dre-ano'), va = ea.value;
+  ea.innerHTML = anos.map(a => '<option>' + a + '</option>').join(''); ea.value = anos.includes(va) ? va : anos[0];
+  const eu = document.getElementById('dred-un'), vu = eu.value;
+  eu.innerHTML = DRE_UN.map(([v, n]) => '<option value="' + v + '">' + n + '</option>').join(''); eu.value = vu || 'CONSOLIDADO';
+  if (tela === 'dash') { montarPeriodosDRE(anos[0]); renderDREDashboard(); }
+  else renderDRETabela();
 }
 
-function dreDaUnidade(l, un) {
-  if (!un) return true;
-  const u = DRE_UNIDADES.find(x => x[0] === un);
-  if (!l.cliente_id) return false;
-  const nome = semAcento((allClientes.find(c => c.id === l.cliente_id) || {}).razao_social);
-  return u[2].some(p => nome.includes(p));
+// linhas de uma unidade (CONSOLIDADO = todas; a receita do consolidado aparece por unidade)
+function dreLinhasUnidade(un, ano) {
+  return dreDados.filter(l => l._mes.slice(0, 4) === ano && (un === 'CONSOLIDADO' || l.unidade === un)).map(l =>
+    (un === 'CONSOLIDADO' && l.grupo === 'receita') ? { ...l, conta: DRE_NOME_UN[l.unidade] || l.unidade, ordem: DRE_UN.findIndex(u => u[0] === l.unidade) } : l);
 }
-// soma um conjunto de lancamentos e calcula a DRE
+// meses do ano com dados e a natureza de cada um (realizado tem prioridade)
+function dreMesesDoAno(linhas, ano) {
+  const nat = {};
+  // os meses vem de todas as unidades (uma unidade com mes zerado continua mostrando a coluna)
+  dreDados.filter(l => l._mes.slice(0, 4) === ano).forEach(l => { if (!(l._mes in nat) || !l._prv) nat[l._mes] = l._prv ? 'prv' : 'real'; });
+  return Object.keys(nat).sort().map(m => ({ mes: m, prv: nat[m] === 'prv', rot: DRE_MESES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4) }));
+}
+// soma e calcula a DRE de um conjunto de linhas
 function dreCalcular(lista) {
-  const r = { rb: 0, contas: {}, mo: 0, co: 0, adm: 0, fin: 0 };
-  lista.forEach(l => {
-    const conta = semAcento(l.conta);
-    if (conta.startsWith('receita')) { r.rb += l._valor; return; }
-    const v = Math.abs(l._valor), g = DRE_CONTA_GRUPO[conta] || 'co';   // conta nao mapeada entra em Custos Operacionais
-    r.contas[conta] = (r.contas[conta] || 0) + v;
-    r[g] += v;
-  });
-  r.imp = r.rb * DRE_ALIQ; r.rl = r.rb - r.imp; r.op = r.mo + r.co; r.mc = r.rl - r.op; r.res = r.mc - r.adm - r.fin;
-  r.mcPct = r.rb ? r.mc / r.rb * 100 : null; r.resPct = r.rb ? r.res / r.rb * 100 : null;
+  const r = { receita: 0, imposto: 0, mo: 0, co: 0, adm: 0, fin: 0, contas: {} };
+  lista.forEach(l => { r[l.grupo] = (r[l.grupo] || 0) + l._valor; const k = l.grupo + '|' + l.conta; r.contas[k] = (r.contas[k] || 0) + l._valor; });
+  r.rl = r.receita - r.imposto; r.cd = r.mo + r.co; r.mc = r.rl - r.cd; r.gpm = r.mc - r.adm - r.fin;
+  r.mcPct = r.receita ? r.mc / r.receita * 100 : null; r.gpmPct = r.receita ? r.gpm / r.receita * 100 : null;
   return r;
 }
-const dreBRL = v => (v < 0 ? '-' : '') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dreBRL = v => (v < -0.004 ? '-' : '') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const dreNum = v => Math.abs(v) < 0.005 ? '-' : (v < 0 ? '-' : '') + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const drePct = v => v === null || !isFinite(v) ? '-' : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
-const dreSinal = v => v < 0 ? ' dre-neg' : '';
+const dreSinal = v => v < -0.004 ? ' dre-neg' : '';
+
+// ---------- DRE (tabela igual a planilha) ----------
+function renderDRETabela() {
+  const un = dreUnidadeAtual, ano = document.getElementById('dre-ano').value, ocultar = document.getElementById('dre-ocultar-zeros').checked;
+  document.getElementById('pageTitle').textContent = 'DRE - ' + DRE_NOME_UN[un];
+  document.getElementById('dre-titulo-un').textContent = 'DRE ' + ano + ' · ' + DRE_NOME_UN[un].toUpperCase();
+  document.getElementById('dre-count').textContent = dreVersao ? 'Versão ' + dreVersao : '';
+  const linhas = dreLinhasUnidade(un, ano);
+  if (!linhas.length) { document.getElementById('dre-tabela').innerHTML = '<div class="dre-vazio">Nenhum dado de DRE em ' + ano + '</div>'; return; }
+  const meses = dreMesesDoAno(linhas, ano);
+  // colunas: meses realizados, acumulado realizado, meses previstos, acumulado previsto, total do ano
+  const reais = meses.filter(m => !m.prv), prevs = meses.filter(m => m.prv);
+  const faixa = l => l.length ? l[0].rot.slice(0, 3).toLowerCase() + '–' + l[l.length - 1].rot.slice(0, 3).toLowerCase() : '';
+  const cols = [];
+  reais.forEach(m => cols.push({ rot: m.rot, sub: 'REAL', calc: dreCalcular(linhas.filter(l => l._mes === m.mes)) }));
+  if (reais.length) cols.push({ rot: 'Acumulado', sub: 'REAL ' + faixa(reais), cls: 'acum', calc: dreCalcular(linhas.filter(l => reais.some(m => m.mes === l._mes))) });
+  prevs.forEach(m => cols.push({ rot: m.rot, sub: 'PRV', cls: 'prv', calc: dreCalcular(linhas.filter(l => l._mes === m.mes)) }));
+  if (prevs.length) cols.push({ rot: 'Acumulado', sub: 'PRV ' + faixa(prevs), cls: 'acum prv', calc: dreCalcular(linhas.filter(l => prevs.some(m => m.mes === l._mes))) });
+  cols.push({ rot: 'Total ' + ano, sub: 'REAL + PRV', cls: 'tot', calc: dreCalcular(linhas) });
+  // contas de cada grupo, na ordem da planilha
+  const contasDo = g => [...new Map(linhas.filter(l => l.grupo === g).sort((a, b) => a.ordem - b.ordem).map(l => [l.conta, l.conta])).keys()];
+  const L = []; const add = (rot, f, tipo) => L.push({ rot, f, tipo: tipo || '' });
+  const folhas = g => contasDo(g).forEach(c => add(c, r => r.contas[g + '|' + c] || 0, 'sub'));
+  add('RECEITA BRUTA', r => r.receita, 'grupo'); folhas('receita');
+  add('(-) IMPOSTOS', r => r.imposto, 'grupo'); folhas('imposto');
+  add('(=) RECEITA LÍQUIDA', r => r.rl, 'total');
+  add('(-) CUSTO DIRETO - OPERACIONAL', r => r.cd, 'grupo');
+  add('MÃO DE OBRA', r => r.mo, 'subgrupo'); folhas('mo');
+  add('CUSTOS OPERACIONAIS', r => r.co, 'subgrupo'); folhas('co');
+  add('(=) MARGEM DE CONTRIBUIÇÃO (R$)', r => r.mc, 'total');
+  add('(=) MARGEM DE CONTRIBUIÇÃO (%)', r => r.mcPct, 'pct');
+  add('(-) CUSTO ADMINISTRATIVO', r => r.adm, 'grupo'); folhas('adm');
+  add('(-) DESPESAS FINANCEIRAS', r => r.fin, 'grupo'); folhas('fin');
+  add('(=) RESULTADO GPM (R$)', r => r.gpm, 'total');
+  add('(=) RESULTADO GPM (%)', r => r.gpmPct, 'pct');
+  const visiveis = L.filter(l => !(ocultar && l.tipo === 'sub' && cols.every(c => Math.abs(l.f(c.calc)) < 0.005)));
+  document.getElementById('dre-tabela').innerHTML = '<table><thead>' +
+    '<tr><th>R$</th>' + cols.map(c => '<th class="' + (c.cls || '') + '">' + c.rot + '</th>').join('') + '</tr>' +
+    '<tr><th></th>' + cols.map(c => '<th class="' + (c.cls || '') + '">' + c.sub + '</th>').join('') + '</tr></thead><tbody>' +
+    visiveis.map(l => '<tr class="' + l.tipo + '"><td>' + esc(l.rot) + '</td>' + cols.map(c => {
+      const v = l.f(c.calc);
+      return '<td class="' + (c.cls || '') + ((l.tipo === 'total' || l.tipo === 'pct') && v < -0.004 ? ' dre-neg' : '') + '">' + (l.tipo === 'pct' ? drePct(v) : dreNum(v)) + '</td>';
+    }).join('') + '</tr>').join('') + '</tbody></table>';
+}
+
+// ---------- DASHBOARD DRE ----------
+function montarPeriodosDRE(ano) {
+  const meses = dreMesesDoAno(dreDados.filter(l => l._mes.slice(0, 4) === ano), ano);
+  const reais = meses.filter(m => !m.prv), prevs = meses.filter(m => m.prv);
+  const ops = [];
+  if (reais.length) ops.push(['real', 'Realizado ' + reais[0].rot.slice(0, 3) + '–' + reais[reais.length - 1].rot]);
+  if (prevs.length) ops.push(['prv', 'Previsto ' + prevs[0].rot.slice(0, 3) + '–' + prevs[prevs.length - 1].rot]);
+  ops.push(['ano', 'Ano ' + ano + ' (real + previsto)']);
+  meses.slice().reverse().forEach(m => ops.push([m.mes, m.rot + (m.prv ? ' (previsto)' : '')]));
+  const el = document.getElementById('dred-per'), v = el.value;
+  el.innerHTML = ops.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
+  el.value = ops.some(o => o[0] === v) ? v : ops[0][0];
+  el.dataset.ano = ano;
+}
 
 function renderDREDashboard() {
-  const ano = document.getElementById('dred-ano').value, mes = document.getElementById('dred-mes').value, un = document.getElementById('dred-un').value;
-  const doAno = dreLanc.filter(l => l._mes.slice(0, 4) === ano && dreDaUnidade(l, un));
-  const periodo = doAno.filter(l => !mes || l._mes.slice(5, 7) === mes);
-  const rea = dreCalcular(periodo.filter(l => !l._prv)), prv = dreCalcular(periodo.filter(l => l._prv));
-  const nomeUn = DRE_UNIDADES.find(x => x[0] === un)[1];
-  const rotPeriodo = (mes ? DRE_MESES[Number(mes) - 1] + '/' : '') + ano + (un ? ' · ' + nomeUn : '');
-  const atingiu = (a, p) => p ? ' · ' + drePct(a / p * 100) + ' do previsto' : '';
+  const un = document.getElementById('dred-un').value, per = document.getElementById('dred-per').value, ano = document.getElementById('dred-per').dataset.ano;
+  document.getElementById('dred-versao').textContent = dreVersao ? 'DRE versão ' + dreVersao : '';
+  const doAno = dreLinhasUnidade(un, ano), meses = dreMesesDoAno(doAno, ano);
+  const noPer = (l, p) => p === 'ano' ? true : p === 'real' ? !l._prv : p === 'prv' ? l._prv : l._mes === p;
+  const periodo = doAno.filter(l => noPer(l, per));
+  const r = dreCalcular(periodo);
+  const real = dreCalcular(doAno.filter(l => !l._prv)), prev = dreCalcular(doAno.filter(l => l._prv)), tot = dreCalcular(doAno);
+  const rotPer = document.getElementById('dred-per').selectedOptions[0]?.textContent || '';
+  const ehPrv = per === 'prv' || (meses.find(m => m.mes === per) || {}).prv;
   const ic = {
     rb: '<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
     imp: '<svg viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>',
     rl: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>',
-    op: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg>',
+    cd: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg>',
     mc: '<svg viewBox="0 0 24 24"><path d="M3 20h18M6 16V9M11 16V5M16 16v-6"/></svg>',
-    res: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>'
+    gpm: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>'
   };
-  const card = (tit, chave, v, p, cor, c1, c2, extra) =>
+  const pctRec = v => r.receita ? drePct(v / r.receita * 100) + ' da receita' : '';
+  const card = (tit, chave, v, cor, c1, c2, sub) =>
     '<div class="k3 tilt" style="--cor:' + cor + '"><div class="k3-cab"><div class="ic3d" style="--c1:' + c1 + ';--c2:' + c2 + '">' + ic[chave] + '</div>' +
     '<div style="min-width:0"><div class="k3-tit">' + tit + '</div><div class="k3-val dre-v' + dreSinal(v) + '">' + dreBRL(v) + '</div></div></div>' +
-    '<div class="k3-sub">' + (extra || '') + 'Previsto ' + dreBRL(p) + atingiu(v, p) + '</div></div>';
-  const corRes = rea.res < 0 ? '#ef4444' : '#3b8cff';
+    '<div class="k3-sub">' + (ehPrv ? 'PREVISTO · ' : '') + sub + '</div></div>';
+  const neg = r.gpm < -0.004;
   document.getElementById('dred-kpis').innerHTML =
-    card('Receita Bruta', 'rb', rea.rb, prv.rb, '#3b8cff', '#93c5fd', '#1d4ed8') +
-    card('Impostos (14,25%)', 'imp', rea.imp, prv.imp, '#ef4444', '#fca5a5', '#b91c1c') +
-    card('Receita Líquida', 'rl', rea.rl, prv.rl, '#22d3ee', '#67e8f9', '#0e7490') +
-    card('Total Operação', 'op', rea.op, prv.op, '#f59e0b', '#fde047', '#a16207') +
-    card('Margem de Contribuição', 'mc', rea.mc, prv.mc, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(rea.mcPct) + ' · ') +
-    card('Resultado GPM', 'res', rea.res, prv.res, corRes, rea.res < 0 ? '#fca5a5' : '#93c5fd', rea.res < 0 ? '#b91c1c' : '#1d4ed8', drePct(rea.resPct) + ' · ');
+    card('Receita Bruta', 'rb', r.receita, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
+    card('Impostos', 'imp', r.imposto, '#ef4444', '#fca5a5', '#b91c1c', pctRec(r.imposto)) +
+    card('Receita Líquida', 'rl', r.rl, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
+    card('Custo Direto Operacional', 'cd', r.cd, '#f59e0b', '#fde047', '#a16207', 'Mão de obra ' + dreBRL(r.mo) + ' · Custos op. ' + dreBRL(r.co)) +
+    card('Margem de Contribuição', 'mc', r.mc, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct)) +
+    card('Resultado GPM', 'gpm', r.gpm, neg ? '#ef4444' : '#3b8cff', neg ? '#fca5a5' : '#93c5fd', neg ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita');
   document.querySelectorAll('#dred-kpis .tilt').forEach(el => {
-    el.addEventListener('mousemove', e => { const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; el.style.transform = 'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) translateY(-4px)'; });
+    el.addEventListener('mousemove', e => { const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = 'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) translateY(-4px)'; });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
   });
 
-  // resultado do exercicio: numero grande + grafico mes a mes (realizado x previsto)
-  document.getElementById('dred-res-sub').textContent = 'Resultado GPM mês a mês · ' + rotPeriodo;
+  // resultado do exercicio: numero + grafico do GPM mes a mes
+  document.getElementById('dred-res-sub').textContent = 'Resultado GPM mês a mês · ' + DRE_NOME_UN[un] + ' · ' + ano;
   const resEl = document.getElementById('dred-res-val');
-  resEl.textContent = dreBRL(rea.res); resEl.className = rea.res < 0 ? 'dre-neg' : '';
-  document.getElementById('dred-res-pct').textContent = drePct(rea.resPct) + ' da receita bruta';
-  const porMes = DRE_MESES.map((_, i) => {
-    const mm = ano + '-' + String(i + 1).padStart(2, '0'), l = doAno.filter(x => x._mes === mm);
-    return { rea: dreCalcular(l.filter(x => !x._prv)).res, prv: dreCalcular(l.filter(x => x._prv)).res, tem: l.some(x => !x._prv), temP: l.some(x => x._prv) };
-  });
-  desenharGraficoDRE(porMes, mes ? Number(mes) - 1 : -1);
+  resEl.textContent = dreBRL(r.gpm); resEl.className = neg ? 'dre-neg' : '';
+  document.getElementById('dred-res-pct').textContent = drePct(r.gpmPct) + ' da receita · ' + rotPer;
+  desenharGraficoDRE(meses.map(m => ({ ...m, gpm: dreCalcular(doAno.filter(l => l._mes === m.mes)).gpm })), per);
 
-  // resumo financeiro
-  const linha = (rot, a, p, cls) => '<div class="dre-linha-res"><span>' + rot + '</span><b class="' + (cls || '') + dreSinal(a) + '">' + dreBRL(a) + '</b><small>PRV ' + dreBRL(p) + '</small></div>';
+  // resumo: realizado, previsto e ano (como a aba Resumo da planilha)
+  const lin = (rot, a, b, c, pct) => '<div class="dre-linha-res" style="grid-template-columns:1.2fr 1fr 1fr 1fr"><span>' + rot + '</span>' +
+    [a, b, c].map((v, i) => '<b class="' + (pct ? '' : '') + dreSinal(v) + '" style="white-space:nowrap;font-size:13px;' + (i === 1 ? 'color:#c4b5fd' : '') + '">' + (pct ? drePct(v) : dreNum(v)) + '</b>').join('') + '</div>';
+  const nR = meses.filter(m => !m.prv), nP = meses.filter(m => m.prv);
   document.getElementById('dred-resumo').innerHTML =
-    linha('Receita Bruta', rea.rb, prv.rb) +
-    linha('(-) Impostos', rea.imp, prv.imp) +
-    linha('(-) Custos e Despesas', rea.op + rea.adm + rea.fin, prv.op + prv.adm + prv.fin) +
-    linha('Resultado GPM', rea.res, prv.res, rea.res >= 0 ? 'dre-pos' : '');
+    '<div class="dre-linha-res" style="grid-template-columns:1.2fr 1fr 1fr 1fr;background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right">REAL ' + (nR.length ? nR[0].rot.slice(0, 3) + '–' + nR[nR.length - 1].rot.slice(0, 3) : '') + '</span><span style="text-align:right">PRV ' + (nP.length ? nP[0].rot.slice(0, 3) + '–' + nP[nP.length - 1].rot.slice(0, 3) : '') + '</span><span style="text-align:right">ANO ' + ano + '</span></div>' +
+    lin('Receita bruta', real.receita, prev.receita, tot.receita) +
+    lin('Margem de contribuição', real.mc, prev.mc, tot.mc) +
+    lin('Resultado GPM', real.gpm, prev.gpm, tot.gpm) +
+    lin('GPM % da receita', real.gpmPct, prev.gpmPct, tot.gpmPct, true);
 
-  // desempenho por cliente (receita bruta realizada)
-  const porCli = {};
-  periodo.filter(l => !l._prv && semAcento(l.conta).startsWith('receita')).forEach(l => { const k = l.cliente_id || ''; porCli[k] = (porCli[k] || 0) + l._valor; });
-  let cli = Object.entries(porCli).map(([id, v]) => ({ nome: id ? ((allClientes.find(c => c.id === id) || {}).razao_social || 'Cliente') : 'Sem cliente', v })).sort((a, b) => b.v - a.v);
-  if (cli.length > 6) { const resto = cli.slice(5).reduce((s, c) => s + c.v, 0); cli = cli.slice(0, 5).concat({ nome: 'Outros', v: resto }); }
-  const maxCli = Math.max(...cli.map(c => Math.abs(c.v)), 1);
-  document.getElementById('dred-clientes').innerHTML = cli.length ? cli.map(c =>
-    '<div class="dre-barra"><span title="' + esc(c.nome) + '">' + esc(c.nome) + '</span><div class="trilho"><i style="width:' + Math.max(2, Math.abs(c.v) / maxCli * 100) + '%"></i><em>' + dreBRL(c.v) + '</em></div><b>' + drePct(rea.rb ? c.v / rea.rb * 100 : null) + '</b></div>'
-  ).join('') : '<div class="dre-vazio">Sem receita lançada no período</div>';
+  // desempenho por unidade no periodo (no consolidado: todas; numa unidade: so ela)
+  const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]]).filter(([u]) => un === 'CONSOLIDADO' || u === un)
+    .map(([u, n]) => ({ u, n, c: dreCalcular(dreDados.filter(l => l.unidade === u && l._mes.slice(0, 4) === ano && noPer(l, per))) }))
+    .filter(x => Math.abs(x.c.receita) > 0.004 || Math.abs(x.c.gpm) > 0.004);
+  const maxR = Math.max(...lista.map(x => x.c.receita), 1);
+  document.getElementById('dred-clientes').innerHTML = lista.length ? lista.map(x =>
+    '<div class="dre-unid dre-barra' + (x.u !== 'CORPORATIVO' ? ' clica" onclick="abrirDREUnidade(\'' + x.u + '\', document.querySelector(\'.nav-item[onclick*=&quot;' + x.u + '&quot;]\'))" title="Abrir a DRE de ' + x.n + '"' : '"') + '>' +
+    '<span>' + esc(x.n) + '</span><div class="trilho"><i style="width:' + Math.max(x.c.receita ? 2 : 0, x.c.receita / maxR * 100) + '%"></i><em>' + (x.c.receita ? dreBRL(x.c.receita) : '') + '</em></div>' +
+    '<b class="' + dreSinal(x.c.gpm) + '" style="text-align:right">' + dreBRL(x.c.gpm) + '</b><b class="' + dreSinal(x.c.gpm) + '" style="text-align:right">' + drePct(x.c.gpmPct) + '</b></div>'
+  ).join('') + '<div class="dre-unid" style="color:var(--muted);font-size:10.5px"><span></span><span>Receita bruta</span><span style="text-align:right">GPM R$</span><span style="text-align:right">GPM %</span></div>'
+    : '<div class="dre-vazio">Sem dados no período</div>';
 
   // composicao dos custos (% sobre a receita bruta)
-  const custos = [['Mão de Obra', rea.mo], ['Custos Operacionais', rea.co], ['Custos Administrativos', rea.adm], ['Despesas Financeiras', rea.fin], ['Impostos', rea.imp]];
+  const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Despesas Financeiras', r.fin], ['Impostos', r.imposto]];
   const maxC = Math.max(...custos.map(c => c[1]), 1);
   document.getElementById('dred-custos').innerHTML = custos.map(([n, v]) =>
-    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreBRL(v) + '</em></div><b>' + drePct(rea.rb ? v / rea.rb * 100 : null) + '</b></div>'
+    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreBRL(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
   ).join('');
 
   // faixa de margens
-  const item = (tit, val, sub, neg) => '<div><small>' + tit + '</small><b class="' + (neg ? 'dre-neg' : '') + '">' + val + '</b><span>' + sub + '</span></div>';
+  const item = (tit, val, sub, n) => '<div><small>' + tit + '</small><b class="' + (n ? 'dre-neg' : '') + '">' + val + '</b><span>' + sub + '</span></div>';
+  const aluguel = Object.entries(r.contas).filter(([k]) => /^co\|alugu/i.test(k)).reduce((s, [, v]) => s + v, 0);
   document.getElementById('dred-margens').innerHTML =
-    item('MARGEM DE CONTRIBUIÇÃO', drePct(rea.mcPct), 'Previsto ' + drePct(prv.mcPct), rea.mc < 0) +
-    item('RESULTADO GPM', drePct(rea.resPct), 'Previsto ' + drePct(prv.resPct), rea.res < 0) +
-    item('MÃO DE OBRA / RECEITA', drePct(rea.rb ? rea.mo / rea.rb * 100 : null), 'Previsto ' + drePct(prv.rb ? prv.mo / prv.rb * 100 : null)) +
-    item('RECEITA REALIZADA X PREVISTA', drePct(prv.rb ? rea.rb / prv.rb * 100 : null), dreBRL(rea.rb - prv.rb) + ' de diferença', rea.rb - prv.rb < 0);
+    item('MARGEM DE CONTRIBUIÇÃO', drePct(r.mcPct), dreBRL(r.mc), r.mc < -0.004) +
+    item('RESULTADO GPM', drePct(r.gpmPct), dreBRL(r.gpm), neg) +
+    item('MÃO DE OBRA / RECEITA', drePct(r.receita ? r.mo / r.receita * 100 : null), dreBRL(r.mo)) +
+    item('ALUGUÉIS / RECEITA', drePct(r.receita ? aluguel / r.receita * 100 : null), dreBRL(aluguel));
+
+  // observacoes da planilha
+  const notas = dreNotas.filter(n => String(n.mes).slice(0, 4) === ano && (per.length !== 7 || String(n.mes).slice(0, 7) === per));
+  document.getElementById('dred-notas').innerHTML = notas.length ? notas.map(n => {
+    const m = String(n.mes).slice(0, 7);
+    return '<div><b>' + DRE_MESES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4) + '</b><span>' + esc(n.texto) + '</span></div>';
+  }).join('') : '<div class="dre-vazio" style="padding:10px">Sem observações para o período</div>';
 }
 
-function desenharGraficoDRE(porMes, mesSel) {
+function desenharGraficoDRE(meses, per) {
   const el = document.getElementById('dred-graf');
-  const W = 480, H = 250, pl = 50, pr = 12, pt = 22, pb = 26;
-  const vals = porMes.flatMap(m => [m.tem ? m.rea : 0, m.temP ? m.prv : 0]);
+  const W = 480, H = 250, pl = 50, pr = 12, pt = 26, pb = 26;
+  if (!meses.length) { el.innerHTML = '<div class="dre-vazio">Sem dados</div>'; return; }
+  const n = meses.length, vals = meses.map(m => m.gpm);
   let max = Math.max(...vals, 0), min = Math.min(...vals, 0);
   if (max === min) max = min + 1;
-  const pad = (max - min) * 0.1; max += pad; if (min < 0) min -= pad;
-  const x = i => pl + i * (W - pl - pr) / 11, y = v => pt + (max - v) * (H - pt - pb) / (max - min);
+  const pad = (max - min) * 0.12; max += pad; if (min < 0) min -= pad;
+  const x = i => pl + (n === 1 ? (W - pl - pr) / 2 : i * (W - pl - pr) / (n - 1)), y = v => pt + (max - v) * (H - pt - pb) / (max - min);
   const curto = v => { const a = Math.abs(v), s = v < 0 ? '-' : ''; return a >= 1e6 ? s + (a / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'MM' : a >= 1e3 ? s + Math.round(a / 1e3) + 'K' : s + Math.round(a); };
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="dreArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b8cff" stop-opacity=".55"/><stop offset="1" stop-color="#3b8cff" stop-opacity="0"/></linearGradient></defs>';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="dreArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b8cff" stop-opacity=".5"/><stop offset="1" stop-color="#3b8cff" stop-opacity="0"/></linearGradient></defs>';
   for (let k = 0; k <= 4; k++) { const v = min + (max - min) * k / 4, yy = y(v); s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="rgba(160,190,255,.12)"/><text x="' + (pl - 8) + '" y="' + (yy + 4) + '" fill="#9fb0d3" font-size="10" text-anchor="end">' + curto(v) + '</text>'; }
-  if (min < 0) s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(239,68,68,.5)" stroke-dasharray="3 3"/>';
-  DRE_MESES.forEach((m, i) => { s += '<text x="' + x(i) + '" y="' + (H - 8) + '" fill="' + (i === mesSel ? '#fff' : '#9fb0d3') + '" font-size="10" font-weight="' + (i === mesSel ? 700 : 400) + '" text-anchor="middle">' + m + '</text>'; });
-  if (mesSel >= 0) s += '<rect x="' + (x(mesSel) - 18) + '" y="' + pt + '" width="36" height="' + (H - pt - pb) + '" rx="6" fill="rgba(59,140,255,.10)"/>';
-  // previsto: linha tracejada roxa
-  const pP = porMes.map((m, i) => m.temP ? [x(i), y(m.prv)] : null).filter(Boolean);
-  if (pP.length > 1) s += '<polyline points="' + pP.map(p => p.join(',')).join(' ') + '" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="6 4"/>';
-  pP.forEach(p => { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3" fill="#a855f7"/>'; });
-  // realizado: area azul
-  const pR = porMes.map((m, i) => m.tem ? [x(i), y(m.rea), m.rea] : null).filter(Boolean);
-  if (pR.length) {
-    if (pR.length > 1) s += '<path d="M' + pR[0][0] + ',' + y(0) + ' ' + pR.map(p => 'L' + p[0] + ',' + p[1]).join(' ') + ' L' + pR[pR.length - 1][0] + ',' + y(0) + 'Z" fill="url(#dreArea)"/>' +
-      '<polyline points="' + pR.map(p => p[0] + ',' + p[1]).join(' ') + '" fill="none" stroke="#3b8cff" stroke-width="3" style="filter:drop-shadow(0 0 6px #3b8cff)"/>';
-    pR.forEach(p => { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + (p[2] < 0 ? '#ef4444' : '#fff') + '" stroke="#3b8cff" stroke-width="2"/>'; });
-    const u = pR[pR.length - 1];
-    s += '<rect x="' + (u[0] - 34) + '" y="' + (u[1] - 26) + '" width="68" height="18" rx="9" fill="#0c1d40" stroke="#3b8cff"/><text x="' + u[0] + '" y="' + (u[1] - 13) + '" fill="' + (u[2] < 0 ? '#f87171' : '#fff') + '" font-size="10" font-weight="700" text-anchor="middle">R$ ' + curto(u[2]) + '</text>';
+  if (min < 0) s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(239,68,68,.6)" stroke-dasharray="3 3"/>';
+  const iSel = meses.findIndex(m => m.mes === per);
+  if (iSel >= 0) s += '<rect x="' + (x(iSel) - 17) + '" y="' + pt + '" width="34" height="' + (H - pt - pb) + '" rx="6" fill="rgba(59,140,255,.12)"/>';
+  meses.forEach((m, i) => { s += '<text x="' + x(i) + '" y="' + (H - 8) + '" fill="' + (m.prv ? '#c4b5fd' : (i === iSel ? '#fff' : '#9fb0d3')) + '" font-size="10" font-weight="' + (i === iSel ? 700 : 400) + '" text-anchor="middle">' + m.rot.slice(0, 3) + '</text>'; });
+  const pts = meses.map((m, i) => [x(i), y(m.gpm), m]);
+  const reais = pts.filter(p => !p[2].prv), ultR = reais[reais.length - 1];
+  // previsto: tracejado roxo, ligado ao ultimo realizado
+  const prv = pts.filter(p => p[2].prv);
+  if (prv.length) { const lp = (ultR ? [ultR] : []).concat(prv); s += '<polyline points="' + lp.map(p => p[0] + ',' + p[1]).join(' ') + '" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="6 4"/>'; }
+  if (reais.length > 1) s += '<path d="M' + reais[0][0] + ',' + y(0) + ' ' + reais.map(p => 'L' + p[0] + ',' + p[1]).join(' ') + ' L' + ultR[0] + ',' + y(0) + 'Z" fill="url(#dreArea)"/>' +
+    '<polyline points="' + reais.map(p => p[0] + ',' + p[1]).join(' ') + '" fill="none" stroke="#3b8cff" stroke-width="3" style="filter:drop-shadow(0 0 6px #3b8cff)"/>';
+  pts.forEach(p => { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (p[2].prv ? 3 : 4) + '" fill="' + (p[2].gpm < 0 ? '#ef4444' : (p[2].prv ? '#a855f7' : '#fff')) + '" stroke="' + (p[2].prv ? '#a855f7' : '#3b8cff') + '" stroke-width="2"><title>' + p[2].rot + (p[2].prv ? ' (previsto)' : '') + ': ' + dreBRL(p[2].gpm) + '</title></circle>'; });
+  const destaque = iSel >= 0 ? pts[iSel] : ultR;
+  if (destaque) {
+    const yy = Math.max(destaque[1] - 26, 2), xx = Math.min(Math.max(destaque[0], pl + 34), W - pr - 34);
+    s += '<rect x="' + (xx - 34) + '" y="' + yy + '" width="68" height="18" rx="9" fill="#0c1d40" stroke="' + (destaque[2].prv ? '#a855f7' : '#3b8cff') + '"/><text x="' + xx + '" y="' + (yy + 13) + '" fill="' + (destaque[2].gpm < 0 ? '#f87171' : '#fff') + '" font-size="10" font-weight="700" text-anchor="middle">R$ ' + curto(destaque[2].gpm) + '</text>';
   }
-  el.innerHTML = s + '</svg>' + (pR.length || pP.length ? '' : '<div class="dre-vazio" style="padding:6px">Nenhum lançamento de DRE neste ano</div>');
-}
-
-function renderDRETabela() {
-  const ano = document.getElementById('dre-ano').value, un = document.getElementById('dre-un').value, visao = document.getElementById('dre-visao').value;
-  const doAno = dreLanc.filter(l => l._mes.slice(0, 4) === ano && dreDaUnidade(l, un));
-  document.getElementById('dre-count').textContent = doAno.length + ' lançamento(s)';
-  // colunas: cada mes + total do ano, com Realizado e/ou Previsto
-  const nats = visao === 'ambos' ? [false, true] : [visao === 'previsto'];
-  const cols = [];
-  DRE_MESES.forEach((m, i) => { const mm = ano + '-' + String(i + 1).padStart(2, '0'); nats.forEach(p => cols.push({ rot: m, p, calc: dreCalcular(doAno.filter(l => l._mes === mm && l._prv === p)) })); });
-  nats.forEach(p => cols.push({ rot: 'Total ' + ano, p, calc: dreCalcular(doAno.filter(l => l._prv === p)) }));
-  // contas fora do plano entram em Custos Operacionais
-  const extras = [...new Set(doAno.map(l => semAcento(l.conta)).filter(c => c && !c.startsWith('receita') && !DRE_CONTA_GRUPO[c]))];
-  const linhas = [];
-  const L = (rot, f, tipo) => linhas.push({ rot, f, tipo: tipo || '' });
-  L('Receita Bruta', r => r.rb, 'grupo');
-  DRE_IMPOSTOS.forEach(([n, a]) => L('(-) ' + n, r => r.rb * a, 'sub'));
-  L('Receita Líquida', r => r.rl, 'total');
-  DRE_GRUPOS.forEach(g => {
-    if (g.id === 'adm') { L('Margem de Contribuição', r => r.mc, 'total'); L('% Margem de Contribuição', r => r.mcPct, 'pct'); }
-    L('(-) ' + g.nome, r => r[g.id], 'grupo');
-    g.contas.forEach(([c, n]) => L(n, r => r.contas[c] || 0, 'sub'));
-    if (g.id === 'co') { extras.forEach(c => L(c, r => r.contas[c] || 0, 'sub')); L('Total Operação', r => r.op, 'total'); }
-  });
-  L('Resultado GPM', r => r.res, 'total');
-  L('% Resultado GPM', r => r.resPct, 'pct');
-  const cab1 = '<tr><th>Conta</th>' + (nats.length > 1 ? DRE_MESES.concat('Total ' + ano).map(m => '<th colspan="2" style="text-align:center">' + m + '</th>').join('') : cols.map(c => '<th' + (c.p ? ' class="prv"' : '') + '>' + c.rot + '</th>').join('')) + '</tr>';
-  const cab2 = nats.length > 1 ? '<tr><th></th>' + cols.map(c => '<th' + (c.p ? ' class="prv"' : '') + '>' + (c.p ? 'PRV' : 'REA') + '</th>').join('') + '</tr>' : '';
-  document.getElementById('dre-tabela').innerHTML = '<table><thead>' + cab1 + cab2 + '</thead><tbody>' +
-    linhas.map(l => '<tr class="' + l.tipo + '"><td>' + esc(l.rot) + '</td>' + cols.map(c => {
-      const v = l.f(c.calc);
-      const txt = l.tipo === 'pct' ? drePct(v) : dreNum(v);
-      return '<td class="' + (c.p ? 'prv' : '') + (v < 0 && (l.tipo === 'total' || l.tipo === 'pct') ? ' dre-neg' : '') + '">' + txt + '</td>';
-    }).join('') + '</tr>').join('') + '</tbody></table>' +
-    (doAno.length ? '' : '<div class="dre-vazio">Nenhum lançamento de DRE em ' + ano + (un ? ' para esta unidade' : '') + '</div>');
+  el.innerHTML = s + '</svg>';
 }
 
 // CONTATOS: QR Code que abre a avaliacao da Kway no Google
