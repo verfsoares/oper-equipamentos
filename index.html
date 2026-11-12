@@ -2399,15 +2399,19 @@ async function renderBidsDashboard() {
 const ANO_PROJ_BIDS = 2027;
 const MESES_ABREV = { JAN:1, FEV:2, MAR:3, ABR:4, MAI:5, JUN:6, JUL:7, AGO:8, SET:9, OUT:10, NOV:11, DEZ:12 };
 function mesInicioBid(txt) {
-  const s = String(txt || '').toUpperCase();
-  let m = s.match(/([A-ZÇ]{3})[A-ZÇ]*\W*(\d{2,4})/);
+  const s = String(txt || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  let m = s.match(/(\d{4})-(\d{2})/);   // data guardada (2027-03-01)
+  if (m) return { a: Number(m[1]), m: Number(m[2]) };
+  m = s.match(/([A-Z]{3})[A-Z]*\W*(?:DE\W+)?(\d{2,4})/);   // "dezembro de 2026", "DEZ/2026", "Dez/26"
   if (m && MESES_ABREV[m[1]]) return { a: m[2].length === 2 ? 2000 + Number(m[2]) : Number(m[2]), m: MESES_ABREV[m[1]] };
   m = s.match(/(\d{1,2})\s*[\/.-]\s*(\d{2,4})/);
   if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12) return { a: m[2].length === 2 ? 2000 + Number(m[2]) : Number(m[2]), m: Number(m[1]) };
   return null;
 }
 function primeiroRecebimentoBid(b) {
-  if (b.recebimento_previsto) return { a: Number(String(b.recebimento_previsto).slice(0, 4)), m: Number(String(b.recebimento_previsto).slice(5, 7)), origem: 'informado' };
+  // a receita entra no caixa na 1a antecipacao dos recebiveis; sem ela, no 1o recebimento; sem os dois, estimativa
+  const ant = mesInicioBid(b.antecipacao_prevista); if (ant) return { ...ant, origem: 'antecipação' };
+  const rec = mesInicioBid(b.recebimento_previsto); if (rec) return { ...rec, origem: 'recebimento' };
   const ini = mesInicioBid(b.inicio_previsto);
   if (!ini) return null;
   const csn = /CSN/i.test(b.cliente || '');
@@ -2434,13 +2438,13 @@ function renderProjecaoBids(bids) {
   box.innerHTML =
     '<div class="proj-bids"><div class="proj-cab"><b>Projeção ' + ANO_PROJ_BIDS + ' · Receita mensal fixa dos bids (visão de caixa)</b>' +
     '<span>Total ' + ANO_PROJ_BIDS + ': <strong>' + reaisBid(total) + '</strong></span></div>' +
-    '<div class="proj-wrap"><table class="proj-tab"><thead><tr><th>Cliente</th><th>1º receb.</th>' + nomes.map(n => '<th>' + n + '/' + String(ANO_PROJ_BIDS).slice(2) + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
-    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha o início previsto ou o 1º recebimento') + '">' +
-      (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + (l.r.origem !== 'informado' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
+    '<div class="proj-wrap"><table class="proj-tab"><thead><tr><th>Cliente</th><th>Entra a partir de</th>' + nomes.map(n => '<th>' + n + '/' + String(ANO_PROJ_BIDS).slice(2) + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
+    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha a 1ª antecipação, o 1º recebimento ou o início previsto') + '">' +
+      (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + ' <small style="color:var(--muted)">' + (l.r.origem === 'antecipação' ? 'antecip.' : l.r.origem === 'recebimento' ? 'receb.' : '') + '</small>' + (l.r.origem !== 'antecipação' && l.r.origem !== 'recebimento' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
       l.meses.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n"><b>' + cel(l.total) + '</b></td></tr>').join('') +
     '</tbody><tfoot><tr><td colspan="2">TOTAL</td>' + totMes.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n">' + cel(total) + '</td></tr></tfoot></table></div>' +
-    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir do <b>1º recebimento previsto</b>, durante o prazo dos equipamentos fixos. ' +
-    '<i>*</i> = 1º recebimento estimado pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha o 1º recebimento no bid para usar a data real.' +
+    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir da <b>1ª antecipação prevista</b> (quando a receita entra no caixa); sem ela, a partir do <b>1º recebimento previsto</b>. Vale durante o prazo dos equipamentos fixos. ' +
+    '<i>*</i> = sem as duas datas: estimado pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha as datas no bid para usar as reais.' +
     (semData ? ' <span style="color:var(--amber)">' + semData + ' bid(s) sem data não entram na projeção.</span>' : '') + '</div></div>';
 }
 
@@ -4307,7 +4311,9 @@ const MODULOS = {
       { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
       { id:'_invest', label:'Investimento Fixo', total: l => reaisBid(l.reduce((s, r) => s + (Number(r.investimento) || 0), 0)) , tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
       { id:'inicio_previsto', label:'Início Previsto', tipo:'text' },
-      { id:'recebimento_previsto', label:'1º Recebimento Previsto', tipo:'mes' },
+      // texto livre, como o inicio previsto: "dezembro de 2026", "DEZ/2026", "12/2026"
+      { id:'recebimento_previsto', label:'1º Recebimento Previsto', tipo:'text' },
+      { id:'antecipacao_prevista', label:'1ª Antecipação Prevista', tipo:'text' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID },
       { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' }
     ]
