@@ -316,6 +316,26 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 .d3-linha>.p3>.d3-custos{display:flex;flex-direction:column;justify-content:space-evenly}
 .d3-coluna .d3-alertas{max-height:210px}
 .d3-coluna .d3-custos{padding:8px 20px 14px}
+/* AMBIENTE DA DIRETORIA: menu proprio, faixa de identificacao e transicao de entrada */
+.nav-diretoria{background:linear-gradient(90deg,rgba(211,47,47,.22),rgba(59,140,255,.12));border:1px solid rgba(239,138,138,.35)}
+.nav-diretoria .nav-seta{margin-left:auto;font-size:18px;color:#fca5a5}
+.dir-faixa{margin:12px 12px 4px;padding:12px 14px;border-radius:14px;text-align:center;background:linear-gradient(135deg,#7f1d1d,#d32f2f 55%,#1e4a7a);box-shadow:0 0 22px rgba(211,47,47,.35),inset 0 1px 0 rgba(255,255,255,.2)}
+.dir-faixa b{display:block;font-family:'Cinzel',Georgia,serif;font-size:19px;letter-spacing:4px;color:#fff;text-shadow:0 0 12px rgba(255,255,255,.35)}
+.dir-faixa small{display:block;font-size:9.5px;letter-spacing:1.2px;color:#ffe4e6;margin-top:3px}
+.dir-voltar{border:1px dashed rgba(160,190,255,.35)}
+body.modo-diretoria #top-sino{display:none !important}
+body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
+#trans-amb{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 45%,rgba(30,74,122,.97),rgba(4,12,34,.99) 70%)}
+#trans-amb.entra{opacity:1;pointer-events:all;transition:opacity .4s ease}
+#trans-amb.sai{opacity:0;transition:opacity .55s ease}
+#trans-amb .ta-caixa{display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.92);transition:transform .9s ease}
+#trans-amb.entra .ta-caixa{transform:scale(1)}
+#trans-amb img{width:220px;height:auto;filter:drop-shadow(0 0 18px rgba(211,47,47,.45))}
+#trans-amb b{font-family:'Cinzel',Georgia,serif;font-size:34px;letter-spacing:8px;color:#fff;text-shadow:0 0 22px rgba(59,140,255,.8)}
+#trans-amb small{font-size:12px;letter-spacing:2px;color:#9fb0d3;text-transform:uppercase}
+#trans-amb i{width:220px;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#3b8cff,#d32f2f,transparent);animation:taBarra 1s ease-in-out infinite}
+@keyframes taBarra{0%{opacity:.3;transform:scaleX(.4)}50%{opacity:1;transform:scaleX(1)}100%{opacity:.3;transform:scaleX(.4)}}
 /* DRE (paleta KWAY: azul, ciano e vermelho; previsto em roxo) */
 .nav-dre-pai .nav-seta{margin-left:auto;font-size:18px;line-height:1;transition:transform .2s;color:var(--muted)}
 .nav-dre-pai.aberto .nav-seta{transform:rotate(90deg)}
@@ -326,7 +346,14 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 .dre-filtros .form-select{width:auto;min-width:120px}
 .dre-leg{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px}
 .dre-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-left:8px}
-#dred-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+#dred-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.dre-cons{padding:12px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.dre-cons-item{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start;padding:12px 14px;border-radius:12px;background:rgba(19,40,90,.55);border:1px solid rgba(249,115,22,.28);font-size:12.5px;line-height:1.5}
+.dre-cons-tags{display:flex;flex-wrap:wrap;gap:6px}
+.dre-cons-tags span{font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:20px}
+.tag-cli{background:rgba(59,140,255,.18);color:#93c5fd;border:1px solid rgba(90,150,255,.35)}
+.tag-frota{background:rgba(249,115,22,.16);color:#fdba74;border:1px solid rgba(249,115,22,.4)}
+@media(max-width:900px){.dre-cons-item{grid-template-columns:1fr}}
 .k3-val.dre-v{font-size:25px;letter-spacing:-.5px;margin-top:2px;white-space:nowrap}
 @media(max-width:1100px){#dred-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#dred-kpis{grid-template-columns:1fr}}
@@ -443,10 +470,14 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 <div id="sidebar">
   <!-- marca do cliente: KWAY -->
   <div class="brand brand-kway"><img class="kway-logo" alt="KWAY - Integração Nexialista" src="data:image/png;base64,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" /></div>
-  <!-- DRE: so aparece para quem tem "Acesso ao DRE" no cadastro de usuarios (perfis.acesso_dre) -->
+  <!-- DIRETORIA: so aparece para quem tem "Acesso ao DRE" (perfis.acesso_dre); abre um ambiente proprio -->
   <div id="nav-dre-grupo" style="display:none">
-  <div class="nav-item nav-dre-pai" style="margin-top:8px" onclick="toggleMenuDRE()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/><path d="M15 6h5v5"/></svg></span><span>Diretoria</span><span class="nav-seta">&#8250;</span></div>
-  <div class="nav-sub" id="nav-dre-sub">
+  <div class="nav-item nav-diretoria" style="margin-top:8px" onclick="entrarDiretoria()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/><path d="M15 6h5v5"/></svg></span><span>Diretoria</span><span class="nav-seta">&#8250;</span></div>
+  </div>
+  <!-- MENU DO AMBIENTE DA DIRETORIA (substitui o menu das operacoes enquanto estiver na Diretoria) -->
+  <div id="menu-dir" style="display:none">
+  <div class="dir-faixa"><b>DIRETORIA</b><small>Resultado · DRE · Considerações</small></div>
+  <div class="nav-section">Resultado</div>
     <div class="nav-item" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Visão 360°</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE – Consolidado</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('ANGLO_GO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Anglo</span></div>
@@ -454,8 +485,11 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
     <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN São Paulo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
+    <div class="nav-item" onclick="nav('consideracoes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Considerações</span></div>
+  <div class="nav-section">Sistema</div>
+  <div class="nav-item dir-voltar" onclick="sairDiretoria()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/><path d="M9 12h12"/></svg></span><span>Voltar às Operações</span></div>
   </div>
-  </div>
+  <div id="menu-oper">
   <div class="nav-section">Principal</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M3 12 12 4l9 8M5 10v10h14V10"/></svg></span><span>Dashboard Operacional</span></div>
   <div class="nav-section">BID</div>
@@ -480,6 +514,7 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
   <div class="nav-section">Sistema</div>
   <div class="nav-item" onclick="nav('usuarios',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span>Usuarios</span></div>
   <div class="nav-item" onclick="nav('contatos',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.2 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.2 9.8a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span><span>Contatos</span></div>
+  </div>
   <div class="user-footer">
     <div class="user-avatar" id="uAvatar">?</div>
     <div style="flex:1"><div class="user-name" id="uName">-</div><div class="user-role" id="uRole">-</div></div>
@@ -503,14 +538,14 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
         <div class="dre-titulo-mes">Resultado do Mês <b id="dred-mes-rot"></b><small>Consolidado</small></div>
         <span>Mês:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
         <span class="dre-leg" id="dred-versao"></span>
-        <span class="dre-leg" style="margin-left:0"><i style="background:#3b8cff"></i>Realizado <i style="background:#a855f7"></i>Previsto</span>
       </div>
       <div class="k3-grid" id="dred-kpis"></div>
-      <div class="d3-linha">
+      <!-- resultado por unidade + resumo do mes (mes anterior x mes atual) -->
+      <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
         <div class="p3">
-          <div class="p3-cab"><div class="ic3d" style="--c1:#93c5fd;--c2:#1d4ed8"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/></svg></div>
-            <div><h2>Resultado do Exercício</h2><small id="dred-res-sub">Resultado GPM mês a mês</small></div></div>
-          <div class="dre-res"><div class="dre-res-num"><small>Resultado GPM</small><b id="dred-res-val">-</b><span id="dred-res-pct"></span></div><div id="dred-graf" class="dre-graf"></div></div>
+          <div class="p3-cab"><div class="ic3d" style="--c1:#67e8f9;--c2:#0e7490"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></div>
+            <div><h2>Resultado por Unidade</h2><small id="dred-un-sub">Receita bruta e Resultado GPM · clique para abrir a DRE</small></div></div>
+          <div id="dred-clientes" class="dre-barras"></div>
         </div>
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fca5a5;--c2:#b91c1c"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
@@ -518,21 +553,26 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
           <div id="dred-resumo" class="dre-resumo"></div>
         </div>
       </div>
+      <!-- composicao dos custos + pessoas por unidade -->
       <div class="d3-linha">
-        <div class="p3">
-          <div class="p3-cab"><div class="ic3d" style="--c1:#67e8f9;--c2:#0e7490"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></div>
-            <div><h2>Desempenho por Unidade</h2><small>Receita bruta e Resultado GPM · clique para abrir a DRE</small></div></div>
-          <div id="dred-clientes" class="dre-barras"></div>
-        </div>
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 5"/></svg></div>
             <div><h2>Composição dos Custos</h2><small>% sobre a receita bruta</small></div></div>
           <div id="dred-custos" class="dre-barras"></div>
         </div>
+        <div class="p3">
+          <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6"/></svg></div>
+            <div><h2>Pessoas por Unidade</h2><small id="dred-pessoas-sub">Colaboradores ativos (cadastro de Colaboradores)</small></div></div>
+          <div id="dred-pessoas" class="dre-barras"></div>
+        </div>
       </div>
-      <div class="p3 dre-faixa" id="dred-margens"></div>
+      <!-- consideracoes do mes (lancadas em Diretoria > Considerações) -->
+      <div class="p3" style="margin-bottom:16px">
+        <div class="p3-cab"><div class="ic3d" style="--c1:#fdba74;--c2:#c2410c"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+          <div><h2>Considerações do Mês</h2><small id="dred-cons-sub">Lançadas em Diretoria › Considerações</small></div></div>
+        <div id="dred-consideracoes" class="dre-cons"></div>
+      </div>
     </div>
-
     <!-- DRE - DEMONSTRATIVO (acesso restrito) -->
     <div class="view" id="v-dre">
       <div class="dre-filtros">
@@ -1277,6 +1317,7 @@ async function doLogout() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-pass').value = '';
+  aplicarModoDiretoria(false);
   document.getElementById('nav-dre-grupo').style.display = 'none';
   nav('dashboard', document.querySelector('.nav-item[onclick*="nav(\'dashboard\'"]'));
 }
@@ -1294,6 +1335,7 @@ const pageMap = {
   dashboard:        { title: 'Dashboard Operacional - UN. de Negócios Movimentação de Carga', loader: carregarDashboard },
   'dre-dashboard':  { title: 'Visão 360° - UN. de Negócios Movimentação de Carga', loader: () => carregarDRE('dash'), restritoDRE: true },
   dre:              { title: 'DRE - Demonstrativo de Resultado do Exercício', loader: () => carregarDRE('dre'), restritoDRE: true },
+  consideracoes:    { title: 'Considerações do Mês - Diretoria', loader: () => carregarModulo('consideracoes'), restritoDRE: true },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
   movimentacao: { title: 'Apontamento Diario Operacional', loader: carregarMovimentacoes },
   inspecao:         { title: 'Treinamento e Inspeção', loader: carregarInspecoes },
@@ -1313,15 +1355,44 @@ const pageMap = {
   contatos:     { title: 'Contatos', loader: desenharQrAvaliacao }
 };
 
-// item DRE do menu: abre/fecha os dois subitens (Dashboard DRE e DRE)
-function toggleMenuDRE(abrir) {
-  const sub = document.getElementById('nav-dre-sub'), pai = document.querySelector('.nav-dre-pai');
-  const ab = abrir === undefined ? !sub.classList.contains('aberto') : abrir;
-  sub.classList.toggle('aberto', ab); pai.classList.toggle('aberto', ab);
+// DIRETORIA: ambiente proprio (menu exclusivo, sem as telas das operacoes)
+let modoDiretoria = false;
+function aplicarModoDiretoria(ligar) {
+  modoDiretoria = ligar;
+  document.body.classList.toggle('modo-diretoria', ligar);
+  document.getElementById('menu-dir').style.display = ligar ? '' : 'none';
+  document.getElementById('menu-oper').style.display = ligar ? 'none' : '';
+  document.getElementById('nav-dre-grupo').style.display = (!ligar && currentUser?.acessoDRE) ? '' : 'none';
+}
+// transicao: escurece a tela, mostra a marca do ambiente e troca o sistema
+function transicaoAmbiente(titulo, sub, depois) {
+  let ov = document.getElementById('trans-amb');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'trans-amb';
+    ov.innerHTML = '<div class="ta-caixa"><img alt="KWAY" src="' + (document.querySelector('.kway-logo')?.src || '') + '"><b></b><small></small><i></i></div>';
+    document.body.appendChild(ov);
+  }
+  ov.querySelector('b').textContent = titulo; ov.querySelector('small').textContent = sub;
+  ov.classList.remove('sai'); void ov.offsetWidth; ov.classList.add('entra');
+  setTimeout(() => { depois(); setTimeout(() => { ov.classList.remove('entra'); ov.classList.add('sai'); }, 650); }, 450);
+}
+function entrarDiretoria() {
+  if (!currentUser?.acessoDRE) return showToast('Acesso à Diretoria restrito', true);
+  transicaoAmbiente('DIRETORIA', 'Resultado · DRE · Considerações', () => {
+    aplicarModoDiretoria(true);
+    nav('dre-dashboard', document.querySelector('#menu-dir .nav-item[onclick*="dre-dashboard"]'));
+  });
+}
+function sairDiretoria() {
+  transicaoAmbiente('OPERAÇÕES', 'UN. de Negócios Movimentação de Carga', () => {
+    aplicarModoDiretoria(false);
+    nav('dashboard', document.querySelector('.nav-item[onclick*="nav(\'dashboard\'"]'));
+  });
 }
 function nav(page, el) {
   if (pageMap[page]?.restritoDRE && !currentUser?.acessoDRE) return showToast('Acesso ao DRE restrito', true);
-  if (pageMap[page]?.restritoDRE) toggleMenuDRE(true);
+  // telas da Diretoria so dentro do ambiente da Diretoria; telas das operacoes so fora dele
+  if (!!pageMap[page]?.restritoDRE !== modoDiretoria) aplicarModoDiretoria(!!pageMap[page]?.restritoDRE);
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   if (el) el.classList.add('active');
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1479,60 +1550,55 @@ function renderDREDashboard() {
   // Visao 360: so o Consolidado (soma de todas as operacoes) e so o mes escolhido, sem acumulado
   const un = 'CONSOLIDADO', per = document.getElementById('dred-per').value, ano = per.slice(0, 4);
   document.getElementById('dred-versao').textContent = dreVersao ? 'DRE versão ' + dreVersao : '';
-  const doAno = dreLinhasUnidade(un, ano), meses = dreMesesDoAno(doAno, ano);
-  const noPer = (l, p) => l._mes === p;
-  const periodo = doAno.filter(l => noPer(l, per));
+  const rotMes = p => DRE_MESES[Number(p.slice(5, 7)) - 1] + '/' + p.slice(2, 4);
+  const linhasMes = p => dreLinhasUnidade(un, p.slice(0, 4)).filter(l => l._mes === p);
+  const periodo = linhasMes(per);
   const r = dreCalcular(periodo);
-  const rotPer = DRE_MESES[Number(per.slice(5, 7)) - 1] + '/' + per.slice(2, 4);
+  const rotPer = rotMes(per);
   const ehPrv = periodo.length > 0 && periodo.every(l => l._prv);
   document.getElementById('dred-mes-rot').textContent = rotPer + (ehPrv ? ' (previsto)' : '');
+  // mes anterior (para o resumo)
+  const [py, pm] = per.split('-').map(Number);
+  const perAnt = pm === 1 ? (py - 1) + '-12' : py + '-' + String(pm - 1).padStart(2, '0');
+  const periodoAnt = linhasMes(perAnt), rAnt = dreCalcular(periodoAnt);
+  const somaContas = (calc, re) => Object.entries(calc.contas).filter(([k]) => re.test(k)).reduce((s, [, v]) => s + v, 0);
+  const aluguel = somaContas(r, /^co\|alugu/i), fixo = somaContas(r, /^adm\|fixo/i), fixoAnt = somaContas(rAnt, /^adm\|fixo/i);
+
+  // cartoes
   const ic = {
     rb: '<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
     imp: '<svg viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>',
     rl: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>',
     cd: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4z"/></svg>',
     mc: '<svg viewBox="0 0 24 24"><path d="M3 20h18M6 16V9M11 16V5M16 16v-6"/></svg>',
-    gpm: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>'
+    gpm: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',
+    mo: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6"/></svg>',
+    alu: '<svg viewBox="0 0 24 24"><path d="M16 3v15M16 16h6"/><path d="M3 16v-5h3V5h5l3 6v5"/><circle cx="6" cy="18" r="2"/><circle cx="12.5" cy="18" r="2"/></svg>'
   };
   const pctRec = v => r.receita ? drePct(v / r.receita * 100) + ' da receita' : '';
-  const card = (tit, chave, v, cor, c1, c2, sub) =>
+  const card = (tit, chave, valor, neg, cor, c1, c2, sub) =>
     '<div class="k3 tilt" style="--cor:' + cor + '"><div class="k3-cab"><div class="ic3d" style="--c1:' + c1 + ';--c2:' + c2 + '">' + ic[chave] + '</div>' +
-    '<div style="min-width:0"><div class="k3-tit">' + tit + '</div><div class="k3-val dre-v' + dreSinal(v) + '">' + dreBRL(v) + '</div></div></div>' +
+    '<div style="min-width:0"><div class="k3-tit">' + tit + '</div><div class="k3-val dre-v' + (neg ? ' dre-neg' : '') + '">' + valor + '</div></div></div>' +
     '<div class="k3-sub">' + (ehPrv ? 'PREVISTO · ' : '') + sub + '</div></div>';
-  const neg = r.gpm < -0.004;
+  const negG = r.gpm < -0.004;
   document.getElementById('dred-kpis').innerHTML =
-    card('Receita Bruta', 'rb', r.receita, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
-    card('Impostos', 'imp', r.imposto, '#ef4444', '#fca5a5', '#b91c1c', pctRec(r.imposto)) +
-    card('Receita Líquida', 'rl', r.rl, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
-    card('Custo Direto Operacional', 'cd', r.cd, '#f59e0b', '#fde047', '#a16207', 'Mão de obra ' + dreBRL(r.mo) + ' · Custos op. ' + dreBRL(r.co)) +
-    card('Margem de Contribuição', 'mc', r.mc, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct)) +
-    card('Resultado GPM', 'gpm', r.gpm, neg ? '#ef4444' : '#3b8cff', neg ? '#fca5a5' : '#93c5fd', neg ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita');
+    card('Receita Bruta', 'rb', dreBRL(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
+    card('Impostos', 'imp', dreBRL(r.imposto), false, '#ef4444', '#fca5a5', '#b91c1c', pctRec(r.imposto)) +
+    card('Receita Líquida', 'rl', dreBRL(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
+    card('Custo Direto Operacional', 'cd', dreBRL(r.cd), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.cd)) +
+    card('Margem de Contribuição', 'mc', dreBRL(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita') +
+    card('Resultado GPM', 'gpm', dreBRL(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita') +
+    card('Mão de Obra / Receita', 'mo', drePct(r.receita ? r.mo / r.receita * 100 : null), false, '#14b8a6', '#5eead4', '#0f766e', dreBRL(r.mo) + ' de mão de obra') +
+    card('Aluguéis / Receita', 'alu', drePct(r.receita ? aluguel / r.receita * 100 : null), false, '#e11d48', '#fda4af', '#9f1239', dreBRL(aluguel) + ' em aluguéis de máquinas');
   document.querySelectorAll('#dred-kpis .tilt').forEach(el => {
     el.addEventListener('mousemove', e => { const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = 'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) translateY(-4px)'; });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
   });
 
-  // resultado do exercicio: numero + grafico do GPM mes a mes
-  document.getElementById('dred-res-sub').textContent = 'Resultado GPM mês a mês · ' + DRE_NOME_UN[un] + ' · ' + ano;
-  const resEl = document.getElementById('dred-res-val');
-  resEl.textContent = dreBRL(r.gpm); resEl.className = neg ? 'dre-neg' : '';
-  document.getElementById('dred-res-pct').textContent = drePct(r.gpmPct) + ' da receita · ' + rotPer;
-  desenharGraficoDRE(meses.map(m => ({ ...m, gpm: dreCalcular(doAno.filter(l => l._mes === m.mes)).gpm })), per);
-
-  // resumo do mes: as linhas principais da DRE consolidada, com % sobre a receita bruta
-  // custo fixo (linha "Fixo (Wesley e Verônica)" do custo administrativo) aparece separado
-  const fixo = Object.entries(r.contas).filter(([k]) => /^adm\|fixo/i.test(k)).reduce((s, [, v]) => s + v, 0);
-  document.getElementById('dred-resumo-sub').textContent ='Consolidado · ' + rotPer + (ehPrv ? ' (previsto)' : '');
-  const lin = (rot, v, forte) => '<div class="dre-linha-res" style="grid-template-columns:1.6fr 1fr 60px;padding:8px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
-    '<b class="' + dreSinal(v) + '" style="white-space:nowrap;font-size:13px">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted)">' + (r.receita ? drePct(v / r.receita * 100) : '-') + '</small></div>';
-  document.getElementById('dred-resumo').innerHTML = periodo.length ?
-    lin('Receita bruta', r.receita, true) + lin('(-) Impostos', r.imposto) + lin('(=) Receita líquida', r.rl) +
-    lin('(-) Custo direto operacional', r.cd) + lin('(=) Margem de contribuição', r.mc, true) +
-    lin('(-) Custos diversos administrativos', r.adm - fixo) + lin('(-) Custo fixo (Wesley e Verônica)', fixo) + lin('(-) Antecipação de recebíveis', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
-    '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
-  // desempenho por unidade no periodo (no consolidado: todas; numa unidade: so ela)
-  const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]]).filter(([u]) => un === 'CONSOLIDADO' || u === un)
-    .map(([u, n]) => ({ u, n, c: dreCalcular(dreDados.filter(l => l.unidade === u && l._mes.slice(0, 4) === ano && noPer(l, per))) }))
+  // resultado por unidade no mes
+  document.getElementById('dred-un-sub').textContent = 'Receita bruta e Resultado GPM · ' + rotPer + ' · clique para abrir a DRE';
+  const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]])
+    .map(([u, n]) => ({ u, n, c: dreCalcular(dreDados.filter(l => l.unidade === u && l._mes === per)) }))
     .filter(x => Math.abs(x.c.receita) > 0.004 || Math.abs(x.c.gpm) > 0.004);
   const maxR = Math.max(...lista.map(x => x.c.receita), 1);
   document.getElementById('dred-clientes').innerHTML = lista.length ? lista.map(x =>
@@ -1540,55 +1606,90 @@ function renderDREDashboard() {
     '<span>' + esc(x.n) + '</span><div class="trilho"><i style="width:' + Math.max(x.c.receita ? 2 : 0, x.c.receita / maxR * 100) + '%"></i><em>' + (x.c.receita ? dreBRL(x.c.receita) : '') + '</em></div>' +
     '<b class="' + dreSinal(x.c.gpm) + '" style="text-align:right">' + dreBRL(x.c.gpm) + '</b><b class="' + dreSinal(x.c.gpm) + '" style="text-align:right">' + drePct(x.c.gpmPct) + '</b></div>'
   ).join('') + '<div class="dre-unid" style="color:var(--muted);font-size:10.5px"><span></span><span>Receita bruta</span><span style="text-align:right">GPM R$</span><span style="text-align:right">GPM %</span></div>'
-    : '<div class="dre-vazio">Sem dados no período</div>';
+    : '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
+
+  // resumo do mes: mes anterior x mes atual
+  document.getElementById('dred-resumo-sub').textContent = 'Consolidado · ' + rotMes(perAnt) + ' x ' + rotPer + (ehPrv ? ' (previsto)' : '');
+  const linhasRes = [
+    ['Receita bruta', c => c.receita, true], ['(-) Impostos', c => c.imposto], ['(=) Receita líquida', c => c.rl],
+    ['(-) Custo direto operacional', c => c.cd], ['(=) Margem de contribuição', c => c.mc, true],
+    ['(-) Custos diversos administrativos', (c, fx) => c.adm - fx], ['(-) Custo fixo (Wesley e Verônica)', (c, fx) => fx],
+    ['(-) Antecipação de recebíveis', c => c.fin], ['(=) Resultado GPM', c => c.gpm, true]
+  ];
+  const colunas = [[rAnt, fixoAnt, periodoAnt.length], [r, fixo, periodo.length]];
+  const celula = ([c, fx, tem], f, atual) => {
+    if (!tem) return '<b style="text-align:right;color:var(--muted)">-</b><small></small>';
+    const v = f(c, fx);
+    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;font-size:' + (atual ? '13' : '12') + 'px;text-align:right' + (atual ? '' : ';opacity:.75') + '">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
+  };
+  const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 46px 1fr 46px;font-size:11.5px';
+  document.getElementById('dred-resumo').innerHTML = (periodo.length || periodoAnt.length) ?
+    '<div class="dre-linha-res" style="' + grade + ';background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right">' + rotMes(perAnt).toUpperCase() + '</span><span></span><span style="text-align:right;color:#93c5fd;font-weight:700">' + rotPer.toUpperCase() + '</span><span></span></div>' +
+    linhasRes.map(([rot, f, forte]) => '<div class="dre-linha-res" style="' + grade + ';padding:7px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
+      celula(colunas[0], f, false) + celula(colunas[1], f, true) + '</div>').join('') :
+    '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
 
   // composicao dos custos (% sobre a receita bruta)
-  const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Despesas Financeiras', r.fin], ['Impostos', r.imposto]];
+  const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Antecipação de Recebíveis', r.fin], ['Impostos', r.imposto]];
   const maxC = Math.max(...custos.map(c => c[1]), 1);
   document.getElementById('dred-custos').innerHTML = custos.map(([n, v]) =>
     '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreBRL(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
   ).join('');
 
-  // faixa de margens
-  const item = (tit, val, sub, n) => '<div><small>' + tit + '</small><b class="' + (n ? 'dre-neg' : '') + '">' + val + '</b><span>' + sub + '</span></div>';
-  const aluguel = Object.entries(r.contas).filter(([k]) => /^co\|alugu/i.test(k)).reduce((s, [, v]) => s + v, 0);
-  document.getElementById('dred-margens').innerHTML =
-    item('MARGEM DE CONTRIBUIÇÃO', drePct(r.mcPct), dreBRL(r.mc), r.mc < -0.004) +
-    item('RESULTADO GPM', drePct(r.gpmPct), dreBRL(r.gpm), neg) +
-    item('MÃO DE OBRA / RECEITA', drePct(r.receita ? r.mo / r.receita * 100 : null), dreBRL(r.mo)) +
-    item('ALUGUÉIS / RECEITA', drePct(r.receita ? aluguel / r.receita * 100 : null), dreBRL(aluguel));
+  renderPessoasPorUnidade();
+  renderConsideracoesVisao(per, rotPer);
 }
 
-function desenharGraficoDRE(meses, per) {
-  const el = document.getElementById('dred-graf');
-  const W = 480, H = 250, pl = 50, pr = 12, pt = 26, pb = 26;
-  if (!meses.length) { el.innerHTML = '<div class="dre-vazio">Sem dados</div>'; return; }
-  const n = meses.length, vals = meses.map(m => m.gpm);
-  let max = Math.max(...vals, 0), min = Math.min(...vals, 0);
-  if (max === min) max = min + 1;
-  const pad = (max - min) * 0.12; max += pad; if (min < 0) min -= pad;
-  const x = i => pl + (n === 1 ? (W - pl - pr) / 2 : i * (W - pl - pr) / (n - 1)), y = v => pt + (max - v) * (H - pt - pb) / (max - min);
-  const curto = v => { const a = Math.abs(v), s = v < 0 ? '-' : ''; return a >= 1e6 ? s + (a / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'MM' : a >= 1e3 ? s + Math.round(a / 1e3) + 'K' : s + Math.round(a); };
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="dreArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b8cff" stop-opacity=".5"/><stop offset="1" stop-color="#3b8cff" stop-opacity="0"/></linearGradient></defs>';
-  for (let k = 0; k <= 4; k++) { const v = min + (max - min) * k / 4, yy = y(v); s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="rgba(160,190,255,.12)"/><text x="' + (pl - 8) + '" y="' + (yy + 4) + '" fill="#9fb0d3" font-size="10" text-anchor="end">' + curto(v) + '</text>'; }
-  if (min < 0) s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(239,68,68,.6)" stroke-dasharray="3 3"/>';
-  const iSel = meses.findIndex(m => m.mes === per);
-  if (iSel >= 0) s += '<rect x="' + (x(iSel) - 17) + '" y="' + pt + '" width="34" height="' + (H - pt - pb) + '" rx="6" fill="rgba(59,140,255,.12)"/>';
-  meses.forEach((m, i) => { s += '<text x="' + x(i) + '" y="' + (H - 8) + '" fill="' + (m.prv ? '#c4b5fd' : (i === iSel ? '#fff' : '#9fb0d3')) + '" font-size="10" font-weight="' + (i === iSel ? 700 : 400) + '" text-anchor="middle">' + m.rot.slice(0, 3) + '</text>'; });
-  const pts = meses.map((m, i) => [x(i), y(m.gpm), m]);
-  const reais = pts.filter(p => !p[2].prv), ultR = reais[reais.length - 1];
-  // previsto: tracejado roxo, ligado ao ultimo realizado
-  const prv = pts.filter(p => p[2].prv);
-  if (prv.length) { const lp = (ultR ? [ultR] : []).concat(prv); s += '<polyline points="' + lp.map(p => p[0] + ',' + p[1]).join(' ') + '" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="6 4"/>'; }
-  if (reais.length > 1) s += '<path d="M' + reais[0][0] + ',' + y(0) + ' ' + reais.map(p => 'L' + p[0] + ',' + p[1]).join(' ') + ' L' + ultR[0] + ',' + y(0) + 'Z" fill="url(#dreArea)"/>' +
-    '<polyline points="' + reais.map(p => p[0] + ',' + p[1]).join(' ') + '" fill="none" stroke="#3b8cff" stroke-width="3" style="filter:drop-shadow(0 0 6px #3b8cff)"/>';
-  pts.forEach(p => { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (p[2].prv ? 3 : 4) + '" fill="' + (p[2].gpm < 0 ? '#ef4444' : (p[2].prv ? '#a855f7' : '#fff')) + '" stroke="' + (p[2].prv ? '#a855f7' : '#3b8cff') + '" stroke-width="2"><title>' + p[2].rot + (p[2].prv ? ' (previsto)' : '') + ': ' + dreBRL(p[2].gpm) + '</title></circle>'; });
-  const destaque = iSel >= 0 ? pts[iSel] : ultR;
-  if (destaque) {
-    const yy = Math.max(destaque[1] - 26, 2), xx = Math.min(Math.max(destaque[0], pl + 34), W - pr - 34);
-    s += '<rect x="' + (xx - 34) + '" y="' + yy + '" width="68" height="18" rx="9" fill="#0c1d40" stroke="' + (destaque[2].prv ? '#a855f7' : '#3b8cff') + '"/><text x="' + xx + '" y="' + (yy + 13) + '" fill="' + (destaque[2].gpm < 0 ? '#f87171' : '#fff') + '" font-size="10" font-weight="700" text-anchor="middle">R$ ' + curto(destaque[2].gpm) + '</text>';
-  }
-  el.innerHTML = s + '</svg>';
+// PESSOAS POR UNIDADE: colaboradores nao desligados, pelo cliente/local de trabalho do cadastro
+const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const UNIDADE_POR_CLIENTE = [
+  ['ANGLO_GO', n => n.includes('anglo')],
+  ['CORREIOS_ES', n => n.includes('correios') && /\b(es|espirito santo|vitoria|serra|cariacica|vila velha)\b/.test(n)],
+  ['CORREIOS_DF', n => n.includes('correios') && /\b(df|brasilia|taguatinga|teca)\b/.test(n)],
+  ['CSN_SP', n => /taubate|santo amaro|bebedouro/.test(n) || (n.includes('csn') && /\bsp\b/.test(n))],
+  ['CSN_MG', n => /pires|fernandinho|almox|entreposto|casa de pedra|congonhas/.test(n) || (n.includes('csn') && /\bmg\b/.test(n))]
+];
+async function renderPessoasPorUnidade() {
+  const el = document.getElementById('dred-pessoas');
+  if (!allColaboradores.length) await carregarColaboradores();
+  const ativos = allColaboradores.filter(c => c.status !== 'Desligado');
+  const grupos = {};
+  ativos.forEach(c => {
+    const nomeCli = (allClientes.find(x => x.id === c.cliente_id) || {}).razao_social || '';
+    const n = semAcento(nomeCli);
+    const u = nomeCli ? ((UNIDADE_POR_CLIENTE.find(([, teste]) => teste(n)) || ['OUTROS'])[0]) : 'SEM_LOCAL';
+    const g = grupos[u] || (grupos[u] = { qtd: 0, afast: 0, locais: new Set() });
+    g.qtd++; if (c.status === 'Afastado') g.afast++;
+    if (nomeCli) g.locais.add(nomeCli);
+  });
+  const nomes = { ...DRE_NOME_UN, OUTROS: 'Outros locais', SEM_LOCAL: 'Sem local cadastrado' };
+  const ordem = DRE_UN.slice(1).map(u => u[0]).concat(['OUTROS', 'SEM_LOCAL']).filter(u => grupos[u]);
+  const max = Math.max(...ordem.map(u => grupos[u].qtd), 1);
+  document.getElementById('dred-pessoas-sub').textContent = ativos.length + ' colaborador' + (ativos.length === 1 ? '' : 'es') + ' (ativos e afastados) · cadastro de Colaboradores';
+  el.innerHTML = ordem.length ? ordem.map(u => {
+    const g = grupos[u];
+    return '<div class="dre-barra" title="' + esc([...g.locais].join(' · ')) + '"><span>' + esc(nomes[u]) + '</span>' +
+      '<div class="trilho"><i style="width:' + (g.qtd / max * 100) + '%;background:linear-gradient(90deg,#065f46,#10b981,#6ee7b7);box-shadow:0 0 14px rgba(16,185,129,.45)"></i><em>' + (g.afast ? g.afast + ' afastado' + (g.afast > 1 ? 's' : '') : '') + '</em></div>' +
+      '<b>' + g.qtd + '</b></div>';
+  }).join('') : '<div class="dre-vazio">Nenhum colaborador cadastrado</div>';
+}
+
+// CONSIDERACOES DO MES (Diretoria > Considerações)
+async function renderConsideracoesVisao(per, rotPer) {
+  const el = document.getElementById('dred-consideracoes');
+  document.getElementById('dred-cons-sub').textContent = rotPer + ' · lançadas em Diretoria › Considerações';
+  const { data, error } = await db.from('dre_consideracoes').select('*').eq('mes', per + '-01').order('criado_em');
+  if (document.getElementById('dred-per').value !== per) return;   // trocou de mes enquanto carregava
+  if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar as considerações: ' + esc(error.message) + '</div>'; return; }
+  const frota = id => (allEquipamentos.find(e => e.id === id) || {}).frota || '';
+  const cliente = id => (allClientes.find(c => c.id === id) || {}).razao_social || '';
+  el.innerHTML = (data || []).length ? data.map(c =>
+    '<div class="dre-cons-item"><div class="dre-cons-tags">' +
+    (c.cliente_id ? '<span class="tag-cli">' + esc(cliente(c.cliente_id)) + '</span>' : '') +
+    (c.equipamento_id ? '<span class="tag-frota">Frota ' + esc(frota(c.equipamento_id)) + '</span>' : '') +
+    (!c.cliente_id && !c.equipamento_id ? '<span class="tag-cli">Geral</span>' : '') +
+    '</div><div class="dre-cons-txt">' + esc(c.justificativa || '').replace(/\n/g, '<br>') + '</div></div>'
+  ).join('') : '<div class="dre-vazio" style="padding:14px">Nenhuma consideração lançada para ' + rotPer + '</div>';
 }
 
 // CONTATOS: QR Code que abre a avaliacao da Kway no Google
@@ -3764,7 +3865,18 @@ function lerValorContabil(txt) {
   const mult = { K: 1e3, MIL: 1e3, M: 1e6, MM: 1e6, MI: 1e6, B: 1e9, BI: 1e9, BB: 1e9 }[m[2]] || 1;
   return Number(num) * mult;
 }
+const OPC_FROTA = () => allEquipamentos.map(e => [e.id, e.frota]);
 const MODULOS = {
+  // CONSIDERACOES DO MES (Diretoria): aparecem na Visao 360 do mes escolhido
+  consideracoes: {
+    tabela: 'dre_consideracoes', titulo: 'Considerações do Mês', botao: '+ Nova Consideração', ordem: 'mes',
+    campos: [
+      { id:'mes', label:'Mês', tipo:'mes', obrig:true, negrito:true },
+      { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
+      { id:'equipamento_id', label:'Equipamento (frota)', tipo:'ref', ref:OPC_FROTA },
+      { id:'justificativa', label:'Consideração / Justificativa', tipo:'textarea', full:true, obrig:true }
+    ]
+  },
   colaboradores: {
     tabela: 'colaboradores', titulo: 'Colaboradores', botao: '+ Novo Colaborador', ordem: 'nome', crescente: true,
     confirmaExclusao: 'Deseja excluir este colaborador?\n\nATENÇÃO: as férias, fichas de EPI e crachás dele também serão excluídos.',
@@ -3927,6 +4039,7 @@ function valorExibicao(c, r) {
   const v = r[c.id];
   if (c.tipo === 'ref') { const o = c.ref().find(([id]) => id === v); return o ? o[1] : '-'; }
   if (c.tipo === 'date') return fmtData(v);
+  if (c.tipo === 'mes') return v ? DRE_MESES[Number(String(v).slice(5, 7)) - 1] + '/' + String(v).slice(2, 4) : '-';
   return (v === null || v === undefined || v === '') ? '-' : String(v);
 }
 
@@ -4000,8 +4113,8 @@ async function abrirFormModulo(chave, id) {
     } else if (c.tipo === 'textarea') {
       campo = '<textarea class="form-input" id="mod-f-' + c.id + '">' + esc(v) + '</textarea>';
     } else {
-      const t = c.tipo === 'number' ? 'number' : c.tipo === 'date' ? 'date' : 'text';
-      const mostra = c.tipo === 'date' ? String(v).slice(0, 10) : (c.tipo === 'valor' && v !== '' && v != null) ? siglaContabil(v) : v;
+      const t = c.tipo === 'number' ? 'number' : c.tipo === 'date' ? 'date' : c.tipo === 'mes' ? 'month' : 'text';
+      const mostra = c.tipo === 'date' ? String(v).slice(0, 10) : c.tipo === 'mes' ? String(v).slice(0, 7) : (c.tipo === 'valor' && v !== '' && v != null) ? siglaContabil(v) : v;
       campo = '<input class="form-input" type="' + t + '"' + (t === 'number' ? ' step="any"' : '') + ' id="mod-f-' + c.id + '" value="' + esc(mostra) + '" />';
     }
     return '<div class="form-group' + (c.full ? ' full' : '') + '">' + label + campo + '</div>';
@@ -4046,6 +4159,7 @@ async function salvarModulo() {
     let v = document.getElementById('mod-f-' + c.id).value.trim();
     if (v === '') v = null;
     else if (c.tipo === 'number') v = Number(v);
+    else if (c.tipo === 'mes') v = v.slice(0, 7) + '-01';   // mes guardado como o dia 1
     else if (c.tipo === 'valor') {
       v = lerValorContabil(v);
       if (isNaN(v)) return showToast(c.label.split(' - ')[0] + ': valor inválido. Use números com K, MM ou BI (ex.: 16K, 4,3MM)', true);
