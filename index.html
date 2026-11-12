@@ -439,7 +439,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .pipe-item{display:grid;grid-template-columns:1.3fr 90px 70px 70px;gap:8px;align-items:center;font-size:11px;padding:6px 10px;border-radius:9px;background:rgba(19,40,90,.4);border-left:3px solid var(--c);cursor:pointer}
 .pipe-item b{text-align:right}.pipe-item .et{font-size:9.5px;font-weight:800;color:var(--c)}
 .tag-dev{font-size:9.5px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:10px;background:rgba(245,180,0,.14);color:#fde047;border:1px dashed rgba(245,180,0,.6);white-space:nowrap}
-.dre-prod{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 18px 8px;opacity:.55;filter:grayscale(.4)}
+.dre-prod{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 18px 8px;opacity:.55;filter:grayscale(.4)}
 .dre-prod div{padding:12px;border-radius:12px;background:rgba(19,40,90,.55);border:1px dashed rgba(148,163,184,.35)}
 .dre-prod span{display:block;font-size:10.5px;letter-spacing:.8px;color:#cbd5e1;font-weight:700}
 .dre-prod b{display:block;font-size:24px;margin:4px 0;color:#94a3b8}.dre-prod small{font-size:10px;color:var(--muted)}
@@ -463,6 +463,25 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .dre-col-estica>.p3{flex:1;display:flex;flex-direction:column}
 .dre-col-estica .dre-barras{flex:1;justify-content:space-evenly;gap:10px}
 .dre-regioes{padding:12px 18px 14px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.pipe-tab-wrap{overflow-x:auto;border-radius:10px;border:1px solid rgba(90,150,255,.18)}
+.pipe-tab{width:100%;border-collapse:collapse;font-size:10.5px}
+.pipe-tab th{font-size:9px;letter-spacing:.5px;color:var(--muted);text-align:left;padding:7px 8px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(90,150,255,.18);white-space:nowrap}
+.pipe-tab td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+.pipe-tab tbody tr{cursor:pointer}.pipe-tab tbody tr:hover{background:rgba(59,140,255,.08)}
+.pipe-tab .n{text-align:right;white-space:nowrap}.pipe-tab .inv{color:#fca5a5;font-weight:700}
+.pipe-tab .esc{max-width:320px;color:#cbd5e1}
+.pipe-tab .et{font-size:9.5px;font-weight:800;color:var(--c)}
+.pipe-tab tfoot td{font-weight:800;color:#fde047;border-top:1px solid rgba(250,204,21,.5);background:rgba(250,204,21,.06)}
+.pipe-tab tfoot .inv{color:#fde047}
+.pipe-obs{font-size:10.5px;color:#cbd5e1;padding:8px 10px;border-left:3px solid #facc15;background:rgba(250,204,21,.06);border-radius:6px}
+.pipe-obs b{color:#fde047}
+/* VISAO 360 em destaque no menu da Diretoria */
+.nav-visao{margin:6px 10px 8px !important;padding:11px 12px !important;border-radius:13px;font-weight:800;letter-spacing:1px;font-size:13px !important;
+  background:linear-gradient(120deg,#1d4ed8,#3b8cff 55%,#22d3ee);border:1px solid rgba(186,230,253,.6);color:#fff !important;
+  box-shadow:0 6px 18px rgba(59,140,255,.45);animation:visaoPulso 2.6s ease-in-out infinite}
+.nav-visao span:not(.nav-icon){color:#fff !important;text-shadow:0 0 10px rgba(255,255,255,.4)}
+.nav-visao:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(59,140,255,.7)}
+@keyframes visaoPulso{0%,100%{box-shadow:0 6px 18px rgba(59,140,255,.40)}50%{box-shadow:0 6px 26px rgba(59,140,255,.80),0 0 14px rgba(34,211,238,.45)}}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -556,7 +575,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
   <div id="menu-dir" style="display:none">
   <div class="dir-faixa"><b>DIRETORIA</b><small>Resultado · DRE · Fatos Relevantes</small></div>
   <div class="nav-section">Resultado</div>
-    <div class="nav-item" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Visão 360°</span></div>
+    <div class="nav-item nav-visao" onclick="nav('dre-dashboard',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Visão 360</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CONSOLIDADO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg></span><span>DRE – Consolidado</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('ANGLO_GO',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Anglo</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CSN_MG',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN MG</span></div>
@@ -649,13 +668,13 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
           </div>
           <div class="p3">
             <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6"/></svg></div>
-              <div><h2>Pessoas e Equipamentos por Região</h2><small id="dred-pessoas-sub">Estados atendidos</small></div></div>
+              <div><h2>Colaboradores por Região</h2><small id="dred-pessoas-sub">Estados atendidos</small></div></div>
             <div id="dred-pessoas" class="dre-regioes"></div>
           </div>
         </div>
       </div>
       <!-- pipeline de bids (investimento) + produtividade dos equipamentos -->
-      <div class="d3-linha" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-bottom:16px">
+      <div class="d3-linha" style="grid-template-columns:minmax(0,1fr);margin-bottom:16px">
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
             <div><h2>Pipeline · Bids e Concorrências</h2><small id="dred-pipe-sub">Negociações em andamento</small></div>
@@ -1436,7 +1455,7 @@ async function initApp() {
 
 const pageMap = {
   dashboard:        { title: 'Dashboard Operacional - UN. de Negócios Movimentação de Carga', loader: carregarDashboard },
-  'dre-dashboard':  { title: 'Visão 360° - UN. de Negócios Movimentação de Carga', loader: () => carregarDRE('dash'), restritoDRE: true },
+  'dre-dashboard':  { title: 'Visão 360 - UN. de Negócios Movimentação de Carga', loader: () => carregarDRE('dash'), restritoDRE: true },
   dre:              { title: 'DRE - Demonstrativo de Resultado do Exercício', loader: () => carregarDRE('dre'), restritoDRE: true },
   consideracoes:    { title: 'Fatos Relevantes deste Mês - Diretoria', loader: () => carregarModulo('consideracoes'), restritoDRE: true },
   equipamentos: { title: 'Cadastro de Equipamento', loader: carregarEquipamentos },
@@ -1805,25 +1824,28 @@ function renderDREDashboard() {
 // PIPELINE: bids em negociacao e a necessidade de investimento ate o momento
 async function renderPipelineVisao() {
   const el = document.getElementById('dred-pipeline');
-  const { data, error } = await db.from('bids').select('cliente_id, escopo, valor_total, valor_global_fixo, valor_mensal, investimento, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('*').order('criado_em');
   if (error) { el.innerHTML = '<div class="dre-vazio">Não foi possível carregar os bids: ' + esc(error.message) + '</div>'; return; }
   const bids = (data || []).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const soma = campo => bids.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
   document.getElementById('dred-pipe-sub').textContent = bids.length + (bids.length === 1 ? ' negociação em andamento' : ' negociações em andamento');
   if (!bids.length) { el.innerHTML = '<div class="dre-vazio">Nenhum bid cadastrado</div>'; return; }
-  const lista = bids.slice().sort((a, b) => (Number(b.investimento) || 0) - (Number(a.investimento) || 0) || (Number(b.valor_total) || 0) - (Number(a.valor_total) || 0));
+  const v = x => x != null && x !== '' ? reaisBid(x) : '-';
+  const comInvest = bids.filter(b => Number(b.investimento) > 0).length;
+  // resumo em cima e, embaixo, os lancamentos (os mesmos da tela Bids / Concorrencias) com o total batendo com o resumo
   el.innerHTML =
     '<div class="pipe-invest"><div><small>NECESSIDADE DE INVESTIMENTO ATÉ O MOMENTO</small><b>' + reaisBid(soma('investimento')) + '</b></div>' +
-    '<span>' + lista.filter(b => Number(b.investimento) > 0).length + ' de ' + bids.length + ' bids<br>exigem investimento</span></div>' +
+    '<span>' + comInvest + ' de ' + bids.length + ' bids<br>exigem investimento</span></div>' +
     '<div class="pipe-nums"><div><small>VALOR GLOBAL</small><b>' + reaisBid(soma('valor_total')) + '</b></div><div><small>GLOBAL FIXO</small><b>' + reaisBid(soma('valor_global_fixo')) + '</b></div><div><small>MENSAL FIXO</small><b>' + reaisBid(soma('valor_mensal')) + '</b></div></div>' +
-    '<div class="pipe-lista">' + lista.map(b =>
-      '<div class="pipe-item" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '" onclick="nav(\'bids\', document.querySelector(\'#menu-dir .nav-item[onclick*=&quot;bids&quot;]\'))" title="' + esc(b.escopo || '') + '">' +
-      '<span><b style="text-align:left;display:block">' + esc(b.cliente) + '</b><span class="et">' + esc(b.etapa || '-') + '</span></span>' +
-      '<b title="Valor global">' + (b.valor_total != null ? reaisBid(b.valor_total) : '-') + '</b><b title="Investimento" style="color:#fca5a5">' + (Number(b.investimento) ? reaisBid(b.investimento) : '-') + '</b>' +
-      '<b title="Prazo" style="color:var(--muted);font-weight:600">' + (b.prazo_meses ? b.prazo_meses + 'm' : '-') + '</b></div>').join('') +
-    '<div class="pipe-item" style="--c:transparent;background:none;cursor:default;color:var(--muted);font-size:9.5px"><span>Cliente / status</span><b>Valor global</b><b>Investimento</b><b>Prazo</b></div></div>';
-}
-// EXPORTAR PDF: abre a impressao do navegador (escolha "Salvar como PDF" ou a impressora)
+    '<div class="pipe-tab-wrap"><table class="pipe-tab"><thead><tr><th>Cliente</th><th>Empresa</th><th>Escopo</th><th class="n">Valor global</th><th class="n">Global fixo</th><th class="n">Mensal fixo</th><th class="n">Prazo</th><th class="n">Investimento</th><th>Início</th><th>Status</th></tr></thead><tbody>' +
+    bids.map(b => '<tr onclick="nav(\'bids\', document.querySelector(\'#menu-dir .nav-item[onclick*=&quot;bids&quot;]\'))">' +
+      '<td><b>' + esc(b.cliente) + '</b></td><td>' + esc(b.empresa_grupo || '-') + '</td><td class="esc">' + esc(b.escopo || '-') + '</td>' +
+      '<td class="n">' + v(b.valor_total) + '</td><td class="n">' + v(b.valor_global_fixo) + '</td><td class="n">' + v(b.valor_mensal) + '</td>' +
+      '<td class="n">' + (b.prazo_meses ? b.prazo_meses + 'm' : '-') + '</td><td class="n inv">' + (Number(b.investimento) ? reaisBid(b.investimento) : '-') + '</td>' +
+      '<td>' + esc(b.inicio_previsto || '-') + '</td><td><span class="et" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '">' + esc(b.etapa || '-') + '</span></td></tr>').join('') +
+    '</tbody><tfoot><tr><td colspan="3">TOTAL</td><td class="n">' + reaisBid(soma('valor_total')) + '</td><td class="n">' + reaisBid(soma('valor_global_fixo')) + '</td><td class="n">' + reaisBid(soma('valor_mensal')) + '</td><td></td><td class="n inv">' + reaisBid(soma('investimento')) + '</td><td colspan="2"></td></tr></tfoot></table></div>' +
+    '<div class="pipe-obs"><b>Considerações:</b> a diferença entre o Valor Global e o Valor Global Fixo refere-se aos equipamentos em formato de contratação SPOT.</div>';
+}// EXPORTAR PDF: abre a impressao do navegador (escolha "Salvar como PDF" ou a impressora)
 function exportarVisaoPDF() {
   const titulo = document.title;
   document.title = 'Visao 360 - Resultado ' + (document.getElementById('dred-mes-rot').textContent || '').replace('/', '-');
