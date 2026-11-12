@@ -601,7 +601,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
     <div class="nav-item" onclick="abrirDREUnidade('CSN_SP',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – CSN SP</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_ES',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios ES</span></div>
     <div class="nav-item" onclick="abrirDREUnidade('CORREIOS_DF',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><span>DRE – Correios DF</span></div>
-    <div class="nav-item" onclick="nav('bids',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></span><span>Bids / Concorrências</span></div>
+    <div class="nav-item" onclick="nav('bids',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></span><span>Pipeline e Projeção</span></div>
     <div class="nav-item" onclick="nav('consideracoes',this)"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>Fatos Relevantes</span></div>
   <div class="nav-section">Sistema</div>
   <div class="nav-item dir-voltar" onclick="sairDiretoria()"><span class="nav-icon ic3d"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/><path d="M9 12h12"/></svg></span><span>Voltar às Operações</span></div>
@@ -696,8 +696,8 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="d3-linha" style="grid-template-columns:minmax(0,1fr);margin-bottom:16px">
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
-            <div><h2>Pipeline · Bids e Concorrências</h2><small id="dred-pipe-sub">Negociações em andamento</small></div>
-            <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('bids', document.querySelector('#menu-dir .nav-item[onclick*=&quot;bids&quot;]'))">Ver bids</button></div>
+            <div><h2>Pipeline e Projeção</h2><small id="dred-pipe-sub">Negociações em andamento</small></div>
+            <button class="btn" style="padding:5px 10px;font-size:11px" onclick="nav('bids', document.querySelector('#menu-dir .nav-item[onclick*=&quot;bids&quot;]'))">Ver pipeline</button></div>
           <div id="dred-pipeline" class="dre-pipe"></div>
         </div>
         <div class="p3">
@@ -837,7 +837,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <!-- BIDS / CONCORRENCIAS: resumo; ao carregar a pagina este quadro vai para a tela BID's -->
       <div class="p3" id="painel-bids" style="margin-bottom:16px">
         <div class="p3-cab"><div class="ic3d" style="--c1:#fde047;--c2:#a16207"><svg viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l5.6-5.6a1 1 0 0 0 0-1.4L13 5H8L3 10l6 6"/><path d="m8 13 3 3M10 11l3 3M13 5l-3 3"/></svg></div>
-          <div><h2>Bids / Concorrências</h2><small>Negociações em andamento</small></div></div>
+          <div><h2>Pipeline e Projeção</h2><small>Bids e concorrências em andamento · projeção de receita</small></div></div>
         <div class="d3-horas">
           <div class="d3-hora" style="--c:#3b8cff"><span>Em Andamento</span><b id="bids-qtd">0</b><small id="bids-qtd-sub">negociações</small></div>
           <div class="d3-hora" style="--c:#facc15"><span>Valor Global da Negociação</span><b id="bids-total">R$ 0</b><small>Total dos contratos em negociação</small></div>
@@ -1498,7 +1498,7 @@ const pageMap = {
   historico:    { title: 'Histórico Equips', loader: carregarHistoricoSelects },
   clientes:     { title: 'Cadastro de Clientes', loader: carregarClientes },
   vencimentos:  { title: 'Vencimento de Contratos', loader: () => carregarModulo('vencimentos') },
-  bids:         { title: 'Bids / Concorrências - Diretoria', loader: () => carregarModulo('bids'), restritoDRE: true },
+  bids:         { title: 'Pipeline e Projeção - Diretoria', loader: () => carregarModulo('bids'), restritoDRE: true },
   usuarios:     { title: 'Usuarios', loader: carregarUsuarios },
   contatos:     { title: 'Contatos', loader: desenharQrAvaliacao }
 };
@@ -2384,7 +2384,7 @@ async function renderBidsDashboard() {
       '<span class="num" style="color:#fca5a5">' + val(b.investimento) + '</span>' +
       '<span class="num">' + (b.prazo_meses ? b.prazo_meses + (Number(b.prazo_meses) === 1 ? ' mês' : ' meses') : '-') + '</span>' +
       '<span class="st">' + esc(b.etapa || '-') + '</span></div>'
-    ).join('') : '<div class="d3-vazio" style="padding:16px">Cadastre os bids na tela Bids / Concorrências</div>';
+    ).join('') : '<div class="d3-vazio" style="padding:16px">Cadastre os bids na tela Pipeline e Projeção</div>';
   // embaixo: quantos bids e quanto valor em cada status, nas mesmas cores
   const funil = document.getElementById('bids-funil');   // quadro 'Por status' retirado (redundante com a tabela)
   if (funil) funil.innerHTML = ETAPAS_BID.map(e => {
@@ -4289,7 +4289,7 @@ const MODULOS = {
     ]
   },
   bids: {
-    tabela: 'bids', titulo: 'Bids / Concorrências', botao: '+ Novo Bid', ordem: 'criado_em',
+    tabela: 'bids', titulo: 'Bids e Concorrências', botao: '+ Novo Bid', ordem: 'criado_em',
     campos: [
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI, obrig:true, negrito:true },
       { id:'empresa_grupo', label:'Empresa do Grupo (por onde entramos)', tipo:'text' },
