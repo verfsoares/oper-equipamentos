@@ -1559,6 +1559,16 @@ function dreMesResultado() {
   return m === 1 ? (y - 1) + '-12' : y + '-' + String(m - 1).padStart(2, '0');
 }
 
+// Visao 360 em linguagem contabil: K = mil, MM = milhoes (ex.: R$ 328,4K; R$ 2,66MM)
+function dreKn(v) {
+  v = Number(v) || 0; const a = Math.abs(v), s = v < -0.004 ? '-' : '';
+  if (a < 0.005) return '-';
+  if (a >= 1e6) return s + (a / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'MM';
+  if (a >= 1e3) return s + (a / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'K';
+  return s + Math.round(a).toLocaleString('pt-BR');
+}
+const dreK = v => { const t = dreKn(v); return t === '-' ? 'R$ 0' : (t.startsWith('-') ? '-R$ ' + t.slice(1) : 'R$ ' + t); };
+
 function renderDREDashboard() {
   // Visao 360: so o Consolidado (soma de todas as operacoes) e so o mes escolhido, sem acumulado
   const un = 'CONSOLIDADO', per = document.getElementById('dred-per').value, ano = per.slice(0, 4);
@@ -1601,14 +1611,13 @@ function renderDREDashboard() {
     '<div class="k3-sub">' + (ehPrv ? 'PREVISTO · ' : '') + sub + '</div></div>';
   const negG = r.gpm < -0.004;
   document.getElementById('dred-kpis').innerHTML =
-    card('Receita Bruta', 'rb', dreBRL(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
-    card('Impostos', 'imp', dreBRL(r.imposto), false, '#ef4444', '#fca5a5', '#b91c1c', pctRec(r.imposto)) +
-    card('Receita Líquida', 'rl', dreBRL(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
-    card('Custo Direto Operacional', 'cd', dreBRL(r.cd), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.cd)) +
-    card('Margem de Contribuição', 'mc', dreBRL(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita') +
-    card('Resultado GPM', 'gpm', dreBRL(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita') +
-    card('Mão de Obra / Receita', 'mo', drePct(r.receita ? r.mo / r.receita * 100 : null), false, '#14b8a6', '#5eead4', '#0f766e', dreBRL(r.mo) + ' de mão de obra') +
-    card('Aluguéis / Receita', 'alu', drePct(r.receita ? aluguel / r.receita * 100 : null), false, '#e11d48', '#fda4af', '#9f1239', dreBRL(aluguel) + ' em aluguéis de máquinas');
+    card('Receita Bruta', 'rb', dreK(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
+    card('Receita Líquida', 'rl', dreK(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
+    card('Custo Direto Operacional', 'cd', dreK(r.cd), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.cd)) +
+    card('Margem de Contribuição', 'mc', dreK(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita') +
+    card('Resultado GPM', 'gpm', dreK(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita') +
+    card('Mão de Obra / Receita', 'mo', drePct(r.receita ? r.mo / r.receita * 100 : null), false, '#14b8a6', '#5eead4', '#0f766e', dreK(r.mo) + ' de mão de obra') +
+    card('Aluguéis / Receita', 'alu', drePct(r.receita ? aluguel / r.receita * 100 : null), false, '#e11d48', '#fda4af', '#9f1239', dreK(aluguel) + ' em aluguéis de máquinas');
   document.querySelectorAll('#dred-kpis .tilt').forEach(el => {
     el.addEventListener('mousemove', e => { const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = 'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) translateY(-4px)'; });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
@@ -1624,7 +1633,7 @@ function renderDREDashboard() {
   const maxR = Math.max(...lista.map(x => x.c.receita), 1);
   document.getElementById('dred-clientes').innerHTML = lista.length ? lista.map(x =>
     '<div class="dre-unid dre-barra clica" onclick="abrirDREUnidade(\'' + x.u + '\', document.querySelector(\'.nav-item[onclick*=&quot;' + x.u + '&quot;]\'))" title="Abrir a DRE de ' + x.n + '">' +
-    '<span><b class="dre-pos-rank">' + (++pos) + 'º</b>' + esc(x.n) + '</span><div class="trilho"><i style="width:' + Math.max(2, x.c.receita / maxR * 100) + '%"></i><em>' + dreBRL(x.c.receita) + '</em></div>' +
+    '<span><b class="dre-pos-rank">' + (++pos) + 'º</b>' + esc(x.n) + '</span><div class="trilho"><i style="width:' + Math.max(2, x.c.receita / maxR * 100) + '%"></i><em>' + dreK(x.c.receita) + '</em></div>' +
     '<b class="' + dreSinal(x.c.mc) + '" style="text-align:right">' + drePct(x.c.mcPct) + '</b></div>'
   ).join('') + '<div class="dre-unid" style="color:var(--muted);font-size:10.5px"><span></span><span>Receita bruta</span><span style="text-align:right">Margem de contribuição %</span></div>'
     : '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
@@ -1641,7 +1650,7 @@ function renderDREDashboard() {
   const celula = ([c, fx, tem], f, prv) => {
     if (!tem) return '<b style="text-align:right;color:var(--muted)">-</b><small></small>';
     const v = f(c, fx);
-    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
+    return '<b class="' + dreSinal(v) + '" style="white-space:nowrap;text-align:right;' + (prv ? 'font-size:13.5px;color:#67e8f9' : 'font-size:12.5px;color:#a8b8d8') + (v < -0.004 ? ';color:#f87171' : '') + '">' + dreKn(v) + '</b><small style="min-width:0;color:var(--muted);text-align:right">' + (c.receita ? drePct(v / c.receita * 100) : '-') + '</small>';
   };
   const grade = 'grid-template-columns:minmax(190px,1.7fr) 1fr 46px 1fr 46px;font-size:11.5px';
   document.getElementById('dred-resumo').innerHTML = (periodo.length || periodoSeg.length) ?
@@ -1654,7 +1663,7 @@ function renderDREDashboard() {
   const custos = [['Mão de Obra', r.mo], ['Custos Operacionais', r.co], ['Custo Administrativo', r.adm], ['Antecipação de Recebíveis', r.fin], ['Impostos', r.imposto]].sort((x, y) => y[1] - x[1]);   // do maior para o menor
   const maxC = Math.max(...custos.map(c => c[1]), 1);
   document.getElementById('dred-custos').innerHTML = custos.map(([n, v]) =>
-    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreBRL(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
+    '<div class="dre-barra"><span>' + n + '</span><div class="trilho"><i style="width:' + Math.max(v ? 2 : 0, v / maxC * 100) + '%;background:linear-gradient(90deg,#7f1d1d,#d32f2f,#ef8a8a);box-shadow:0 0 14px rgba(211,47,47,.45)"></i><em>' + dreK(v) + '</em></div><b>' + drePct(r.receita ? v / r.receita * 100 : null) + '</b></div>'
   ).join('');
 
   renderPessoasPorUnidade();
@@ -3894,7 +3903,6 @@ const MODULOS = {
     campos: [
       { id:'mes', label:'Mês', tipo:'mes', obrig:true, negrito:true },
       { id:'cliente_id', label:'Cliente', tipo:'ref', ref:OPC_CLI },
-      { id:'equipamento_id', label:'Equipamento (frota)', tipo:'ref', ref:OPC_FROTA },
       { id:'justificativa', label:'Consideração / Justificativa', tipo:'textarea', full:true, obrig:true }
     ]
   },
