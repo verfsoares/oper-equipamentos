@@ -389,6 +389,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .dre-notas b{color:#c4b5fd}
 .dre-barra.clica{cursor:pointer}
 .dre-barra.clica:hover>span:first-child{color:#93c5fd}
+.dre-aviso{margin:-6px 0 14px;padding:10px 14px;border-radius:12px;font-size:12px;line-height:1.5;background:rgba(245,180,0,.10);border:1px solid rgba(245,180,0,.45);color:#fde68a}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -543,6 +544,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
         <span>Mês:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
         <span class="dre-leg" id="dred-versao"></span>
       </div>
+      <div class="dre-aviso" id="dred-aviso" style="display:none"></div>
       <div class="k3-grid" id="dred-kpis"></div>
       <!-- resultado por unidade + resumo do mes (mes anterior x mes atual) -->
       <div class="d3-linha" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
@@ -1541,13 +1543,20 @@ function montarMesesVisao() {
   const ops = [];
   for (let [y, m] = DRE_VISAO_INICIO.split('-').map(Number); (y + '-' + String(m).padStart(2, '0')) <= fim; m === 12 ? (y++, m = 1) : m++) {
     const k = y + '-' + String(m).padStart(2, '0');
-    ops.push([k, DRE_MESES[m - 1] + '/' + String(y).slice(2) + (nat[k] === 'prv' ? ' (previsto)' : !nat[k] ? ' (sem dados)' : '')]);
+    // mes que ja terminou nunca aparece como previsto (so o mes corrente e os seguintes)
+    ops.push([k, DRE_MESES[m - 1] + '/' + String(y).slice(2) + (nat[k] === 'prv' && k >= dreMesCorrente() ? ' (previsto)' : !nat[k] ? ' (sem dados)' : '')]);
   }
-  // padrao: o ultimo mes realizado
-  const reais = Object.keys(nat).filter(k => nat[k] === 'real' && k >= DRE_VISAO_INICIO).sort();
+  // padrao: o mes do resultado = mes anterior ao mes corrente (em novembro, mostra outubro)
   const el = document.getElementById('dred-per'), v = el.value;
   el.innerHTML = ops.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
-  el.value = ops.some(o => o[0] === v) ? v : (reais.pop() || ops[0][0]);
+  const mesResultado = dreMesResultado();
+  const reais = Object.keys(nat).filter(k => nat[k] === 'real' && k >= DRE_VISAO_INICIO).sort();
+  el.value = ops.some(o => o[0] === v) ? v : ops.some(o => o[0] === mesResultado) ? mesResultado : (reais.pop() || ops[0][0]);
+}
+const dreMesCorrente = () => hojeLocal().slice(0, 7);
+function dreMesResultado() {
+  const [y, m] = dreMesCorrente().split('-').map(Number);
+  return m === 1 ? (y - 1) + '-12' : y + '-' + String(m - 1).padStart(2, '0');
 }
 
 function renderDREDashboard() {
@@ -1559,8 +1568,13 @@ function renderDREDashboard() {
   const periodo = linhasMes(per);
   const r = dreCalcular(periodo);
   const rotPer = rotMes(per);
-  const ehPrv = periodo.length > 0 && periodo.every(l => l._prv);
+  const dadosPrv = periodo.length > 0 && periodo.every(l => l._prv);
+  const ehPrv = dadosPrv && per >= dreMesCorrente();   // mes que ja terminou e resultado, nao previsao
   document.getElementById('dred-mes-rot').textContent = rotPer + (ehPrv ? ' (previsto)' : '');
+  // mes ja fechado, mas a DRE carregada ainda traz a previsao dele: avisa que falta carregar a planilha nova
+  const aviso = document.getElementById('dred-aviso');
+  aviso.style.display = (dadosPrv && !ehPrv) ? '' : 'none';
+  aviso.innerHTML = '⚠️ O resultado realizado de <b>' + rotPer + '</b> ainda não foi carregado (a DRE carregada é a versão ' + esc(dreVersao || '-') + ', em que ' + rotPer + ' era previsão). Os números abaixo são a previsão até a carga da planilha nova.';
   // quadro comparativo: mes escolhido (mes atual, em destaque) x mes anterior
   const [py, pm] = per.split('-').map(Number);
   const perSeg = pm === 1 ? (py - 1) + '-12' : py + '-' + String(pm - 1).padStart(2, '0');   // mes anterior
