@@ -465,6 +465,19 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .dre-regioes{padding:12px 18px 14px;flex:1;display:flex;flex-direction:column;justify-content:center}
 .pipe-tab-wrap{overflow-x:auto;border-radius:10px;border:1px solid rgba(90,150,255,.18)}
 .pipe-tab{width:100%;border-collapse:collapse;font-size:10.5px}
+/* Bids: projecao do ano seguinte (valor mensal fixo a partir do 1o recebimento) */
+.proj-bids{margin:14px 18px 0;border:1px solid var(--border2);border-radius:12px;background:rgba(7,18,43,.45);overflow:hidden}
+.proj-cab{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;letter-spacing:.5px}
+.proj-cab b{color:#fff}.proj-cab span{color:var(--muted)}.proj-cab strong{color:#22c55e;font-size:15px;margin-left:4px}
+.proj-wrap{overflow-x:auto}
+.proj-tab{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.proj-tab th{padding:7px 8px;text-align:right;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.5px}
+.proj-tab th:nth-child(-n+2),.proj-tab td:nth-child(-n+2){text-align:left}
+.proj-tab td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.proj-tab td.n{text-align:right;font-variant-numeric:tabular-nums}
+.proj-tab td i,.proj-obs i{color:var(--amber);font-style:normal;font-weight:700}
+.proj-tab tfoot td{font-weight:700;color:#22c55e;border-top:1px solid var(--border2);border-bottom:none}
+.proj-obs{padding:8px 14px;font-size:10.5px;color:var(--muted);line-height:1.5}
 .pipe-tab th{font-size:9px;letter-spacing:.5px;color:var(--muted);text-align:left;padding:7px 8px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(90,150,255,.18);white-space:nowrap}
 .pipe-tab td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
 .pipe-tab tbody tr{cursor:pointer}.pipe-tab tbody tr:hover{background:rgba(59,140,255,.08)}
@@ -832,6 +845,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
           <div class="d3-hora" style="--c:#22c55e"><span>Valor Mensal Fixo</span><b id="bids-mensal">R$ 0</b><small>Equipamentos Fixos</small></div>
           <div class="d3-hora" style="--c:#ef4444"><span>Valor de Investimento</span><b id="bids-invest">R$ 0</b></div>
         </div>
+        <div id="bids-proj"></div>
         <div style="height:12px"></div>
       </div>
 
@@ -2343,7 +2357,7 @@ async function renderEpiDashboard() {
 // BIDS / CONCORRENCIAS: resumo das negociacoes (em andamento = nao ganho nem perdido)
 async function renderBidsDashboard() {
   if (!document.getElementById('bids-qtd')) return;
-  const { data, error } = await db.from('bids').select('cliente_id, empresa_grupo, escopo, valor_total, valor_global_fixo, valor_mensal, valor_spot, investimento, prazo_meses, etapa');
+  const { data, error } = await db.from('bids').select('*');
   const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
   const andamento = bids;   // todo bid cadastrado esta em negociacao (quando fechar, exclua ou mude o cliente para Ativo)
   const soma = (l, campo) => l.reduce((s, b) => s + (Number(b[campo]) || 0), 0);
@@ -2353,6 +2367,7 @@ async function renderBidsDashboard() {
   set('bids-mensal', reaisBid(soma(andamento, 'valor_mensal')));
   set('bids-globalfixo', reaisBid(soma(andamento, 'valor_global_fixo')));
   set('bids-invest', reaisBid(soma(andamento, 'investimento')));
+  renderProjecaoBids(andamento);
   const cores = CORES_ETAPA_BID;
   const abrir = 'onclick="nav(\'bids\', document.querySelector(\'.nav-item[onclick*=&quot;bids&quot;]\'))"';
   // tabela: cliente, escopo, faturamento (global e mensal), investimento, prazo e status com a cor da fase
@@ -2376,6 +2391,57 @@ async function renderBidsDashboard() {
     const l = andamento.filter(b => b.etapa === e);
     return '<div class="d3-bst" style="--c:' + cores[e] + '"><span>' + e + '</span><b>' + l.length + '</b><small>' + (l.length === 1 ? 'bid' : 'bids') + ' · ' + reaisBid(soma(l, 'valor_total')) + '</small></div>';
   }).join('');
+}
+
+// PROJECAO 2027 (visao de caixa, como a DRE): o valor mensal fixo de cada bid entra a partir do
+// 1o recebimento previsto, durante o prazo dos equipamentos fixos. Sem o 1o recebimento preenchido,
+// usa o inicio previsto + prazo de pagamento (CSN: 120 dias = 4 meses; demais clientes: 30 dias = 1 mes).
+const ANO_PROJ_BIDS = 2027;
+const MESES_ABREV = { JAN:1, FEV:2, MAR:3, ABR:4, MAI:5, JUN:6, JUL:7, AGO:8, SET:9, OUT:10, NOV:11, DEZ:12 };
+function mesInicioBid(txt) {
+  const s = String(txt || '').toUpperCase();
+  let m = s.match(/([A-ZÇ]{3})[A-ZÇ]*\W*(\d{2,4})/);
+  if (m && MESES_ABREV[m[1]]) return { a: m[2].length === 2 ? 2000 + Number(m[2]) : Number(m[2]), m: MESES_ABREV[m[1]] };
+  m = s.match(/(\d{1,2})\s*[\/.-]\s*(\d{2,4})/);
+  if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12) return { a: m[2].length === 2 ? 2000 + Number(m[2]) : Number(m[2]), m: Number(m[1]) };
+  return null;
+}
+function primeiroRecebimentoBid(b) {
+  if (b.recebimento_previsto) return { a: Number(String(b.recebimento_previsto).slice(0, 4)), m: Number(String(b.recebimento_previsto).slice(5, 7)), origem: 'informado' };
+  const ini = mesInicioBid(b.inicio_previsto);
+  if (!ini) return null;
+  const csn = /CSN/i.test(b.cliente || '');
+  const soma = (ini.m - 1) + (csn ? 4 : 1);
+  return { a: ini.a + Math.floor(soma / 12), m: (soma % 12) + 1, origem: csn ? 'início + 120 dias' : 'início + 30 dias' };
+}
+function renderProjecaoBids(bids) {
+  const box = document.getElementById('bids-proj');
+  if (!box) return;
+  const nomes = DRE_MESES;   // Jan, Fev, ...
+  const linhas = bids.map(b => {
+    const r = primeiroRecebimentoBid(b), mensal = Number(b.valor_mensal) || 0, prazo = Number(b.prazo_meses) || 0;
+    const meses = Array(12).fill(0);
+    if (r && mensal) {
+      const ini = r.a * 12 + (r.m - 1), fim = prazo ? ini + prazo - 1 : Infinity;
+      for (let i = 0; i < 12; i++) { const k = ANO_PROJ_BIDS * 12 + i; if (k >= ini && k <= fim) meses[i] = mensal; }
+    }
+    return { b, r, meses, total: meses.reduce((s, v) => s + v, 0) };
+  }).sort((x, y) => y.total - x.total);
+  const totMes = Array(12).fill(0).map((_, i) => linhas.reduce((s, l) => s + l.meses[i], 0));
+  const total = totMes.reduce((s, v) => s + v, 0);
+  const cel = v => v ? siglaContabil(v) : '<span style="opacity:.35">–</span>';
+  const semData = linhas.filter(l => !l.r).length;
+  box.innerHTML =
+    '<div class="proj-bids"><div class="proj-cab"><b>Projeção ' + ANO_PROJ_BIDS + ' · Receita mensal fixa dos bids (visão de caixa)</b>' +
+    '<span>Total ' + ANO_PROJ_BIDS + ': <strong>' + reaisBid(total) + '</strong></span></div>' +
+    '<div class="proj-wrap"><table class="proj-tab"><thead><tr><th>Cliente</th><th>1º receb.</th>' + nomes.map(n => '<th>' + n + '/' + String(ANO_PROJ_BIDS).slice(2) + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
+    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha o início previsto ou o 1º recebimento') + '">' +
+      (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + (l.r.origem !== 'informado' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
+      l.meses.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n"><b>' + cel(l.total) + '</b></td></tr>').join('') +
+    '</tbody><tfoot><tr><td colspan="2">TOTAL</td>' + totMes.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n">' + cel(total) + '</td></tr></tfoot></table></div>' +
+    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir do <b>1º recebimento previsto</b>, durante o prazo dos equipamentos fixos. ' +
+    '<i>*</i> = 1º recebimento estimado pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha o 1º recebimento no bid para usar a data real.' +
+    (semData ? ' <span style="color:var(--amber)">' + semData + ' bid(s) sem data não entram na projeção.</span>' : '') + '</div></div>';
 }
 
 async function marcarFeriasConcedidas(id) {
@@ -4241,6 +4307,7 @@ const MODULOS = {
       { id:'_prazo', label:'Prazo Equipamentos Fixos', tipo:'calc', calc: r => r.prazo_meses != null ? r.prazo_meses + (Number(r.prazo_meses) === 1 ? ' mês' : ' meses') : '-' },
       { id:'_invest', label:'Investimento Fixo', total: l => reaisBid(l.reduce((s, r) => s + (Number(r.investimento) || 0), 0)) , tipo:'calc', calc: r => r.investimento != null ? reaisBid(r.investimento) : '-' },
       { id:'inicio_previsto', label:'Início Previsto', tipo:'text' },
+      { id:'recebimento_previsto', label:'1º Recebimento Previsto', tipo:'mes' },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID },
       { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' }
     ]
