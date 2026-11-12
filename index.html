@@ -479,6 +479,23 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .proj-tab tfoot td{font-weight:700;color:#22c55e;border-top:1px solid var(--border2);border-bottom:none}
 .proj-obs{padding:8px 14px;font-size:10.5px;color:var(--muted);line-height:1.5}
 .proj-tab tr.cont td{opacity:.45}
+/* Visao 360: projecao de crescimento (regua realizado / provisao / projecao) */
+.proj-cresc{padding:4px 18px 14px}
+.pc-wrap{overflow-x:auto}
+.pc-tab{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px;white-space:nowrap}
+.pc-tab th{padding:6px 8px;text-align:right;font-size:10px;letter-spacing:.6px;color:var(--muted);font-weight:700}
+.pc-tab th:first-child,.pc-tab td:first-child{text-align:left;position:sticky;left:0;background:#0c1d40;z-index:1;padding-right:14px}
+.pc-regua th{font-size:9.5px;padding:4px 8px;border-radius:6px 6px 0 0;text-align:center}
+.pc-regua th.pc-real{background:rgba(59,140,255,.18);color:#93c5fd}
+.pc-regua th.pc-prv{background:rgba(249,115,22,.18);color:#fdba74}
+.pc-regua th.pc-proj{background:rgba(34,197,94,.14);color:#86efac}
+.pc-tab thead tr:last-child th.pc-real{color:#93c5fd}.pc-tab thead tr:last-child th.pc-prv{color:#fdba74}.pc-tab thead tr:last-child th.pc-proj{color:#86efac}
+.pc-tab td{padding:7px 8px;text-align:right;border-top:1px solid var(--border);font-variant-numeric:tabular-nums}
+.pc-tab td small{display:block;font-size:9.5px;color:var(--muted)}
+.pc-tab tr.pc-novos td{color:#86efac}
+.pc-tab tr.pc-total td{font-weight:700;color:#fff;background:rgba(59,140,255,.08)}
+.pc-tab tr.pc-total td:first-child{background:#11244f}
+.pc-resumo{margin-top:10px;font-size:12px;color:var(--muted)}.pc-resumo b{color:#fff}.pc-resumo b.pc-up{color:#22c55e}
 .proj-tipo{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--c);border:1px solid var(--c);vertical-align:middle}
 .pipe-tab th{font-size:9px;letter-spacing:.5px;color:var(--muted);text-align:left;padding:7px 8px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(90,150,255,.18);white-space:nowrap}
 .pipe-tab td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
@@ -660,6 +677,12 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="dre-aviso" id="dred-aviso" style="display:none"></div>
       <div class="dre-frase" id="dred-frase"></div>
       <div class="k3-grid" id="dred-kpis"></div>
+      <!-- projecao de crescimento: contratos existentes (DRE) + contratos novos do pipeline, mes a mes -->
+      <div class="p3" style="margin-bottom:16px">
+        <div class="p3-cab"><div class="ic3d" style="--c1:#86efac;--c2:#15803d"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div>
+          <div><h2>Projeção de Crescimento</h2><small id="dred-proj-sub">Contratos existentes (DRE) + contratos novos do Pipeline</small></div></div>
+        <div id="dred-proj" class="proj-cresc"></div>
+      </div>
       <!-- duas colunas: esquerda (quadro comparativo, fatos relevantes) | direita (ranking, custos, pessoas) -->
       <div class="d3-linha" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);margin-bottom:16px">
         <div class="d3-coluna">
@@ -860,7 +883,6 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
           <div class="d3-hora" style="--c:#facc15"><span>Preventiva</span><b id="horas-prev">0h</b><small id="horas-prev-sub">0 manutenções</small></div>
           <div class="d3-hora" style="--c:#ef4444"><span>Corretiva</span><b id="horas-corr">0h</b><small id="horas-corr-sub">0 manutenções</small></div>
           <div class="d3-hora" style="--c:#3b8cff"><span>Total Parado</span><b id="horas-total">0h</b><small id="horas-total-sub">Preventiva + corretiva</small></div>
-          <div class="d3-hora" style="--c:#facc15"><span>Em Andamento</span><b id="horas-abertas">0</b><small>Sem data de retorno</small></div>
         </div>
         <div id="manut-motivos" class="d3-motivos"></div>
       </div>
@@ -1847,9 +1869,78 @@ function renderDREDashboard() {
   renderPessoasPorUnidade();
   renderConsideracoesVisao(per, rotPer);
   renderPipelineVisao();
+  renderProjecaoCrescimento(per);
 }
 
 // PIPELINE: bids em negociacao e a necessidade de investimento ate o momento
+// PROJECAO DE CRESCIMENTO (Visao 360): do mes do resultado ate dezembro do ano seguinte.
+// Contratos existentes = DRE (realizado e provisao); depois do ultimo mes da DRE, repete o ultimo mes (mesmo cenario).
+// Contratos novos = bids "Novo" (continuidade nao entra), valor mensal fixo a partir da antecipacao do titulo.
+// Margens dos novos: mesma estrutura de custos de hoje (MC % do ultimo mes da DRE; GPM = MC % - antecipacao de recebiveis %).
+// contratos que saem da operacao: [unidade, a partir do mes] (Correios ES vai para a Tropheus em jan/27)
+const SAIDAS_PROJECAO = [['CORREIOS_ES', '2027-01']];
+async function renderProjecaoCrescimento(per) {
+  const el = document.getElementById('dred-proj');
+  if (!el) return;
+  const { data, error } = await db.from('bids').select('*');
+  const bids = (error ? [] : (data || [])).map(b => ({ ...b, cliente: (allClientes.find(c => c.id === b.cliente_id) || {}).razao_social || '-' }));
+  const novos = bids.filter(b => b.tipo_negocio !== 'Continuidade');
+  const semTipo = bids.filter(b => !b.tipo_negocio).length;
+  // meses: do mes do resultado ate dezembro do ano seguinte
+  const [py] = per.split('-').map(Number);
+  const meses = [];
+  for (let k = py * 12 + Number(per.slice(5, 7)) - 1; k <= (py + 1) * 12 + 11; k++) meses.push(Math.floor(k / 12) + '-' + String(k % 12 + 1).padStart(2, '0'));
+  const mesesDRE = [...new Set(dreDados.map(l => l._mes))].sort();
+  const ultimoDRE = mesesDRE[mesesDRE.length - 1];
+  const calcMes = m => dreCalcular(dreLinhasUnidade('CONSOLIDADO', m.slice(0, 4)).filter(l => l._mes === m));
+  const base = calcMes(ultimoDRE);
+  // contratos existentes que saem: a partir do mes de saida, a unidade deixa de contar (receita e custos)
+  const ativas = m => l => !SAIDAS_PROJECAO.some(([u, desde]) => l.unidade === u && m >= desde);
+  const calcExistente = (m, mesDados) => dreCalcular(dreLinhasUnidade('CONSOLIDADO', mesDados.slice(0, 4)).filter(l => l._mes === mesDados).filter(ativas(m)));
+  const mcPctBase = base.receita ? base.mc / base.receita : 0, finPctBase = base.receita ? base.fin / base.receita : 0;
+  const natDe = m => { const ls = dreDados.filter(l => l._mes === m); return !ls.length ? 'proj' : ls.some(l => !l._prv) ? 'real' : 'prv'; };
+  const col = meses.map(m => {
+    const nat = m <= ultimoDRE ? natDe(m) : 'proj';
+    const ex = calcExistente(m, nat === 'proj' ? ultimoDRE : m);
+    const k = Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;
+    const recNova = novos.reduce((s, b) => {
+      const r = primeiroRecebimentoBid(b), mensal = Number(b.valor_mensal) || 0, prazo = Number(b.prazo_meses) || 0;
+      if (!r || !mensal) return s;
+      const ini = r.a * 12 + (r.m - 1);
+      return s + (k >= ini && (!prazo || k <= ini + prazo - 1) ? mensal : 0);
+    }, 0);
+    const rec = ex.receita + recNova, mc = ex.mc + recNova * mcPctBase, gpm = ex.gpm + recNova * (mcPctBase - finPctBase);
+    return { m, nat, recEx: ex.receita, recNova, rec, mc, gpm, mcPct: rec ? mc / rec * 100 : null, gpmPct: rec ? gpm / rec * 100 : null };
+  });
+  const rot = m => DRE_MESES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4);
+  // regua: blocos realizado / provisao (DRE) / projecao
+  const blocos = []; col.forEach(c => { const u = blocos[blocos.length - 1]; if (u && u.nat === c.nat) u.n++; else blocos.push({ nat: c.nat, n: 1 }); });
+  const nomeBloco = { real: '◄ Realizado', prv: 'Provisão DRE', proj: 'Projeção ▶' };
+  const v = x => '<span class="' + (x < -0.004 ? 'dre-neg' : '') + '">' + dreKn(x) + '</span>';
+  const p = x => x === null || !isFinite(x) ? '' : '<small class="' + (x < 0 ? 'dre-neg' : '') + '">' + drePct(x) + '</small>';
+  const ultimo = col[col.length - 1], primeiro = col[0];
+  const cresc = primeiro.rec ? (ultimo.rec / primeiro.rec - 1) * 100 : null;
+  document.getElementById('dred-proj-sub').textContent = 'Contratos existentes (DRE ' + (dreVersao || '') + ') + contratos novos do Pipeline · ' + rot(meses[0]) + ' a ' + rot(meses[meses.length - 1]);
+  el.innerHTML =
+    '<div class="pc-wrap"><table class="pc-tab"><thead>' +
+    '<tr class="pc-regua"><th></th>' + blocos.map(b => '<th colspan="' + b.n + '" class="pc-' + b.nat + '">' + nomeBloco[b.nat] + '</th>').join('') + '</tr>' +
+    '<tr><th>R$</th>' + col.map(c => '<th class="pc-' + c.nat + '">' + rot(c.m) + '</th>').join('') + '</tr></thead><tbody>' +
+    '<tr><td>Receita contratos existentes</td>' + col.map(c => '<td>' + v(c.recEx) + '</td>').join('') + '</tr>' +
+    '<tr class="pc-novos"><td>Receita contratos novos</td>' + col.map(c => '<td>' + (c.recNova ? '+' + dreKn(c.recNova) : '<span style="opacity:.35">–</span>') + '</td>').join('') + '</tr>' +
+    '<tr class="pc-total"><td>Receita total</td>' + col.map(c => '<td>' + v(c.rec) + '</td>').join('') + '</tr>' +
+    '<tr><td>Margem de contribuição</td>' + col.map(c => '<td>' + v(c.mc) + p(c.mcPct) + '</td>').join('') + '</tr>' +
+    '<tr><td>Margem GPM</td>' + col.map(c => '<td>' + v(c.gpm) + p(c.gpmPct) + '</td>').join('') + '</tr>' +
+    '</tbody></table></div>' +
+    '<div class="pc-resumo">Receita mensal sai de <b>' + dreK(primeiro.rec) + '</b> (' + rot(primeiro.m) + ') para <b>' + dreK(ultimo.rec) + '</b> (' + rot(ultimo.m) + ')' +
+    (cresc !== null ? ' · <b class="' + (cresc < 0 ? 'dre-neg' : 'pc-up') + '">' + (cresc >= 0 ? '+' : '') + drePct(cresc) + '</b>' : '') +
+    ' · GPM ' + rot(ultimo.m) + ': <b class="' + (ultimo.gpm < 0 ? 'dre-neg' : '') + '">' + dreK(ultimo.gpm) + '</b></div>' +
+    '<div class="pipe-obs"><b>Premissas:</b> contratos existentes = DRE ' + esc(dreVersao || '') + ' até ' + rot(ultimoDRE) + '; depois, o mesmo valor de ' + rot(ultimoDRE) + ' (mesmo cenário de hoje)' +
+    SAIDAS_PROJECAO.map(([u, desde]) => ', sem ' + (DRE_NOME_UN[u] || u) + ' a partir de ' + rot(desde) + ' (saída do contrato)').join('') + '. ' +
+    'Contratos novos = bids marcados como <b>Novo</b> no Pipeline (continuidade não entra), pelo valor mensal fixo, a partir da <b>antecipação do título</b> e durante o prazo dos equipamentos fixos. ' +
+    'Margens dos novos com a mesma estrutura de custos de hoje: MC ' + drePct(mcPctBase * 100) + ' e GPM ' + drePct((mcPctBase - finPctBase) * 100) + ' da receita (base ' + rot(ultimoDRE) + '; o custo fixo não aumenta).' +
+    (semTipo ? ' <span style="color:var(--amber)">' + semTipo + ' bid(s) sem "Novo ou Continuidade" estão sendo considerados como novos.</span>' : '') + '</div>';
+}
+
 async function renderPipelineVisao() {
   const el = document.getElementById('dred-pipeline');
   const { data, error } = await db.from('bids').select('*').order('criado_em');
@@ -2809,7 +2900,6 @@ async function renderHorasManutencao(ini, fim, mes, ano) {
   set('horas-prev', fmtDuracao(soma.prev)); set('horas-prev-sub', manut(qtd.prev));
   set('horas-corr', fmtDuracao(soma.corr)); set('horas-corr-sub', manut(qtd.corr));
   set('horas-total', fmtDuracao(soma.prev + soma.corr)); set('horas-total-sub', manut(qtd.prev + qtd.corr) + ' concluída' + (qtd.prev + qtd.corr === 1 ? '' : 's'));
-  set('horas-abertas', abertas);
   // motivos informados pela equipe (observacao), para entender as demoras
   const comMotivo = lista.filter(m => (m.descricao || '').trim()).slice(0, 5);
   document.getElementById('manut-motivos').innerHTML = comMotivo.length ?
