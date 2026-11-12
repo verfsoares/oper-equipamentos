@@ -363,16 +363,33 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 .dre-barra.clica{cursor:pointer}
 .dre-barra.clica:hover>span:first-child{color:#93c5fd}
 .dre-unid{display:grid;grid-template-columns:130px 1fr 110px 60px;gap:10px;align-items:center;font-size:12px}
-#dre-tabela th.acum,#dre-tabela td.acum{background:rgba(59,140,255,.10);font-weight:700}
-#dre-tabela th.acum.prv,#dre-tabela td.acum.prv{background:rgba(168,85,247,.14)}
-#dre-tabela th.tot,#dre-tabela td.tot{background:rgba(34,211,238,.10);font-weight:800}
+/* tabela DRE: bloco REALIZADO (azul) | espaco | PROVISAO (laranja) | espaco | TOTAL do ano (ciano) */
+#dre-tabela table{border-collapse:separate;border-spacing:0}
+#dre-tabela th.esp,#dre-tabela td.esp{width:14px;min-width:14px;padding:0 !important;background:transparent !important;border:none !important}
+#dre-tabela tr.dre-regua th{padding:0;border:none;height:34px;vertical-align:bottom}
+#dre-tabela tr.dre-regua th:first-child{background:#0c1d40;text-align:left;padding:4px 8px}
+#dre-tabela tr.dre-regua th:first-child span{font-size:10px;color:var(--muted);margin-left:8px;letter-spacing:1px}
+#dre-tabela tr.dre-regua th.r-real{background:linear-gradient(180deg,#1e4a7a,#0d2f5c);color:#fff;text-align:left;border-radius:8px 8px 0 0;padding:8px 12px}
+#dre-tabela tr.dre-regua th.r-real span:last-child{float:right;font-weight:700}
+#dre-tabela tr.dre-regua th.r-prv{background:linear-gradient(180deg,#f08a24,#c2570c);color:#fff;text-align:left;border-radius:8px 8px 0 0;padding:8px 12px}
+#dre-tabela tr.dre-regua th.r-tot{background:linear-gradient(180deg,#22b8f0,#0a8ec9);color:#fff;text-align:center;border-radius:8px 8px 0 0;padding:8px 12px}
+#dre-tabela tr.dre-regua span{font-size:11px;font-weight:800;letter-spacing:1px}
+.dre-mais{width:24px;height:24px;border-radius:6px;border:1px solid rgba(90,150,255,.5);background:#13285a;color:#fff;font-size:16px;font-weight:800;cursor:pointer;line-height:1}
+.dre-mais:hover{background:#1e4a7a}
+#dre-tabela tr.dre-cab th,#dre-tabela tr.dre-cab2 th{color:#fff;font-weight:700}
+#dre-tabela tr.dre-cab th.real,#dre-tabela tr.dre-cab2 th.real{background:#141b2d}
+#dre-tabela tr.dre-cab th.prv,#dre-tabela tr.dre-cab2 th.prv{background:#e0700f;color:#fff}
+#dre-tabela tr.dre-cab th.tot,#dre-tabela tr.dre-cab2 th.tot{background:#0ea5e9;color:#fff}
+#dre-tabela td.prv{color:#fb923c;background:rgba(249,115,22,.06)}
+#dre-tabela td.real.acum{background:rgba(59,140,255,.12);font-weight:700}
+#dre-tabela td.prv.acum{background:rgba(249,115,22,.14);font-weight:700}
+#dre-tabela td.tot{background:rgba(14,165,233,.14);font-weight:800;color:#e0f2fe}
 #dre-tabela tr.subgrupo td{font-weight:700;color:#bcd2ff}
 #dre-tabela tr.subgrupo td:first-child{padding-left:18px}
 #dre-tabela tr.sub td:first-child{padding-left:30px}
 #dre-tabela table{font-size:12px}
 #dre-tabela th,#dre-tabela td{white-space:nowrap;padding:7px 10px;text-align:right}
 #dre-tabela th:first-child,#dre-tabela td:first-child{text-align:left;position:sticky;left:0;background:#0c1d40;z-index:1;min-width:230px}
-#dre-tabela th.prv,#dre-tabela td.prv{color:#c4b5fd;background:rgba(168,85,247,.07)}
 #dre-tabela tr.grupo td{font-weight:700;background:rgba(59,140,255,.08)}
 #dre-tabela tr.grupo td:first-child{background:#11275a}
 #dre-tabela tr.total td{font-weight:800;background:rgba(59,140,255,.16);border-top:1px solid rgba(90,150,255,.35)}
@@ -514,11 +531,6 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
         </div>
       </div>
       <div class="p3 dre-faixa" id="dred-margens"></div>
-      <div class="p3" style="margin-bottom:16px">
-        <div class="p3-cab"><div class="ic3d" style="--c1:#c4b5fd;--c2:#6d28d9"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
-          <div><h2>Observações do Mês</h2><small>Comentários da planilha (aba Resumo)</small></div></div>
-        <div id="dred-notas" class="dre-notas"></div>
-      </div>
     </div>
 
     <!-- DRE - DEMONSTRATIVO (acesso restrito) -->
@@ -526,7 +538,8 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
       <div class="dre-filtros">
         <span>Ano:</span><select class="form-select" id="dre-ano" onchange="renderDRETabela()"></select>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="dre-ocultar-zeros" onchange="renderDRETabela()" /> Esconder contas zeradas</label>
-        <span class="dre-leg"><i style="background:#3b8cff"></i>REAL = Realizado <i style="background:#a855f7"></i>PRV = Previsto</span>
+        <button class="btn" onclick="alternarMesesDRE()" id="dre-btn-meses" style="padding:5px 12px">± Meses</button>
+        <span class="dre-leg"><i style="background:#3b8cff"></i>REAL = Realizado <i style="background:#f97316"></i>PRV = Provisão (ainda não aconteceu)</span>
       </div>
       <div class="table-wrap"><div class="table-header"><div class="table-title"><span id="dre-titulo-un">Consolidado</span> <span class="table-count" id="dre-count"></span></div></div>
         <div id="dre-tabela" style="overflow-x:auto"><div class="loading">Carregando...</div></div></div>
@@ -1379,6 +1392,14 @@ const drePct = v => v === null || !isFinite(v) ? '-' : v.toLocaleString('pt-BR',
 const dreSinal = v => v < -0.004 ? ' dre-neg' : '';
 
 // ---------- DRE (tabela igual a planilha) ----------
+// mostrar todos os meses (+) ou so o resumo (-): ultimo mes realizado, acumulado, provisao e total
+let dreExpandido = false;
+try { dreExpandido = localStorage.getItem('dreExpandido') === '1'; } catch (e) {}
+function alternarMesesDRE() {
+  dreExpandido = !dreExpandido;
+  try { localStorage.setItem('dreExpandido', dreExpandido ? '1' : '0'); } catch (e) {}
+  renderDRETabela();
+}
 function renderDRETabela() {
   const un = dreUnidadeAtual, ano = document.getElementById('dre-ano').value, ocultar = document.getElementById('dre-ocultar-zeros').checked;
   document.getElementById('pageTitle').textContent = 'DRE - ' + DRE_NOME_UN[un];
@@ -1387,15 +1408,18 @@ function renderDRETabela() {
   const linhas = dreLinhasUnidade(un, ano);
   if (!linhas.length) { document.getElementById('dre-tabela').innerHTML = '<div class="dre-vazio">Nenhum dado de DRE em ' + ano + '</div>'; return; }
   const meses = dreMesesDoAno(linhas, ano);
-  // colunas: meses realizados, acumulado realizado, meses previstos, acumulado previsto, total do ano
   const reais = meses.filter(m => !m.prv), prevs = meses.filter(m => m.prv);
-  const faixa = l => l.length ? l[0].rot.slice(0, 3).toLowerCase() + '–' + l[l.length - 1].rot.slice(0, 3).toLowerCase() : '';
-  const cols = [];
-  reais.forEach(m => cols.push({ rot: m.rot, sub: 'REAL', calc: dreCalcular(linhas.filter(l => l._mes === m.mes)) }));
-  if (reais.length) cols.push({ rot: 'Acumulado', sub: 'REAL ' + faixa(reais), cls: 'acum', calc: dreCalcular(linhas.filter(l => reais.some(m => m.mes === l._mes))) });
-  prevs.forEach(m => cols.push({ rot: m.rot, sub: 'PRV', cls: 'prv', calc: dreCalcular(linhas.filter(l => l._mes === m.mes)) }));
-  if (prevs.length) cols.push({ rot: 'Acumulado', sub: 'PRV ' + faixa(prevs), cls: 'acum prv', calc: dreCalcular(linhas.filter(l => prevs.some(m => m.mes === l._mes))) });
-  cols.push({ rot: 'Total ' + ano, sub: 'REAL + PRV', cls: 'tot', calc: dreCalcular(linhas) });
+  const faixa = l => l.length ? (l.length === 1 ? l[0].rot.slice(0, 3).toLowerCase() : l[0].rot.slice(0, 3).toLowerCase() + '–' + l[l.length - 1].rot.slice(0, 3).toLowerCase()) + '/' + ano.slice(2) : '';
+  const calcMes = m => dreCalcular(linhas.filter(l => l._mes === m.mes));
+  // blocos: REALIZADO (meses + total) | PROVISAO (meses + acumulado) | TOTAL ANO (real + prv)
+  const reaisVis = dreExpandido ? reais : reais.slice(-1);
+  const blocoR = reaisVis.map(m => ({ rot: m.rot, sub: 'REAL', cls: 'real', calc: calcMes(m) }));
+  if (reais.length) blocoR.push({ rot: 'TOTAL', sub: 'REAL ' + faixa(reais), cls: 'real acum', calc: dreCalcular(linhas.filter(l => reais.some(m => m.mes === l._mes))) });
+  const blocoP = prevs.map(m => ({ rot: m.rot, sub: 'PRV', cls: 'prv', calc: calcMes(m) }));
+  if (prevs.length) blocoP.push({ rot: 'Acumulado', sub: 'PRV ' + faixa(prevs), cls: 'prv acum', calc: dreCalcular(linhas.filter(l => prevs.some(m => m.mes === l._mes))) });
+  const blocoT = [{ rot: 'Total ' + ano, sub: 'REAL + PRV', cls: 'tot', calc: dreCalcular(linhas) }];
+  const ESP = { esp: true };
+  const cols = blocoR.concat(blocoP.length ? [ESP].concat(blocoP) : [], [ESP], blocoT);
   // contas de cada grupo, na ordem da planilha
   const contasDo = g => [...new Map(linhas.filter(l => l.grupo === g).sort((a, b) => a.ordem - b.ordem).map(l => [l.conta, l.conta])).keys()];
   const L = []; const add = (rot, f, tipo) => L.push({ rot, f, tipo: tipo || '' });
@@ -1412,13 +1436,22 @@ function renderDRETabela() {
   add('(-) DESPESAS FINANCEIRAS', r => r.fin, 'grupo'); folhas('fin');
   add('(=) RESULTADO GPM (R$)', r => r.gpm, 'total');
   add('(=) RESULTADO GPM (%)', r => r.gpmPct, 'pct');
-  const visiveis = L.filter(l => !(ocultar && l.tipo === 'sub' && cols.every(c => Math.abs(l.f(c.calc)) < 0.005)));
-  document.getElementById('dre-tabela').innerHTML = '<table><thead>' +
-    '<tr><th>R$</th>' + cols.map(c => '<th class="' + (c.cls || '') + '">' + c.rot + '</th>').join('') + '</tr>' +
-    '<tr><th></th>' + cols.map(c => '<th class="' + (c.cls || '') + '">' + c.sub + '</th>').join('') + '</tr></thead><tbody>' +
+  const dados = cols.filter(c => !c.esp);
+  const visiveis = L.filter(l => !(ocultar && l.tipo === 'sub' && dados.every(c => Math.abs(l.f(c.calc)) < 0.005)));
+  // regua no topo: REALIZADO (azul) e PROVISAO (laranja), como na planilha
+  const botao = '<button class="dre-mais" onclick="alternarMesesDRE()" title="' + (dreExpandido ? 'Mostrar menos meses' : 'Mostrar todos os meses') + '">' + (dreExpandido ? '−' : '+') + '</button>';
+  const regua = '<tr class="dre-regua"><th>' + botao + '<span>' + (dreExpandido ? 'Menos meses' : 'Mais meses') + '</span></th>' +
+    (blocoR.length ? '<th colspan="' + blocoR.length + '" class="r-real"><span>◄ REALIZADO</span><span>REALIZADO ' + faixa(reais) + '</span></th>' : '') +
+    (blocoP.length ? '<th class="esp"></th><th colspan="' + blocoP.length + '" class="r-prv"><span>▶ PROVISÃO ' + faixa(prevs) + '</span></th>' : '') +
+    '<th class="esp"></th><th class="r-tot">TOTAL ' + ano + '</th></tr>';
+  const cel = (c, conteudo, tag) => c.esp ? '<' + tag + ' class="esp"></' + tag + '>' : '<' + tag + ' class="' + c.cls + '">' + conteudo + '</' + tag + '>';
+  document.getElementById('dre-tabela').innerHTML = '<table><thead>' + regua +
+    '<tr class="dre-cab"><th>R$</th>' + cols.map(c => cel(c, c.rot, 'th')).join('') + '</tr>' +
+    '<tr class="dre-cab2"><th></th>' + cols.map(c => cel(c, c.sub, 'th')).join('') + '</tr></thead><tbody>' +
     visiveis.map(l => '<tr class="' + l.tipo + '"><td>' + esc(l.rot) + '</td>' + cols.map(c => {
+      if (c.esp) return '<td class="esp"></td>';
       const v = l.f(c.calc);
-      return '<td class="' + (c.cls || '') + ((l.tipo === 'total' || l.tipo === 'pct') && v < -0.004 ? ' dre-neg' : '') + '">' + (l.tipo === 'pct' ? drePct(v) : dreNum(v)) + '</td>';
+      return '<td class="' + c.cls + ((l.tipo === 'total' || l.tipo === 'pct') && v < -0.004 ? ' dre-neg' : '') + '">' + (l.tipo === 'pct' ? drePct(v) : dreNum(v)) + '</td>';
     }).join('') + '</tr>').join('') + '</tbody></table>';
 }
 
@@ -1524,13 +1557,6 @@ function renderDREDashboard() {
     item('RESULTADO GPM', drePct(r.gpmPct), dreBRL(r.gpm), neg) +
     item('MÃO DE OBRA / RECEITA', drePct(r.receita ? r.mo / r.receita * 100 : null), dreBRL(r.mo)) +
     item('ALUGUÉIS / RECEITA', drePct(r.receita ? aluguel / r.receita * 100 : null), dreBRL(aluguel));
-
-  // observacoes da planilha
-  const notas = dreNotas.filter(n => String(n.mes).slice(0, 4) === ano && (per.length !== 7 || String(n.mes).slice(0, 7) === per));
-  document.getElementById('dred-notas').innerHTML = notas.length ? notas.map(n => {
-    const m = String(n.mes).slice(0, 7);
-    return '<div><b>' + DRE_MESES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4) + '</b><span>' + esc(n.texto) + '</span></div>';
-  }).join('') : '<div class="dre-vazio" style="padding:10px">Sem observações para o período</div>';
 }
 
 function desenharGraficoDRE(meses, per) {
