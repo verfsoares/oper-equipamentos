@@ -478,6 +478,8 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .proj-tab td i,.proj-obs i{color:var(--amber);font-style:normal;font-weight:700}
 .proj-tab tfoot td{font-weight:700;color:#22c55e;border-top:1px solid var(--border2);border-bottom:none}
 .proj-obs{padding:8px 14px;font-size:10.5px;color:var(--muted);line-height:1.5}
+.proj-tab tr.cont td{opacity:.45}
+.proj-tipo{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--c);border:1px solid var(--c);vertical-align:middle}
 .pipe-tab th{font-size:9px;letter-spacing:.5px;color:var(--muted);text-align:left;padding:7px 8px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(90,150,255,.18);white-space:nowrap}
 .pipe-tab td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
 .pipe-tab tbody tr{cursor:pointer}.pipe-tab tbody tr:hover{background:rgba(59,140,255,.08)}
@@ -1863,13 +1865,13 @@ async function renderPipelineVisao() {
     '<div class="pipe-invest"><div><small>NECESSIDADE DE INVESTIMENTO ATÉ O MOMENTO</small><b>' + reaisBid(soma('investimento')) + '</b></div>' +
     '<span>' + comInvest + ' de ' + bids.length + ' bids<br>exigem investimento</span></div>' +
     '<div class="pipe-nums"><div><small>VALOR GLOBAL</small><b>' + reaisBid(soma('valor_total')) + '</b></div><div><small>GLOBAL FIXO</small><b>' + reaisBid(soma('valor_global_fixo')) + '</b></div><div><small>MENSAL FIXO</small><b>' + reaisBid(soma('valor_mensal')) + '</b></div></div>' +
-    '<div class="pipe-tab-wrap"><table class="pipe-tab"><thead><tr><th>Cliente</th><th>Empresa</th><th>Escopo</th><th class="n">Valor global</th><th class="n">Global fixo</th><th class="n">Mensal fixo</th><th class="n">Prazo</th><th class="n">Investimento</th><th>Início</th><th>Antecip. do título</th><th>Status</th></tr></thead><tbody>' +
+    '<div class="pipe-tab-wrap"><table class="pipe-tab"><thead><tr><th>Cliente</th><th>Empresa</th><th>Escopo</th><th class="n">Valor global</th><th class="n">Global fixo</th><th class="n">Mensal fixo</th><th class="n">Prazo</th><th class="n">Investimento</th><th>Início</th><th>Antecip. do título</th><th>Tipo</th><th>Status</th></tr></thead><tbody>' +
     bids.map(b => '<tr onclick="nav(\'bids\', document.querySelector(\'#menu-dir .nav-item[onclick*=&quot;bids&quot;]\'))">' +
       '<td><b>' + esc(b.cliente) + '</b></td><td>' + esc(b.empresa_grupo || '-') + '</td><td class="esc">' + esc(b.escopo || '-') + '</td>' +
       '<td class="n">' + v(b.valor_total) + '</td><td class="n">' + v(b.valor_global_fixo) + '</td><td class="n">' + v(b.valor_mensal) + '</td>' +
       '<td class="n">' + (b.prazo_meses ? b.prazo_meses + 'm' : '-') + '</td><td class="n inv">' + (Number(b.investimento) ? reaisBid(b.investimento) : '-') + '</td>' +
-      '<td>' + esc(b.inicio_previsto || '-') + '</td><td>' + esc(b.antecipacao_prevista || '-') + '</td><td><span class="et" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '">' + esc(b.etapa || '-') + '</span></td></tr>').join('') +
-    '</tbody><tfoot><tr><td colspan="3">TOTAL</td><td class="n">' + reaisBid(soma('valor_total')) + '</td><td class="n">' + reaisBid(soma('valor_global_fixo')) + '</td><td class="n">' + reaisBid(soma('valor_mensal')) + '</td><td></td><td class="n inv">' + reaisBid(soma('investimento')) + '</td><td colspan="3"></td></tr></tfoot></table></div>' +
+      '<td>' + esc(b.inicio_previsto || '-') + '</td><td>' + esc(b.antecipacao_prevista || '-') + '</td><td><span class="et" style="--c:' + (COR_TIPO_NEGOCIO_BID[b.tipo_negocio] || '#64748b') + '">' + esc(b.tipo_negocio || '-') + '</span></td><td><span class="et" style="--c:' + (CORES_ETAPA_BID[b.etapa] || '#64748b') + '">' + esc(b.etapa || '-') + '</span></td></tr>').join('') +
+    '</tbody><tfoot><tr><td colspan="3">TOTAL</td><td class="n">' + reaisBid(soma('valor_total')) + '</td><td class="n">' + reaisBid(soma('valor_global_fixo')) + '</td><td class="n">' + reaisBid(soma('valor_mensal')) + '</td><td></td><td class="n inv">' + reaisBid(soma('investimento')) + '</td><td colspan="4"></td></tr></tfoot></table></div>' +
     '<div class="pipe-obs"><b>Considerações:</b> a diferença entre o Valor Global e o Valor Global Fixo refere-se aos equipamentos em formato de contratação SPOT.</div>';
 }// EXPORTAR PDF: abre a impressao do navegador (escolha "Salvar como PDF" ou a impressora)
 function exportarVisaoPDF() {
@@ -2428,21 +2430,26 @@ function renderProjecaoBids(bids) {
       const ini = r.a * 12 + (r.m - 1), fim = prazo ? ini + prazo - 1 : Infinity;
       for (let i = 0; i < 12; i++) { const k = ANO_PROJ_BIDS * 12 + i; if (k >= ini && k <= fim) meses[i] = mensal; }
     }
-    return { b, r, meses, total: meses.reduce((s, v) => s + v, 0) };
-  }).sort((x, y) => y.total - x.total);
-  const totMes = Array(12).fill(0).map((_, i) => linhas.reduce((s, l) => s + l.meses[i], 0));
+    const cont = b.tipo_negocio === 'Continuidade';   // continuidade = mesmo faturamento de hoje: aparece, mas nao soma
+    return { b, r, meses, cont, total: meses.reduce((s, v) => s + v, 0) };
+  }).sort((x, y) => (x.cont - y.cont) || (y.total - x.total));
+  const totMes = Array(12).fill(0).map((_, i) => linhas.reduce((s, l) => s + (l.cont ? 0 : l.meses[i]), 0));
+  const qtdCont = linhas.filter(l => l.cont).length, semTipo = linhas.filter(l => !l.b.tipo_negocio).length;
+  const tagTipo = l => l.cont ? ' <span class="proj-tipo" style="--c:#94a3b8">continuidade · não soma</span>' : l.b.tipo_negocio === 'Novo' ? ' <span class="proj-tipo" style="--c:#22c55e">novo</span>' : ' <span class="proj-tipo" style="--c:#f5b400">definir: novo ou continuidade</span>';
   const total = totMes.reduce((s, v) => s + v, 0);
   const cel = v => v ? siglaContabil(v) : '<span style="opacity:.35">–</span>';
   const semData = linhas.filter(l => !l.r).length;
   box.innerHTML =
-    '<div class="proj-bids"><div class="proj-cab"><b>Projeção ' + ANO_PROJ_BIDS + ' · Receita mensal fixa dos bids (visão de caixa)</b>' +
+    '<div class="proj-bids"><div class="proj-cab"><b>Projeção ' + ANO_PROJ_BIDS + ' · Receita nova dos bids (valor mensal fixo, visão de caixa)</b>' +
     '<span>Total ' + ANO_PROJ_BIDS + ': <strong>' + reaisBid(total) + '</strong></span></div>' +
     '<div class="proj-wrap"><table class="proj-tab"><thead><tr><th>Cliente</th><th>Entra a partir de</th>' + nomes.map(n => '<th>' + n + '/' + String(ANO_PROJ_BIDS).slice(2) + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
-    linhas.map(l => '<tr><td>' + esc(l.b.cliente) + '</td><td title="' + (l.r ? l.r.origem : 'preencha a antecipação do título ou o início previsto') + '">' +
+    linhas.map(l => '<tr' + (l.cont ? ' class="cont"' : '') + '><td>' + esc(l.b.cliente) + tagTipo(l) + '</td><td title="' + (l.r ? l.r.origem : 'preencha a antecipação do título ou o início previsto') + '">' +
       (l.r ? nomes[l.r.m - 1] + '/' + String(l.r.a).slice(2) + ' <small style="color:var(--muted)">' + (l.r.origem === 'antecipação' ? 'antecip.' : '') + '</small>' + (l.r.origem !== 'antecipação' ? ' <i>*</i>' : '') : '<span style="color:var(--amber)">sem data</span>') + '</td>' +
-      l.meses.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n"><b>' + cel(l.total) + '</b></td></tr>').join('') +
+      l.meses.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n"><b>' + (l.cont ? 'não soma' : cel(l.total)) + '</b></td></tr>').join('') +
     '</tbody><tfoot><tr><td colspan="2">TOTAL</td>' + totMes.map(v => '<td class="n">' + cel(v) + '</td>').join('') + '<td class="n">' + cel(total) + '</td></tr></tfoot></table></div>' +
-    '<div class="proj-obs">Considera o <b>valor mensal fixo</b> de cada bid a partir da <b>antecipação do título</b> (quando o dinheiro entra no caixa), durante o prazo dos equipamentos fixos. ' +
+    '<div class="proj-obs">Soma só os bids <b>novos</b> (que acrescentam faturamento). Os de <b>continuidade</b> mantêm o faturamento que já existe hoje: aparecem em cinza e <b>não entram no total</b>' + (qtdCont ? ' (' + qtdCont + ' nesta lista)' : '') + '. ' +
+    (semTipo ? '<span style="color:var(--amber)">' + semTipo + ' bid(s) sem "Novo ou Continuidade" estão sendo somados como novos — defina no lançamento.</span> ' : '') +
+    'Considera o <b>valor mensal fixo</b> de cada bid a partir da <b>antecipação do título</b> (quando o dinheiro entra no caixa), durante o prazo dos equipamentos fixos. ' +
     '<i>*</i> = antecipação não preenchida: estimada pelo início previsto + prazo de pagamento (CSN 120 dias; demais 30 dias) — preencha a antecipação do título no bid para usar a data real.' +
     (semData ? ' <span style="color:var(--amber)">' + semData + ' bid(s) sem data não entram na projeção.</span>' : '') + '</div></div>';
 }
@@ -4168,6 +4175,9 @@ const VERDE = 'var(--green)', AMARELO = 'var(--amber)', VERMELHO = 'var(--red)',
 const ETAPAS_BID = ['Proposta', 'Leilão', 'Supply Cliente'];
 const CORES_ETAPA_BID = { 'Proposta':'#3b8cff', 'Leilão':'#a855f7', 'Supply Cliente':'#f97316' };
 const COR_ETAPA_BID = CORES_ETAPA_BID;
+// Novo x Continuidade: so os novos entram na projecao (continuidade nao acrescenta faturamento)
+const TIPOS_NEGOCIO_BID = ['Novo', 'Continuidade'];
+const COR_TIPO_NEGOCIO_BID = { 'Novo':'#22c55e', 'Continuidade':'#94a3b8' };
 // Valores dos Bids em linguagem contabil: 16K = 16 mil, 4,3MM = 4,3 milhoes, 1,2BI = 1,2 bilhao
 function siglaContabil(n) {
   n = Number(n); if (!isFinite(n)) return '';
@@ -4312,6 +4322,8 @@ const MODULOS = {
       { id:'inicio_previsto', label:'Início Previsto', tipo:'text' },
       // quando o dinheiro entra no caixa; texto livre como o inicio previsto: "dezembro de 2026", "DEZ/2026", "12/2026"
       { id:'antecipacao_prevista', label:'Antecipação do Título', tipo:'text' },
+      // Novo = acrescenta faturamento (entra na projecao); Continuidade = mesmo faturamento de hoje (nao entra)
+      { id:'tipo_negocio', label:'Novo ou Continuidade', tipo:'select', opcoes: TIPOS_NEGOCIO_BID, obrig:true, cor: COR_TIPO_NEGOCIO_BID },
       { id:'etapa', label:'Status', tipo:'select', opcoes: ETAPAS_BID, obrig:true, cor: COR_ETAPA_BID },
       { id:'data_envio', label:'Data de Envio da Proposta', tipo:'date' }
     ]
