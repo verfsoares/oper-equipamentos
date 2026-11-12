@@ -354,6 +354,9 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
 .dre-faixa b{font-size:22px;font-weight:800}
 .dre-faixa span{font-size:11px;color:#c4b5fd}
 .dre-vazio{padding:30px;text-align:center;color:var(--muted)}
+.dre-titulo-mes{font-size:20px;font-weight:800;letter-spacing:1px;color:var(--text);margin-right:14px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dre-titulo-mes b{color:#93c5fd;text-shadow:0 0 14px rgba(59,140,255,.6)}
+.dre-titulo-mes small{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;border:1px solid rgba(90,150,255,.35)}
 .dre-notas{padding:12px 18px 18px;display:flex;flex-direction:column;gap:8px;font-size:12px}
 .dre-notas div{display:grid;grid-template-columns:70px 1fr;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(19,40,90,.55);border:1px solid rgba(168,85,247,.25)}
 .dre-notas b{color:#c4b5fd}
@@ -480,8 +483,8 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
     <!-- DASHBOARD DRE (acesso restrito) -->
     <div class="view" id="v-dre-dashboard">
       <div class="dre-filtros">
-        <span>Unidade:</span><select class="form-select" id="dred-un" onchange="renderDREDashboard()"></select>
-        <span>Período:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
+        <div class="dre-titulo-mes">Resultado do Mês <b id="dred-mes-rot"></b><small>Consolidado</small></div>
+        <span>Mês:</span><select class="form-select" id="dred-per" onchange="renderDREDashboard()"></select>
         <span class="dre-leg" id="dred-versao"></span>
         <span class="dre-leg" style="margin-left:0"><i style="background:#3b8cff"></i>Realizado <i style="background:#a855f7"></i>Previsto</span>
       </div>
@@ -494,7 +497,7 @@ tfoot .linha-total td{padding:12px 14px;font-weight:800;color:#facc15;border-top
         </div>
         <div class="p3">
           <div class="p3-cab"><div class="ic3d" style="--c1:#fca5a5;--c2:#b91c1c"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-            <div><h2>Resumo Financeiro</h2><small>Realizado · Previsto · Ano</small></div></div>
+            <div><h2>Resumo do Mês</h2><small id="dred-resumo-sub">Consolidado</small></div></div>
           <div id="dred-resumo" class="dre-resumo"></div>
         </div>
       </div>
@@ -1346,9 +1349,7 @@ async function carregarDRE(tela) {
   if (!anos.length) anos.push(hojeLocal().slice(0, 4));
   const ea = document.getElementById('dre-ano'), va = ea.value;
   ea.innerHTML = anos.map(a => '<option>' + a + '</option>').join(''); ea.value = anos.includes(va) ? va : anos[0];
-  const eu = document.getElementById('dred-un'), vu = eu.value;
-  eu.innerHTML = DRE_UN.map(([v, n]) => '<option value="' + v + '">' + n + '</option>').join(''); eu.value = vu || 'CONSOLIDADO';
-  if (tela === 'dash') { montarPeriodosDRE(anos[0]); renderDREDashboard(); }
+  if (tela === 'dash') { montarMesesVisao(); renderDREDashboard(); }
   else renderDRETabela();
 }
 
@@ -1422,30 +1423,36 @@ function renderDRETabela() {
 }
 
 // ---------- DASHBOARD DRE ----------
-function montarPeriodosDRE(ano) {
-  const meses = dreMesesDoAno(dreDados.filter(l => l._mes.slice(0, 4) === ano), ano);
-  const reais = meses.filter(m => !m.prv), prevs = meses.filter(m => m.prv);
+// filtro de mes da Visao 360: a partir de Set/26 ate Dez/27 (ou ate o ultimo mes com dados)
+const DRE_VISAO_INICIO = '2026-09';
+function montarMesesVisao() {
+  const nat = {};
+  dreDados.forEach(l => { if (!(l._mes in nat) || !l._prv) nat[l._mes] = l._prv ? 'prv' : 'real'; });
+  const ultimoDado = Object.keys(nat).sort().pop() || DRE_VISAO_INICIO;
+  const fim = ultimoDado > '2027-12' ? ultimoDado : '2027-12';
   const ops = [];
-  if (reais.length) ops.push(['real', 'Realizado ' + reais[0].rot.slice(0, 3) + '–' + reais[reais.length - 1].rot]);
-  if (prevs.length) ops.push(['prv', 'Previsto ' + prevs[0].rot.slice(0, 3) + '–' + prevs[prevs.length - 1].rot]);
-  ops.push(['ano', 'Ano ' + ano + ' (real + previsto)']);
-  meses.slice().reverse().forEach(m => ops.push([m.mes, m.rot + (m.prv ? ' (previsto)' : '')]));
+  for (let [y, m] = DRE_VISAO_INICIO.split('-').map(Number); (y + '-' + String(m).padStart(2, '0')) <= fim; m === 12 ? (y++, m = 1) : m++) {
+    const k = y + '-' + String(m).padStart(2, '0');
+    ops.push([k, DRE_MESES[m - 1] + '/' + String(y).slice(2) + (nat[k] === 'prv' ? ' (previsto)' : !nat[k] ? ' (sem dados)' : '')]);
+  }
+  // padrao: o ultimo mes realizado
+  const reais = Object.keys(nat).filter(k => nat[k] === 'real' && k >= DRE_VISAO_INICIO).sort();
   const el = document.getElementById('dred-per'), v = el.value;
   el.innerHTML = ops.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
-  el.value = ops.some(o => o[0] === v) ? v : ops[0][0];
-  el.dataset.ano = ano;
+  el.value = ops.some(o => o[0] === v) ? v : (reais.pop() || ops[0][0]);
 }
 
 function renderDREDashboard() {
-  const un = document.getElementById('dred-un').value, per = document.getElementById('dred-per').value, ano = document.getElementById('dred-per').dataset.ano;
+  // Visao 360: so o Consolidado (soma de todas as operacoes) e so o mes escolhido, sem acumulado
+  const un = 'CONSOLIDADO', per = document.getElementById('dred-per').value, ano = per.slice(0, 4);
   document.getElementById('dred-versao').textContent = dreVersao ? 'DRE versão ' + dreVersao : '';
   const doAno = dreLinhasUnidade(un, ano), meses = dreMesesDoAno(doAno, ano);
-  const noPer = (l, p) => p === 'ano' ? true : p === 'real' ? !l._prv : p === 'prv' ? l._prv : l._mes === p;
+  const noPer = (l, p) => l._mes === p;
   const periodo = doAno.filter(l => noPer(l, per));
   const r = dreCalcular(periodo);
-  const real = dreCalcular(doAno.filter(l => !l._prv)), prev = dreCalcular(doAno.filter(l => l._prv)), tot = dreCalcular(doAno);
-  const rotPer = document.getElementById('dred-per').selectedOptions[0]?.textContent || '';
-  const ehPrv = per === 'prv' || (meses.find(m => m.mes === per) || {}).prv;
+  const rotPer = DRE_MESES[Number(per.slice(5, 7)) - 1] + '/' + per.slice(2, 4);
+  const ehPrv = periodo.length > 0 && periodo.every(l => l._prv);
+  document.getElementById('dred-mes-rot').textContent = rotPer + (ehPrv ? ' (previsto)' : '');
   const ic = {
     rb: '<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
     imp: '<svg viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>',
@@ -1479,17 +1486,15 @@ function renderDREDashboard() {
   document.getElementById('dred-res-pct').textContent = drePct(r.gpmPct) + ' da receita · ' + rotPer;
   desenharGraficoDRE(meses.map(m => ({ ...m, gpm: dreCalcular(doAno.filter(l => l._mes === m.mes)).gpm })), per);
 
-  // resumo: realizado, previsto e ano (como a aba Resumo da planilha)
-  const lin = (rot, a, b, c, pct) => '<div class="dre-linha-res" style="grid-template-columns:1.2fr 1fr 1fr 1fr"><span>' + rot + '</span>' +
-    [a, b, c].map((v, i) => '<b class="' + (pct ? '' : '') + dreSinal(v) + '" style="white-space:nowrap;font-size:13px;' + (i === 1 ? 'color:#c4b5fd' : '') + '">' + (pct ? drePct(v) : dreNum(v)) + '</b>').join('') + '</div>';
-  const nR = meses.filter(m => !m.prv), nP = meses.filter(m => m.prv);
-  document.getElementById('dred-resumo').innerHTML =
-    '<div class="dre-linha-res" style="grid-template-columns:1.2fr 1fr 1fr 1fr;background:none;border:none;padding:0 12px;color:var(--muted);font-size:10.5px"><span>R$</span><span style="text-align:right">REAL ' + (nR.length ? nR[0].rot.slice(0, 3) + '–' + nR[nR.length - 1].rot.slice(0, 3) : '') + '</span><span style="text-align:right">PRV ' + (nP.length ? nP[0].rot.slice(0, 3) + '–' + nP[nP.length - 1].rot.slice(0, 3) : '') + '</span><span style="text-align:right">ANO ' + ano + '</span></div>' +
-    lin('Receita bruta', real.receita, prev.receita, tot.receita) +
-    lin('Margem de contribuição', real.mc, prev.mc, tot.mc) +
-    lin('Resultado GPM', real.gpm, prev.gpm, tot.gpm) +
-    lin('GPM % da receita', real.gpmPct, prev.gpmPct, tot.gpmPct, true);
-
+  // resumo do mes: as linhas principais da DRE consolidada, com % sobre a receita bruta
+  document.getElementById('dred-resumo-sub').textContent = 'Consolidado · ' + rotPer + (ehPrv ? ' (previsto)' : '');
+  const lin = (rot, v, forte) => '<div class="dre-linha-res" style="grid-template-columns:1.6fr 1fr 60px;padding:8px 12px' + (forte ? ';background:rgba(59,140,255,.16);border-color:rgba(90,150,255,.4)' : '') + '"><span' + (forte ? ' style="font-weight:700"' : '') + '>' + rot + '</span>' +
+    '<b class="' + dreSinal(v) + '" style="white-space:nowrap;font-size:13px">' + dreNum(v) + '</b><small style="min-width:0;color:var(--muted)">' + (r.receita ? drePct(v / r.receita * 100) : '-') + '</small></div>';
+  document.getElementById('dred-resumo').innerHTML = periodo.length ?
+    lin('Receita bruta', r.receita, true) + lin('(-) Impostos', r.imposto) + lin('(=) Receita líquida', r.rl) +
+    lin('(-) Custo direto operacional', r.cd) + lin('(=) Margem de contribuição', r.mc, true) +
+    lin('(-) Custo administrativo', r.adm) + lin('(-) Despesas financeiras', r.fin) + lin('(=) Resultado GPM', r.gpm, true) :
+    '<div class="dre-vazio">Sem dados da DRE para ' + rotPer + '</div>';
   // desempenho por unidade no periodo (no consolidado: todas; numa unidade: so ela)
   const lista = DRE_UN.slice(1).concat([['CORPORATIVO', DRE_NOME_UN.CORPORATIVO]]).filter(([u]) => un === 'CONSOLIDADO' || u === un)
     .map(([u, n]) => ({ u, n, c: dreCalcular(dreDados.filter(l => l.unidade === u && l._mes.slice(0, 4) === ano && noPer(l, per))) }))
