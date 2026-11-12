@@ -1613,7 +1613,7 @@ function renderDREDashboard() {
   document.getElementById('dred-kpis').innerHTML =
     card('Receita Bruta', 'rb', dreK(r.receita), false, '#3b8cff', '#93c5fd', '#1d4ed8', rotPer) +
     card('Receita Líquida', 'rl', dreK(r.rl), false, '#22d3ee', '#67e8f9', '#0e7490', pctRec(r.rl)) +
-    card('Custo Direto Operacional', 'cd', dreK(r.cd), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.cd)) +
+    card('Custo Direto Operacional', 'cd', dreK(r.co), false, '#f59e0b', '#fde047', '#a16207', pctRec(r.co) + ' · sem mão de obra') +
     card('Margem de Contribuição', 'mc', dreK(r.mc), r.mc < -0.004, '#6366f1', '#a5b4fc', '#4338ca', 'MC ' + drePct(r.mcPct) + ' da receita') +
     card('Resultado GPM', 'gpm', dreK(r.gpm), negG, negG ? '#ef4444' : '#3b8cff', negG ? '#fca5a5' : '#93c5fd', negG ? '#b91c1c' : '#1d4ed8', 'GPM ' + drePct(r.gpmPct) + ' da receita') +
     card('Mão de Obra / Receita', 'mo', drePct(r.receita ? r.mo / r.receita * 100 : null), false, '#14b8a6', '#5eead4', '#0f766e', dreK(r.mo) + ' de mão de obra') +
@@ -1642,7 +1642,7 @@ function renderDREDashboard() {
   document.getElementById('dred-resumo-sub').textContent = 'Consolidado · ' + rotPer + ' x ' + rotMes(perSeg);
   const linhasRes = [
     ['Receita bruta', c => c.receita, true], ['(-) Impostos', c => c.imposto], ['(=) Receita líquida', c => c.rl],
-    ['(-) Custo direto operacional', c => c.cd], ['(=) Margem de contribuição', c => c.mc, true],
+    ['(-) Custo mão de obra', c => c.mo], ['(-) Custo direto operacional', c => c.co], ['(=) Margem de contribuição', c => c.mc, true],
     ['(-) Custos diversos administrativos', (c, fx) => c.adm - fx], ['(-) Custo fixo (Wesley e Verônica)', (c, fx) => fx],
     ['(-) Antecipação de recebíveis', c => c.fin], ['(=) Resultado GPM', c => c.gpm, true]
   ];
