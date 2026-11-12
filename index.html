@@ -926,7 +926,7 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="table-wrap">
         <div class="table-header">
           <div class="table-title">Lancamentos de Custos</div>
-          <button class="btn btn-primary" onclick="openModal('modal-custo')">+ Lancar Custo</button>
+          <button class="btn btn-primary" onclick="fecharCusto();openModal('modal-custo')">+ Lancar Custo</button>
         </div>
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <div style="font-size:12px;color:var(--muted);font-weight:500">Filtrar por:</div>
@@ -1338,6 +1338,11 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
       <div class="form-group"><div class="form-label">Servicos (R$)</div><input class="form-input" type="number" id="ct-serv" placeholder="0" oninput="calcTotal()" /></div>
       <div class="form-group"><div class="form-label">Total (automatico)</div><input class="form-input" id="ct-total" readonly style="color:var(--green);font-weight:600" /></div>
       <div class="form-group full"><div class="form-label">Descricao / NF</div><input class="form-input" id="ct-desc" placeholder="Numero da NF, descricao..." /></div>
+      <div class="form-group full">
+        <div class="form-label">Anexos (NF, recibo, orçamento, foto)</div>
+        <input class="form-input anexo-venc" type="file" id="ct-files" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx" />
+        <div id="ct-anexos-atuais" style="margin-top:10px"></div>
+      </div>
     </div>
     <input type="hidden" id="ct-id" value="" />
     <div class="modal-footer">
@@ -3037,15 +3042,26 @@ async function salvarCusto() {
     descricao: document.getElementById('ct-desc').value,
     usuario: currentUser?.nome || '-'
   };
-  let error;
-  if (id) {
-    ({ error } = await db.from('custos').update(dados).eq('id', id));
-  } else {
-    ({ error } = await db.from('custos').insert(dados));
-  }
+  const { data: salvo, error } = id ?
+    await db.from('custos').update(dados).eq('id', id).select('id').single() :
+    await db.from('custos').insert(dados).select('id').single();
   if (error) return showToast('Erro: ' + error.message, true);
+  const arquivos = Array.from(document.getElementById('ct-files').files || []);
+  const custoId = salvo?.id || id;
+  let enviados = 0;
+  for (const file of arquivos) {
+    try {
+      const path = ANEXOS_REG.custo.pasta(custoId) + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+      if (upErr) continue;
+      const { data: urlData } = db.storage.from('inspecoes').getPublicUrl(path);
+      const { error: e2 } = await db.from('custo_arquivos').insert({ custo_id: String(custoId), nome_arquivo: file.name, url_arquivo: urlData.publicUrl, tipo_arquivo: file.type || 'application/octet-stream' });
+      if (!e2) enviados++;
+    } catch (e) {}
+  }
   fecharCusto();
-  showToast(id ? 'Custo atualizado!' : 'Custo lancado!');
+  if (enviados < arquivos.length) showToast('Custo salvo, mas ' + (arquivos.length - enviados) + ' anexo(s) não foram enviados', true);
+  else showToast((id ? 'Custo atualizado!' : 'Custo lancado!') + (enviados ? ' (' + enviados + ' anexo(s))' : ''));
   await carregarCustos();
 }
 
@@ -3062,20 +3078,28 @@ async function editarCusto(id) {
   document.getElementById('ct-serv').value = c.servicos || 0;
   document.getElementById('ct-desc').value = c.descricao || '';
   document.getElementById('modal-custo-title').textContent = 'Editar Custo';
+  document.getElementById('ct-files').value = '';
+  anexosNoForm('custo', c.id);
   calcTotal();
   openModal('modal-custo');
 }
 
 async function deletarCusto(id) {
-  if (!confirm('Deseja excluir este lancamento?')) return;
+  if (!confirm('Deseja excluir este lancamento?\n\nOs anexos dele também serão excluídos.')) return;
   const { error } = await db.from('custos').delete().eq('id', id);
   if (error) return showToast('Erro: ' + error.message, true);
+  const { data: arqs } = await db.from('custo_arquivos').select('url_arquivo').eq('custo_id', String(id));
+  const caminhos = (arqs || []).map(a => (a.url_arquivo || '').split('/inspecoes/')[1]).filter(Boolean).map(decodeURIComponent);
+  if (caminhos.length) await db.storage.from('inspecoes').remove(caminhos);
+  await db.from('custo_arquivos').delete().eq('custo_id', String(id));
   showToast('Custo excluido!');
   await carregarCustos();
 }
 
 function fecharCusto() {
   document.getElementById('ct-id').value = '';
+  document.getElementById('ct-files').value = '';
+  document.getElementById('ct-anexos-atuais').innerHTML = '';
   document.getElementById('modal-custo-title').textContent = 'Lancar Custo';
   closeModal('modal-custo');
 }
@@ -3478,6 +3502,13 @@ async function carregarCustos() {
   else if (ano) { q = q.gte('data', ano+'-01-01').lte('data', ano+'-12-31'); }
   else if (mes) { const y = new Date().getFullYear(); q = q.gte('data', y+'-'+mes+'-01').lte('data', y+'-'+mes+'-31'); }
   const { data } = await q.limit(500);
+  // anexos de cada lancamento (tabela custo_arquivos)
+  const anexosCusto = {};
+  if (data && data.length) {
+    const { data: arqs } = await db.from('custo_arquivos').select('custo_id,nome_arquivo,url_arquivo').in('custo_id', data.map(c => String(c.id)));
+    (arqs || []).forEach(a => (anexosCusto[a.custo_id] = anexosCusto[a.custo_id] || []).push(a));
+  }
+  const celAnexos = c => { const l = anexosCusto[String(c.id)] || []; return l.length ? l.map(a => '<a href="' + esc(a.url_arquivo) + '" target="_blank" style="color:var(--accent2);font-size:12px;display:block;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis" title="' + esc(a.nome_arquivo) + '">&#128206; ' + esc(a.nome_arquivo) + '</a>').join('') : '<span style="color:var(--muted);font-size:12px">-</span>'; };
   const campos = ['frete','combustivel','pneus','pecas','servicos'];
   const kpis = ['kpi-frete','kpi-comb','kpi-pneus','kpi-pecas','kpi-serv'];
   if (data) {
@@ -3488,9 +3519,9 @@ async function carregarCustos() {
     });
   }
   document.getElementById('custo-table-body').innerHTML = data && data.length ?
-    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descricao</th><th>Frete</th><th>Combustivel</th><th>Pneus</th><th>Pecas</th><th>Servicos</th><th>Total</th><th>Lancado por</th><th></th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Data</th><th>Equipamento</th><th>Descricao</th><th>Frete</th><th>Combustivel</th><th>Pneus</th><th>Pecas</th><th>Servicos</th><th>Total</th><th>Anexos</th><th>Lancado por</th><th></th></tr></thead><tbody>' +
     data.map(c =>
-      '<tr><td>' + (c.data||'-') + '</td><td>' + (c.equipamentos?.frota||'-') + ' . ' + (c.equipamentos?.equipamento||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (c.descricao||'-') + '</td><td>' + (c.frete ? 'R$ '+c.frete.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.combustivel ? 'R$ '+c.combustivel.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pneus ? 'R$ '+c.pneus.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pecas ? 'R$ '+c.pecas.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.servicos ? 'R$ '+c.servicos.toLocaleString('pt-BR') : '-') + '</td><td><strong style="color:var(--green)">R$ ' + (c.custo_total || ((c.frete||0)+(c.combustivel||0)+(c.pneus||0)+(c.pecas||0)+(c.servicos||0))).toLocaleString('pt-BR') + '</strong></td><td style="color:var(--muted)">' + (c.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCusto(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCusto(\'' + c.id + '\')">&#128465;&#65039;</button></td></tr>'
+      '<tr><td>' + (c.data||'-') + '</td><td>' + (c.equipamentos?.frota||'-') + ' . ' + (c.equipamentos?.equipamento||'-') + '</td><td style="color:var(--muted);font-size:12px">' + (c.descricao||'-') + '</td><td>' + (c.frete ? 'R$ '+c.frete.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.combustivel ? 'R$ '+c.combustivel.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pneus ? 'R$ '+c.pneus.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.pecas ? 'R$ '+c.pecas.toLocaleString('pt-BR') : '-') + '</td><td>' + (c.servicos ? 'R$ '+c.servicos.toLocaleString('pt-BR') : '-') + '</td><td><strong style="color:var(--green)">R$ ' + (c.custo_total || ((c.frete||0)+(c.combustivel||0)+(c.pneus||0)+(c.pecas||0)+(c.servicos||0))).toLocaleString('pt-BR') + '</strong></td><td>' + celAnexos(c) + '</td><td style="color:var(--muted)">' + (c.usuario||'-') + '</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:13px" onclick="editarCusto(\'' + c.id + '\')">&#9999;&#65039;</button> <button class="btn" style="padding:4px 8px;font-size:13px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="deletarCusto(\'' + c.id + '\')">&#128465;&#65039;</button></td></tr>'
     ).join('') + '</tbody></table>' :
     '<div class="loading">Nenhum custo encontrado</div>';
 }
@@ -3742,21 +3773,26 @@ function preencherFormManut(m) {
   document.getElementById('manut-files').value = '';
   document.getElementById('manut-files-preview').innerHTML = '';
   document.getElementById('manut-laudos-atuais').innerHTML = '';
-  if (m.id) laudosNoFormManut(m.id);
+  if (m.id) anexosNoForm('manut', m.id);
   document.getElementById('modal-manut-title').textContent = m.id ? 'Editar Manutenção' : 'Nova Manutencao';
   atualizarTempoManutForm();
 }
 function novaManutencao() { preencherFormManut({}); openModal('modal-manut-equip'); }
-// laudos ja lancados, dentro do formulario de edicao: cada um com a lixeira (exclui so o arquivo)
-async function laudosNoFormManut(id) {
-  const box = document.getElementById('manut-laudos-atuais');
-  const { data: arqs } = await db.from('manut_arquivos').select('*').eq('manut_id', id);
-  if (document.getElementById('manut-id').value !== String(id)) return;
-  box.innerHTML = arqs && arqs.length ?
-    '<div class="form-label" style="margin-bottom:6px">Laudos já lançados (' + arqs.length + ')</div>' +
+// anexos ja lancados, dentro do formulario de edicao (laudos da manutencao, anexos dos custos):
+// cada um com a lixeira, que exclui so o arquivo
+const ANEXOS_FORM = {
+  manut: { box: 'manut-laudos-atuais', campoId: 'manut-id', titulo: 'Laudos já lançados', vazio: 'Nenhum laudo lançado ainda.' },
+  custo: { box: 'ct-anexos-atuais', campoId: 'ct-id', titulo: 'Anexos já lançados', vazio: 'Nenhum anexo lançado ainda.' }
+};
+async function anexosNoForm(tipo, id) {
+  const f = ANEXOS_FORM[tipo], t = ANEXOS_REG[tipo];
+  const { data: arqs } = await db.from(t.tabela).select('*').eq(t.fk, String(id));
+  if (document.getElementById(f.campoId).value !== String(id)) return;
+  document.getElementById(f.box).innerHTML = arqs && arqs.length ?
+    '<div class="form-label" style="margin-bottom:6px">' + f.titulo + ' (' + arqs.length + ')</div>' +
     arqs.map(a => '<div class="anexo-venc-item"><a class="anexo-venc-link" href="' + esc(a.url_arquivo) + '" target="_blank">&#128206; ' + esc(a.nome_arquivo) + '</a>' +
-      '<button type="button" class="btn" title="Excluir só este arquivo" style="padding:2px 8px;font-size:12px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="excluirAnexo(\'manut\',\'' + a.id + '\',\'' + id + '\',true)">&#128465;</button></div>').join('') :
-    '<div style="font-size:12px;color:var(--muted)">Nenhum laudo lançado ainda.</div>';
+      '<button type="button" class="btn" title="Excluir só este arquivo" style="padding:2px 8px;font-size:12px;color:var(--red);border-color:rgba(239,68,68,0.3)" onclick="excluirAnexo(\'' + tipo + '\',\'' + a.id + '\',\'' + id + '\',true)">&#128465;</button></div>').join('') :
+    '<div style="font-size:12px;color:var(--muted)">' + f.vazio + '</div>';
 }
 
 async function editarManutencao(id) {
@@ -3967,7 +4003,8 @@ async function verVisita(id) {
 const ANEXOS_REG = {
   inspecao: { tabela: 'inspecao_arquivos', fk: 'inspecao_id', pasta: id => id + '/', reabrir: id => verInspecao(id), recarregar: () => carregarInspecoes() },
   manut:    { tabela: 'manut_arquivos', fk: 'manut_id', pasta: id => 'manutencao/' + id + '/', reabrir: id => verManutencao(id), recarregar: () => carregarManutencaoEquip() },
-  visita:   { tabela: 'visita_arquivos', fk: 'visita_id', pasta: id => 'visitas/' + id + '/', reabrir: id => verVisita(id), recarregar: () => carregarVisitas() }
+  visita:   { tabela: 'visita_arquivos', fk: 'visita_id', pasta: id => 'visitas/' + id + '/', reabrir: id => verVisita(id), recarregar: () => carregarVisitas() },
+  custo:    { tabela: 'custo_arquivos', fk: 'custo_id', pasta: id => 'custos/' + id + '/', reabrir: id => anexosNoForm('custo', id), recarregar: () => carregarCustos() }
 };
 function gradeAnexos(tipo, paiId, arqs) {
   arqs = arqs || [];
@@ -3998,7 +4035,7 @@ async function excluirAnexo(tipo, arqId, paiId, noFormulario) {
   const caminho = a?.url_arquivo ? a.url_arquivo.split('/inspecoes/')[1] : null;
   if (caminho) await db.storage.from('inspecoes').remove([decodeURIComponent(caminho)]);
   showToast('Anexo excluído!');
-  if (noFormulario && tipo === 'manut') await laudosNoFormManut(paiId);
+  if (noFormulario && ANEXOS_FORM[tipo]) await anexosNoForm(tipo, paiId);
   else await t.reabrir(paiId);
   t.recarregar();
 }
