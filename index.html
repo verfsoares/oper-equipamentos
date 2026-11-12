@@ -482,6 +482,12 @@ body.modo-diretoria #topbar{box-shadow:inset 0 -2px 0 rgba(211,47,47,.55)}
 .nav-visao span:not(.nav-icon){color:#fff !important;text-shadow:0 0 10px rgba(255,255,255,.4)}
 .nav-visao:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(59,140,255,.7)}
 @keyframes visaoPulso{0%,100%{box-shadow:0 6px 18px rgba(59,140,255,.40)}50%{box-shadow:0 6px 26px rgba(59,140,255,.80),0 0 14px rgba(34,211,238,.45)}}
+.anexo-venc{margin-top:6px;font-size:11px;padding:5px 8px}
+.anexo-venc-item{display:flex;align-items:center;gap:8px;font-size:11.5px;margin-top:4px}
+.anexo-venc-item a{color:var(--accent2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:85%}
+.anexo-venc-item button{border:1px solid rgba(239,68,68,.3);background:none;color:var(--red);border-radius:6px;cursor:pointer;padding:1px 6px}
+.clip-venc{cursor:pointer;font-size:11px;font-weight:800;color:#93c5fd;margin-left:3px;white-space:nowrap}
+.anexo-venc-link{display:block;padding:9px 12px;margin:6px 0;border-radius:10px;background:rgba(19,40,90,.55);color:#93c5fd;text-decoration:none;border:1px solid rgba(90,150,255,.25)}
 .tag-atual{font-style:normal;font-size:11px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:linear-gradient(90deg,#0e7490,#0ea5e9);color:#fff;box-shadow:0 0 12px rgba(14,165,233,.45)}
 .tag-anterior{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.8px;padding:3px 8px;border-radius:10px;background:rgba(148,163,184,.14);color:#a8b8d8;border:1px solid rgba(148,163,184,.35)}
 .dre-pos-rank{display:inline-block;width:26px;color:#fde047;font-weight:800}
@@ -4074,22 +4080,24 @@ const MODULOS = {
   },
   colaboradores: {
     tabela: 'colaboradores', titulo: 'Colaboradores', botao: '+ Novo Colaborador', ordem: 'nome', crescente: true,
+    anexosPorCampo: 'anexos_venc',   // anexos de cada vencimento (ASO, crachá, RCM...), guardados por campo
     confirmaExclusao: 'Deseja excluir este colaborador?\n\nATENÇÃO: as férias, fichas de EPI e crachás dele também serão excluídos.',
     campos: [
       { id:'nome', label:'Nome', tipo:'text', obrig:true, negrito:true },
       { id:'cpf', label:'CPF', tipo:'text', naTabela:false },
       { id:'funcao', label:'Função / Cargo', tipo:'text' },
-      { id:'telefone', label:'Telefone', tipo:'text' },
+      { id:'telefone', label:'Telefone', tipo:'text', naTabela:false },
       { id:'cliente_id', label:'Cliente / Local de Trabalho', tipo:'ref', ref:OPC_CLI },
       { id:'data_admissao', label:'Data de Admissão', tipo:'date', obrig:true },
       { id:'status', label:'Situação', tipo:'select', opcoes:['Ativo','Afastado','Desligado'], obrig:true, cor:{ Ativo:VERDE, Afastado:AMARELO, Desligado:CINZA } },
       // vencimentos: ficam amarelos quando faltam 30 dias ou menos (ASO, selo e limite das ferias: 60 dias) e vermelhos quando vencem
-      { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true },
-      { id:'venc_selo', label:'Opacidade', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_rcm04', label:'RCM04', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_rcm08', label:'RCM08', tipo:'date', alertaVencimento:true, diasAlerta:60 },
-      { id:'venc_maquina', label:'Máquina', tipo:'date', alertaVencimento:true, diasAlerta:60 },
+      { id:'venc_aso', label:'Vencimento do ASO', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
+      { id:'venc_cracha', label:'Vencimento do Crachá', tipo:'date', alertaVencimento:true, anexos:true },
+      { id:'venc_selo', label:'Opacidade', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
+      { id:'venc_rcm04', label:'RCM04', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
+      { id:'venc_rcm08', label:'RCM08', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
+      { id:'venc_maquina', label:'Máquina', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
+      { id:'venc_treinamento', label:'Treinamento Equipamento', tipo:'date', alertaVencimento:true, diasAlerta:60, anexos:true },
       { id:'ferias_primeira', label:'1ª Férias', tipo:'date' },
       { id:'venc_ferias', label:'Limite para Concessão', tipo:'date', alertaVencimento:true, diasAlerta:60, concedida:'ferias_concedidas_venc', gozo:'ferias_gozo' },
       // data em que o colaborador tirou (gozou) as ferias: se for dentro do periodo desse limite, o limite nao fica mais vermelho/amarelo
@@ -4239,6 +4247,11 @@ function valorExibicao(c, r) {
 }
 
 function celulaModulo(c, r) {
+  const base = celulaModuloBase(c, r);
+  const arqs = c.anexos && r.anexos_venc ? (r.anexos_venc[c.id] || []) : [];
+  return arqs.length ? base + ' <a class="clip-venc" title="Ver anexos" onclick="verAnexosCampo(\'' + r.id + '\',\'' + c.id + '\')">&#128206;' + arqs.length + '</a>' : base;
+}
+function celulaModuloBase(c, r) {
   const txt = esc(valorExibicao(c, r));
   const v = r[c.id];
   if (c.cor && c.cor[v]) return '<span style="color:' + c.cor[v] + ';font-weight:600">' + txt + '</span>';
@@ -4312,6 +4325,8 @@ async function abrirFormModulo(chave, id) {
       const mostra = c.tipo === 'date' ? String(v).slice(0, 10) : c.tipo === 'mes' ? String(v).slice(0, 7) : (c.tipo === 'valor' && v !== '' && v != null) ? siglaContabil(v) : v;
       campo = '<input class="form-input" type="' + t + '"' + (t === 'number' ? ' step="any"' : '') + ' id="mod-f-' + c.id + '" value="' + esc(mostra) + '" />';
     }
+    if (c.anexos && m.anexosPorCampo) campo += '<input class="form-input anexo-venc" type="file" multiple id="mod-fa-' + c.id + '" accept=".pdf,.jpg,.jpeg,.png,.webp" title="Anexar comprovante deste vencimento" />' +
+      '<div id="mod-fl-' + c.id + '">' + listaAnexosCampo(chave, id, c.id, ((r[m.anexosPorCampo] || {})[c.id])) + '</div>';
     return '<div class="form-group' + (c.full ? ' full' : '') + '">' + label + campo + '</div>';
   }).join('') +
   (m.arquivos ? '<div class="form-group full"><div class="form-label">' + esc(m.rotuloArquivos || 'Anexar arquivos (fotos, PDF, Word)') + '</div>' +
@@ -4346,6 +4361,45 @@ async function excluirAnexoModulo(chave, id, idx) {
   showToast('Anexo excluído!');
 }
 
+// ANEXOS POR VENCIMENTO (colaboradores): lista no formulario, excluir um anexo e ver os anexos pela lista
+function listaAnexosCampo(chave, id, campo, arqs) {
+  if (!id || !(arqs || []).length) return '';
+  return arqs.map((a, i) => '<div class="anexo-venc-item"><a href="' + esc(a.url) + '" target="_blank">&#128206; ' + esc(a.nome) + '</a>' +
+    '<button type="button" title="Excluir só este anexo" onclick="excluirAnexoCampo(\'' + chave + '\',\'' + id + '\',\'' + campo + '\',' + i + ')">&#128465;&#65039;</button></div>').join('');
+}
+async function excluirAnexoCampo(chave, id, campo, idx) {
+  const m = MODULOS[chave], reg = (m.registros || []).find(x => x.id === id);
+  const todos = JSON.parse(JSON.stringify(reg?.[m.anexosPorCampo] || {}));
+  const a = (todos[campo] || [])[idx];
+  if (!a) return;
+  if (!confirm('Excluir só o anexo "' + a.nome + '"?\n\nO cadastro continua salvo. O arquivo não poderá ser recuperado.')) return;
+  todos[campo].splice(idx, 1);
+  const { data, error } = await db.from(m.tabela).update({ [m.anexosPorCampo]: todos }).eq('id', id).select('id');
+  if (error) return showToast('Erro ao excluir o anexo: ' + error.message, true);
+  if (!data || !data.length) return showToast('Não foi possível excluir o anexo (sem permissão no banco)', true);
+  const caminho = a.url ? a.url.split('/inspecoes/')[1] : null;
+  if (caminho) await db.storage.from('inspecoes').remove([decodeURIComponent(caminho)]);
+  reg[m.anexosPorCampo] = todos;
+  document.getElementById('mod-fl-' + campo).innerHTML = listaAnexosCampo(chave, id, campo, todos[campo]);
+  renderModulo(chave);
+  showToast('Anexo excluído!');
+}
+function verAnexosCampo(id, campo) {
+  const m = MODULOS.colaboradores, reg = (m.registros || []).find(x => x.id === id) || allColaboradores.find(x => x.id === id);
+  const arqs = ((reg || {})[m.anexosPorCampo] || {})[campo] || [];
+  const rot = (m.campos.find(c => c.id === campo) || {}).label || campo;
+  if (arqs.length === 1) return window.open(arqs[0].url, '_blank');
+  let ov = document.getElementById('modal-anexos-venc');
+  if (!ov) {
+    ov = document.createElement('div'); ov.className = 'modal-overlay'; ov.id = 'modal-anexos-venc';
+    ov.innerHTML = '<div class="modal" style="max-width:460px"><div class="modal-header"><div class="modal-title" id="anexos-venc-tit"></div><button class="modal-close" onclick="closeModal(\'modal-anexos-venc\')">x</button></div><div id="anexos-venc-lista"></div></div>';
+    ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+    document.body.appendChild(ov);
+  }
+  document.getElementById('anexos-venc-tit').textContent = (reg?.nome || '') + ' · ' + rot;
+  document.getElementById('anexos-venc-lista').innerHTML = arqs.map(a => '<a class="anexo-venc-link" href="' + esc(a.url) + '" target="_blank">&#128206; ' + esc(a.nome) + '</a>').join('');
+  openModal('modal-anexos-venc');
+}
 async function salvarModulo() {
   const chave = moduloAtual, m = MODULOS[chave];
   const id = document.getElementById('mod-id').value;
@@ -4377,6 +4431,19 @@ async function salvarModulo() {
         lista.push({ nome: file.name, url: db.storage.from('inspecoes').getPublicUrl(path).data.publicUrl, tipo: file.type || '' });
       }
       dados.arquivos = lista;
+    }
+    if (m.anexosPorCampo) {
+      const anterior = id ? (m.registros || []).find(x => x.id === id) : null;
+      const todos = JSON.parse(JSON.stringify(anterior?.[m.anexosPorCampo] || {}));
+      for (const c of m.campos.filter(c => c.anexos)) {
+        for (const file of Array.from(document.getElementById('mod-fa-' + c.id)?.files || [])) {
+          const path = m.tabela + '/' + c.id + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const { error: upErr } = await db.storage.from('inspecoes').upload(path, file, { upsert: true });
+          if (upErr) { showToast('Erro no arquivo ' + file.name + ': ' + upErr.message, true); continue; }
+          (todos[c.id] = todos[c.id] || []).push({ nome: file.name, url: db.storage.from('inspecoes').getPublicUrl(path).data.publicUrl });
+        }
+      }
+      dados[m.anexosPorCampo] = todos;
     }
     if (!id && !m.semUsuario) dados.usuario = currentUser?.nome || '-';
     const { error } = id ? await db.from(m.tabela).update(dados).eq('id', id) : await db.from(m.tabela).insert(dados);
