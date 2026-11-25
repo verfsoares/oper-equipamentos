@@ -148,9 +148,18 @@
 
 <script>
 /* ================= CONFIGURAÇÃO DO TESTE =================
-   Login provisório só para o teste. Na versão final, o login passa para o Supabase Auth
-   e as senhas saem deste arquivo. */
-const SENHA_TESTE = '1234';
+   Login provisório só para o teste. Na versão final, o login passa para o Supabase Auth.
+   Cada operador tem a SUA senha. Aqui fica só o código cifrado (SHA-256 de "usuario:senha"),
+   e não a senha em si. Quem não tem senha cadastrada ainda não consegue entrar.
+   As senhas em texto ficam só no computador da Verônica (arquivo que não é publicado). */
+const SENHAS = {
+  rafael: '8dc54823b6a274a5eddb758f878f1b1e379863235feb2f1d629321ad9c3fd5cd',
+  paulo: '442f67c250dcb37416f9519755605d7bfe2103323ba6b6b7480585943ea0a808',
+};
+async function hashSenha(u, s){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(u + ':' + s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('');
+}
 const OPERADORES = {
   // ---- São Paulo (teste) ---- dados conferidos com o Cadastro de Equipamento do OPER em 25/11/2026
   priscilla:   { nome:'Priscilla',    cliente:'Companhia Metalúrgica Prada (CSN)', unidade:'Prada Distribuição – Bebedouro/SP', maquina:'bebedouro',  equipamento:'Empilhadeira Contrabalançada Diesel 7 ton',   tag:'EP-K-128',   contrato:'CW2388411' },
@@ -182,9 +191,11 @@ document.getElementById('logoTopo').src = LOGO;
 const sel = document.getElementById('lgUser');
 sel.innerHTML = '<option value="">Selecione seu nome</option>' + Object.entries(OPERADORES).map(([k,o]) => `<option value="${k}">${o.nome}${o.reserva ? ' (reserva ' + o.reserva + ')' : ''}</option>`).join('');
 
-function entrar(){
-  const u = sel.value, s = document.getElementById('lgSenha').value;
-  if (!u || s !== SENHA_TESTE) { document.getElementById('lgErro').classList.remove('hide'); return; }
+async function entrar(){
+  const u = sel.value, s = document.getElementById('lgSenha').value.trim(), er = document.getElementById('lgErro');
+  if (u && !SENHAS[u]) { er.textContent = 'Seu acesso ainda não foi liberado. Fale com a Verônica.'; er.classList.remove('hide'); return; }
+  if (!u || !s || (await hashSenha(u, s)) !== SENHAS[u]) { er.textContent = 'Usuário ou senha incorretos.'; er.classList.remove('hide'); return; }
+  er.classList.add('hide');
   user = u; ls.set('pd_user', u); abrirForm();
 }
 function sair(){ user = null; ls.set('pd_user', null); mostrar('telaLogin'); document.getElementById('btnSair').classList.add('hide'); document.getElementById('lgSenha').value=''; }
@@ -454,7 +465,7 @@ function gerarPdf(r){
 
 /* Continua logado neste aparelho (roda por último, quando tudo já foi carregado) */
 const salvo = ls.get('pd_user', null);
-if (salvo && OPERADORES[salvo]) { user = salvo; abrirForm(); }
+if (salvo && OPERADORES[salvo] && SENHAS[salvo]) { user = salvo; abrirForm(); }
 </script>
 </body>
 </html>
