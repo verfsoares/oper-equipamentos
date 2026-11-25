@@ -129,7 +129,7 @@
   </div>
 
   <div id="erroEnvio" class="aviso erro hide"></div>
-  <button class="btn prim" id="btnEnviar" onclick="enviar()">Enviar parte diária</button>
+  <button class="btn prim" id="btnEnviar" onclick="enviar()" style="background:#25d366">Salvar em PDF e enviar no WhatsApp</button>
   <br>
 </main>
 
@@ -141,7 +141,7 @@
     <div id="okTexto"></div>
   </div>
   <br>
-  <button class="btn prim" id="btnCompartilhar" onclick="compartilhar()" style="background:#25d366">Enviar PDF no WhatsApp</button>
+  <button class="btn prim" id="btnCompartilhar" onclick="compartilhar()" style="background:#25d366">Enviar de novo no WhatsApp</button>
   <button class="btn sec" onclick="baixarDeNovo()">Baixar o PDF de novo</button>
   <button class="btn prim" style="margin-top:10px" onclick="novaParte()">Nova parte diária</button>
 </main>
@@ -184,7 +184,7 @@ const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let user = null, ultimoPdf = null, ultimoNome = '';
+let user = null, ultimoPdf = null, ultimoNome = '', ultimaLocal = null;
 
 /* ================= LOGIN ================= */
 document.getElementById('logoTopo').src = LOGO;
@@ -249,6 +249,8 @@ function abrirForm(){
   mostrar('telaForm');
   // as áreas de assinatura só têm tamanho depois que a tela aparece
   limparSig('op'); limparSig('ge');
+  // pega a localização já na abertura, para o botão final abrir o WhatsApp na hora (sem espera)
+  localizacao().then(l => { ultimaLocal = l; });
   checarData(); calcHor(); calcTrab();
 }
 
@@ -355,21 +357,21 @@ async function enviar(){
     linhas: getLinhas(), minTrab: calcTrab(),
     gestor: document.getElementById('fGestor').value.trim(),
     sigOp: imgAssinatura(sigs.op.c), sigGe: imgAssinatura(sigs.ge.c),
-    assinadoEm: agora.toLocaleString('pt-BR'), local: await localizacao()
+    assinadoEm: agora.toLocaleString('pt-BR'), local: ultimaLocal
   };
   try {
     ultimoPdf = gerarPdf(reg);
     const [a,m,d] = data.split('-');
     ultimoNome = `${d}.${m}.pdf`;
-    ultimoPdf.save(ultimoNome);
     ls.set('pd_seq_' + o.maquina, numero);
     env[data] = String(numero).padStart(6,'0'); ls.set('pd_env_' + o.maquina, env);
-    document.getElementById('okTitulo').textContent = `Parte diária Nº ${String(numero).padStart(6,'0')} enviada`;
-    document.getElementById('okTexto').innerHTML = `${o.nome} · ${brData(data)}<br>O PDF <b>${ultimoNome}</b> foi gerado.<br><small>Toque em <b>Enviar PDF no WhatsApp</b> e mande no grupo da operação.</small>`;
+    document.getElementById('okTitulo').textContent = `Parte diária Nº ${String(numero).padStart(6,'0')} gerada`;
+    document.getElementById('okTexto').innerHTML = `${o.nome} · ${brData(data)}<br>PDF <b>${ultimoNome}</b><br><small>Escolha o <b>WhatsApp</b> e mande no grupo da operação. Se o WhatsApp não abriu, toque em <b>Enviar de novo no WhatsApp</b>.</small>`;
     mostrar('telaOk');
+    compartilhar();   // já abre o WhatsApp com o PDF anexado
   } catch(e) {
     err.textContent = 'Erro ao gerar o PDF: ' + e.message; err.classList.remove('hide');
-  } finally { btn.disabled = false; btn.textContent = 'Enviar parte diária'; }
+  } finally { btn.disabled = false; btn.textContent = 'Salvar em PDF e enviar no WhatsApp'; }
 }
 function baixarDeNovo(){ if (ultimoPdf) ultimoPdf.save(ultimoNome); }
 // No teste, o operador manda o PDF pelo WhatsApp (grupo da operação). Na versão final, ele vai direto para a nuvem do OPER.
