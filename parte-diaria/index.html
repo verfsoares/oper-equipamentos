@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1f3a5f">
+<title>Parte Diária Digital KWAY</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{--azul:#1f3a5f;--azul2:#2b5a8c;--cinza:#eef1f5;--borda:#cfd6df;--texto:#1d2733;--verde:#1f9d55;--verm:#c0392b;--roxo:#6d28d9}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f5f7fa;color:var(--texto);font-size:16px}
+  header{background:var(--azul);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+  header img{height:30px;border-radius:3px}
+  header .t{font-weight:700;font-size:17px;flex:1}
+  header button{background:transparent;border:1px solid #ffffff80;color:#fff;border-radius:8px;padding:6px 10px;font-size:14px}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:14px;margin-bottom:14px}
+  .card h2{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:.4px;color:var(--azul)}
+  label{display:block;font-size:14px;font-weight:600;margin:10px 0 4px}
+  input,select,textarea{width:100%;font-size:16px;padding:11px 12px;border:1px solid var(--borda);border-radius:10px;background:#fff;color:var(--texto)}
+  .row{display:flex;gap:10px}.row>div{flex:1;min-width:0}
+  .info{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:15px}
+  .info b{color:#55606e;font-weight:600}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opts label{margin:0;font-weight:500;border:1px solid var(--borda);border-radius:999px;padding:9px 14px;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .opts input{width:auto;margin:0}
+  .opts label:has(input:checked){background:var(--azul);color:#fff;border-color:var(--azul)}
+  .linha{border:1px solid var(--borda);border-radius:10px;padding:10px;margin-bottom:10px;background:#fafbfc}
+  .linha .row{align-items:end}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chips button{border:1px solid var(--azul2);background:#fff;color:var(--azul2);border-radius:999px;padding:6px 11px;font-size:14px}
+  .rm{background:none;border:none;color:var(--verm);font-size:14px;padding:6px 0;margin-top:6px}
+  .btn{display:block;width:100%;border:none;border-radius:12px;padding:15px;font-size:17px;font-weight:700;cursor:pointer}
+  .btn.prim{background:var(--verde);color:#fff}
+  .btn.sec{background:var(--cinza);color:var(--azul);margin-top:6px}
+  .btn:disabled{opacity:.45}
+  .sig{border:2px dashed var(--borda);border-radius:10px;background:#fff;touch-action:none;width:100%;height:170px;display:block}
+  .sig.ok{border-color:var(--verde);border-style:solid}
+  .sigbar{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:14px}
+  .sigbar button{background:none;border:none;color:var(--azul2);font-size:14px}
+  .tot{font-size:14px;color:#55606e;margin-top:6px}
+  .aviso{background:#fff4e5;border:1px solid #f5c26b;color:#7a4b00;border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0}
+  .erro{background:#fdecea;border-color:#f1a9a0;color:#8a1f11}
+  .okmsg{background:#e8f6ee;border:1px solid #9fd8b6;color:#14532d;border-radius:12px;padding:16px;text-align:center}
+  .teste{background:var(--roxo);color:#fff;text-align:center;font-size:13px;padding:5px}
+  .hide{display:none!important}
+  #login{max-width:420px;margin:30px auto}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){}}
+</style>
+</head>
+<body>
+<div class="teste">VERSÃO DE TESTE: dados salvos só neste aparelho</div>
+<header>
+  <img id="logoTopo" alt="KWAY">
+  <div class="t">Parte Diária Digital</div>
+  <button id="btnSair" class="hide" onclick="sair()">Sair</button>
+</header>
+
+<!-- LOGIN -->
+<main id="telaLogin">
+  <div class="card" id="login">
+    <h2>Entrar</h2>
+    <label for="lgUser">Usuário</label>
+    <select id="lgUser"></select>
+    <label for="lgSenha">Senha</label>
+    <input id="lgSenha" type="password" inputmode="numeric" autocomplete="current-password">
+    <div id="lgErro" class="aviso erro hide">Usuário ou senha incorretos.</div>
+    <br><button class="btn prim" onclick="entrar()">Entrar</button>
+  </div>
+</main>
+
+<!-- FORMULÁRIO -->
+<main id="telaForm" class="hide">
+  <div class="card">
+    <h2>Locação de equipamento</h2>
+    <div id="boxReserva" class="hide">
+      <label for="fMaquina">Qual máquina você está operando hoje?</label>
+      <select id="fMaquina" onchange="maqSel = this.value; renderInfo(); checarData();"></select>
+      <br><br>
+    </div>
+    <div class="info" id="infoFixa"></div>
+    <label for="fData">Data da parte diária</label>
+    <input id="fData" type="date">
+    <div id="avisoData" class="aviso hide"></div>
+  </div>
+
+  <div class="card">
+    <h2>Condições do dia</h2>
+    <label>Manhã</label>
+    <div class="opts" data-grupo="manha"></div>
+    <label>Tarde</label>
+    <div class="opts" data-grupo="tarde"></div>
+    <label>Situação da máquina</label>
+    <div class="opts" id="optSituacao"></div>
+    <div class="row">
+      <div><label for="fAlmIni">Início do almoço</label><input id="fAlmIni" type="time" value="12:00"></div>
+      <div><label for="fAlmFim">Fim do almoço</label><input id="fAlmFim" type="time" value="13:00"></div>
+    </div>
+    <div class="row">
+      <div><label for="fHorIni">Horímetro inicial</label><input id="fHorIni" type="number" inputmode="decimal" step="0.1"></div>
+      <div><label for="fHorFim">Horímetro final</label><input id="fHorFim" type="number" inputmode="decimal" step="0.1"></div>
+    </div>
+    <div class="tot" id="totHor"></div>
+    <label for="fAbast">Abastecimento (litros ou cilindro GLP)</label>
+    <input id="fAbast" type="text" placeholder="Ex.: 1 cilindro GLP / 40 litros">
+  </div>
+
+  <div class="card">
+    <h2>Período de trabalho</h2>
+    <div id="linhas"></div>
+    <button class="btn sec" onclick="addLinha()">+ Adicionar horário</button>
+    <div class="tot" id="totTrab"></div>
+  </div>
+
+  <div class="card">
+    <h2>Assinatura do operador</h2>
+    <canvas class="sig" id="sigOp"></canvas>
+    <div class="sigbar"><span id="stOp">Assine com o dedo</span><button onclick="limparSig('op')">Limpar</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Assinatura do gestor de contrato</h2>
+    <label for="fGestor">Nome do gestor (opcional)</label>
+    <input id="fGestor" type="text" placeholder="Nome de quem está assinando">
+    <br><br>
+    <canvas class="sig" id="sigGe"></canvas>
+    <div class="sigbar"><span id="stGe">Entregue o celular ao gestor para assinar</span><button onclick="limparSig('ge')">Limpar</button></div>
+  </div>
+
+  <div id="erroEnvio" class="aviso erro hide"></div>
+  <button class="btn prim" id="btnEnviar" onclick="enviar()">Enviar parte diária</button>
+  <br>
+</main>
+
+<!-- SUCESSO -->
+<main id="telaOk" class="hide">
+  <div class="okmsg">
+    <div style="font-size:42px">✅</div>
+    <h2 id="okTitulo" style="margin:6px 0"></h2>
+    <div id="okTexto"></div>
+  </div>
+  <br>
+  <button class="btn prim" id="btnCompartilhar" onclick="compartilhar()" style="background:#25d366">Enviar PDF no WhatsApp</button>
+  <button class="btn sec" onclick="baixarDeNovo()">Baixar o PDF de novo</button>
+  <button class="btn prim" style="margin-top:10px" onclick="novaParte()">Nova parte diária</button>
+</main>
+
+<script>
+/* ================= CONFIGURAÇÃO DO TESTE =================
+   Login provisório só para o teste. Na versão final, o login passa para o Supabase Auth
+   e as senhas saem deste arquivo. */
+const SENHA_TESTE = '1234';
+const OPERADORES = {
+  // ---- São Paulo (teste) ---- dados conferidos com o Cadastro de Equipamento do OPER em 25/11/2026
+  priscilla:   { nome:'Priscilla',    cliente:'Companhia Metalúrgica Prada (CSN)', unidade:'Prada Distribuição – Bebedouro/SP', maquina:'bebedouro',  equipamento:'Empilhadeira Contrabalançada Diesel 7 ton',   tag:'EP-K-128',   contrato:'CW2388411' },
+  josebraz:    { nome:'José Braz',    cliente:'CSN', unidade:'Santo Amaro/SP', maquina:'santoamaro', equipamento:'Empilhadeira Contrabalançada GLP 5 ton',     tag:'SEM-TAG-1',  contrato:'CW2346893' },
+  joseeduardo: { nome:'José Eduardo', cliente:'CSN', unidade:'Taubaté/SP',     maquina:'taubate12',  equipamento:'Empilhadeira Contrabalançada Diesel 12 ton', tag:'SEM-TAG-6',  contrato:'CW2346893' },
+  mario:       { nome:'Mário',        cliente:'CSN', unidade:'Taubaté/SP',     maquina:'taubate5',   equipamento:'Empilhadeira Contrabalançada GLP 4,5 ton',   tag:'EP-4391',    contrato:'CW2346893' },
+  // ---- Minas Gerais ---- FALTA o nº do contrato
+  antonio:     { nome:'Antonio',      cliente:'CSN BID Consolidado', unidade:'Almoxarifado/MG', maquina:'mg_almoxarifado', equipamento:'Empilhadeira Cabinada Diesel 5 ton',   tag:'EP0051F',  contrato:'' },
+  gilvan:      { nome:'Gilvan',       cliente:'CSN', unidade:'Entreposto/MG',                   maquina:'mg_entreposto',   equipamento:'Empilhadeira Cabinada Diesel 2,5 ton', tag:'EP-K-127', contrato:'' },
+  rafael:      { nome:'Rafael',       cliente:'CSN BID Consolidado', unidade:'Fernandinho/MG',  maquina:'mg_fernandinho',  equipamento:'Empilhadeira Cabinada Diesel 7 ton',   tag:'EP0052F',  contrato:'' },
+  vanderlei:   { nome:'Vanderlei',    cliente:'CSN BID Consolidado', unidade:'Pires/MG',        maquina:'mg_pires',        equipamento:'Empilhadeira Cabinada Diesel 4 ton',   tag:'EP0049F',  contrato:'' },
+  // ---- Reserva: Controlador de Operações; cobre a falta de qualquer operador de MG (só MG) ----
+  paulo:       { nome:'Paulo', funcao:'Controlador de Operações', reserva:'MG' }
+};
+const LOGO = 'data:image/jpeg;base64,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';
+const ATALHOS = ['DDS','Inspeção / checklist','Operação','Movimentação de material','Almoço','À disposição do cliente','Manutenção'];
+const SITUACOES = ['Trabalhando','À disposição do cliente','Em manutenção'];
+const CLIMAS = ['Bom','Nublado','Chuva'];
+
+/* ================= ARMAZENAMENTO LOCAL (só no teste) ================= */
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let user = null, ultimoPdf = null, ultimoNome = '';
+
+/* ================= LOGIN ================= */
+document.getElementById('logoTopo').src = LOGO;
+const sel = document.getElementById('lgUser');
+sel.innerHTML = '<option value="">Selecione seu nome</option>' + Object.entries(OPERADORES).map(([k,o]) => `<option value="${k}">${o.nome}${o.reserva ? ' (reserva ' + o.reserva + ')' : ''}</option>`).join('');
+
+function entrar(){
+  const u = sel.value, s = document.getElementById('lgSenha').value;
+  if (!u || s !== SENHA_TESTE) { document.getElementById('lgErro').classList.remove('hide'); return; }
+  user = u; ls.set('pd_user', u); abrirForm();
+}
+function sair(){ user = null; ls.set('pd_user', null); mostrar('telaLogin'); document.getElementById('btnSair').classList.add('hide'); document.getElementById('lgSenha').value=''; }
+function mostrar(id){ ['telaLogin','telaForm','telaOk'].forEach(t => document.getElementById(t).classList.toggle('hide', t !== id)); window.scrollTo(0,0); }
+
+/* ================= FORMULÁRIO ================= */
+function hojeISO(){ const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function brData(iso){ const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
+
+/* Operador reserva (ex.: Paulo): escolhe a máquina do dia entre as do seu estado.
+   A parte diária entra no bloco numerado DA MÁQUINA, com o nome do reserva como operador. */
+let maqSel = null;
+const ufDe = o => (o.unidade || '').slice(-2);
+function maquinasReserva(){ const u = OPERADORES[user]; return Object.entries(OPERADORES).filter(([k,o]) => !o.reserva && ufDe(o) === u.reserva); }
+function dados(){
+  const u = OPERADORES[user];
+  if (!u.reserva) return u;
+  const m = OPERADORES[maqSel];
+  return { ...m, nome:u.nome, reservaDe:m.nome };
+}
+function renderInfo(){
+  const o = dados();
+  document.getElementById('infoFixa').innerHTML =
+    `<b>Cliente</b><span>${o.cliente}</span><b>Unidade</b><span>${o.unidade}</span><b>Equipamento</b><span>${o.equipamento}</span>` +
+    `<b>TAG</b><span>${o.tag || '—'}</span><b>Contrato</b><span>${o.contrato || '—'}</span><b>Operador</b><span>${nomeOperador(o)}</span>` +
+    `<b>Nº</b><span>${String(proximoNumero()).padStart(6,'0')} <small style="color:#888">(definido no envio)</small></span>`;
+}
+function nomeOperador(o){ return o.reservaDe ? `${o.nome} (reserva de ${o.reservaDe})` : o.nome; }
+
+function abrirForm(){
+  const u = OPERADORES[user];
+  document.getElementById('btnSair').classList.remove('hide');
+  const box = document.getElementById('boxReserva');
+  if (u.reserva) {
+    const lista = maquinasReserva();
+    if (!maqSel || !lista.some(([k]) => k === maqSel)) maqSel = lista[0][0];
+    document.getElementById('fMaquina').innerHTML = lista.map(([k,o]) => `<option value="${k}" ${k===maqSel?'selected':''}>${o.tag} – ${o.unidade} (titular: ${o.nome})</option>`).join('');
+    box.classList.remove('hide');
+  } else box.classList.add('hide');
+  renderInfo();
+  const f = document.getElementById('fData'); f.value = hojeISO(); f.max = hojeISO();
+  document.querySelectorAll('.opts[data-grupo]').forEach(div => {
+    const g = div.dataset.grupo;
+    div.innerHTML = CLIMAS.map((c,i) => `<label><input type="radio" name="${g}" value="${c}" ${i===0?'checked':''}>${c}</label>`).join('');
+  });
+  document.getElementById('optSituacao').innerHTML = SITUACOES.map((s,i) => `<label><input type="radio" name="situacao" value="${s}" ${i===0?'checked':''}>${s}</label>`).join('');
+  ['fHorIni','fHorFim','fAbast','fGestor'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('linhas').innerHTML = '';
+  [['07:00','07:30','DDS'],['07:30','12:00','Operação'],['12:00','13:00','Almoço'],['13:00','17:00','Operação']].forEach(l => addLinha(...l));
+  document.getElementById('erroEnvio').classList.add('hide');
+  mostrar('telaForm');
+  // as áreas de assinatura só têm tamanho depois que a tela aparece
+  limparSig('op'); limparSig('ge');
+  checarData(); calcHor(); calcTrab();
+}
+
+function proximoNumero(){ return ls.get('pd_seq_' + dados().maquina, 0) + 1; }
+function enviadas(){ return ls.get('pd_env_' + dados().maquina, {}); }
+
+function checarData(){
+  const v = document.getElementById('fData').value, av = document.getElementById('avisoData');
+  const env = enviadas();
+  if (v > hojeISO()) { av.textContent = 'Não é possível lançar uma data futura.'; av.className = 'aviso erro'; return false; }
+  if (env[v]) { av.textContent = `Já existe a parte diária Nº ${env[v]} enviada para ${brData(v)}. Confira se não está lançando em dobro.`; av.className = 'aviso'; return true; }
+  if (v !== hojeISO()) { av.textContent = `Atenção: você está lançando a parte diária de ${brData(v)}, não a de hoje.`; av.className = 'aviso'; return true; }
+  av.className = 'aviso hide'; return true;
+}
+document.getElementById('fData').addEventListener('change', checarData);
+
+function calcHor(){
+  const a = parseFloat(document.getElementById('fHorIni').value), b = parseFloat(document.getElementById('fHorFim').value);
+  const el = document.getElementById('totHor');
+  if (isNaN(a) || isNaN(b)) { el.textContent = ''; return null; }
+  if (b < a) { el.innerHTML = '<span style="color:var(--verm)">O horímetro final está menor que o inicial.</span>'; return null; }
+  const t = Math.round((b-a)*10)/10; el.textContent = 'Total do horímetro: ' + t.toLocaleString('pt-BR') + ' h'; return t;
+}
+['fHorIni','fHorFim'].forEach(id => document.getElementById(id).addEventListener('input', calcHor));
+
+function addLinha(ini='', fim='', desc=''){
+  const d = document.createElement('div'); d.className = 'linha';
+  d.innerHTML = `<div class="row"><div><label>Início</label><input type="time" class="lIni" value="${ini}"></div><div><label>Término</label><input type="time" class="lFim" value="${fim}"></div></div>
+    <label>Serviço / observação</label><input type="text" class="lDesc" value="${desc}">
+    <div class="chips">${ATALHOS.map(a => `<button type="button">${a}</button>`).join('')}</div>
+    <button type="button" class="rm">Remover este horário</button>`;
+  d.querySelectorAll('.chips button').forEach(b => b.onclick = () => { d.querySelector('.lDesc').value = b.textContent; });
+  d.querySelector('.rm').onclick = () => { d.remove(); calcTrab(); };
+  d.querySelectorAll('input').forEach(i => i.addEventListener('input', calcTrab));
+  document.getElementById('linhas').appendChild(d); calcTrab();
+}
+function minutos(h){ if(!h) return null; const [a,b] = h.split(':').map(Number); return a*60+b; }
+function getLinhas(){ return [...document.querySelectorAll('.linha')].map(d => ({ ini:d.querySelector('.lIni').value, fim:d.querySelector('.lFim').value, desc:d.querySelector('.lDesc').value.trim() })).filter(l => l.ini || l.fim || l.desc); }
+function calcTrab(){
+  let tot = 0;
+  getLinhas().forEach(l => { const a = minutos(l.ini), b = minutos(l.fim); if (a!=null && b!=null && b>a && !/almo/i.test(l.desc)) tot += b-a; });
+  document.getElementById('totTrab').textContent = tot ? `Total trabalhado (sem almoço): ${Math.floor(tot/60)}h${String(tot%60).padStart(2,'0')}` : '';
+  return tot;
+}
+
+/* ================= ASSINATURAS ================= */
+const sigs = {};
+function prepSig(key, id, stId, msg){
+  const c = document.getElementById(id), ctx = c.getContext('2d');
+  const s = sigs[key] = { c, ctx, vazia:true, st:document.getElementById(stId), msg };
+  function ajustar(){ const r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1; c.width = r.width*dpr; c.height = r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b2a6f'; }
+  s.ajustar = ajustar;
+  let des = false;
+  const pos = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  c.addEventListener('pointerdown', e => { des = true; c.setPointerCapture(e.pointerId); const [x,y] = pos(e); ctx.beginPath(); ctx.moveTo(x,y); });
+  c.addEventListener('pointermove', e => { if(!des) return; const [x,y] = pos(e); ctx.lineTo(x,y); ctx.stroke(); if (s.vazia){ s.vazia = false; c.classList.add('ok'); s.st.textContent = 'Assinado ✓'; } });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => c.addEventListener(ev, () => des = false));
+}
+prepSig('op','sigOp','stOp','Assine com o dedo');
+prepSig('ge','sigGe','stGe','Entregue o celular ao gestor para assinar');
+// Assinatura em JPEG com fundo branco e tamanho reduzido, para o PDF ficar leve
+function imgAssinatura(c){
+  const w = 600, h = Math.round(w * c.height / c.width), t = document.createElement('canvas');
+  t.width = w; t.height = h; const x = t.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(c, 0, 0, w, h);
+  return t.toDataURL('image/jpeg', 0.85);
+}
+function limparSig(k){ const s = sigs[k]; s.ajustar(); s.ctx.clearRect(0,0,s.c.width,s.c.height); s.vazia = true; s.c.classList.remove('ok'); s.st.textContent = s.msg; }
+
+/* ================= ENVIO ================= */
+function localizacao(){
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(p => res(p.coords.latitude.toFixed(5) + ', ' + p.coords.longitude.toFixed(5)), () => res(null), { timeout:6000, maximumAge:60000 });
+  });
+}
+
+async function enviar(){
+  const err = document.getElementById('erroEnvio'), falhas = [];
+  const data = document.getElementById('fData').value;
+  if (!data || !checarData() || data > hojeISO()) falhas.push('Escolha uma data válida (hoje ou um dia anterior).');
+  if (!getLinhas().some(l => l.ini && l.fim)) falhas.push('Preencha pelo menos um horário de trabalho.');
+  if (calcHor() === null && (document.getElementById('fHorIni').value || document.getElementById('fHorFim').value)) falhas.push('Confira o horímetro.');
+  if (sigs.op.vazia) falhas.push('Falta a assinatura do operador.');
+  if (sigs.ge.vazia) falhas.push('Falta a assinatura do gestor de contrato. Sem ela, a parte diária não pode ser faturada.');
+  if (falhas.length) { err.innerHTML = falhas.join('<br>'); err.classList.remove('hide'); err.scrollIntoView({behavior:'smooth', block:'center'}); return; }
+  err.classList.add('hide');
+
+  const env = enviadas();
+  if (env[data] && !confirm(`Já existe a parte diária Nº ${env[data]} para ${brData(data)}. Enviar outra mesmo assim?`)) return;
+
+  const btn = document.getElementById('btnEnviar'); btn.disabled = true; btn.textContent = 'Gerando...';
+  const o = dados();
+  const numero = proximoNumero();
+  const agora = new Date();
+  const reg = {
+    numero, data, operador:nomeOperador(o), cliente:o.cliente, unidade:o.unidade, equipamento:o.equipamento, tag:o.tag, contrato:o.contrato,
+    manha: document.querySelector('input[name=manha]:checked').value,
+    tarde: document.querySelector('input[name=tarde]:checked').value,
+    situacao: document.querySelector('input[name=situacao]:checked').value,
+    almIni: document.getElementById('fAlmIni').value, almFim: document.getElementById('fAlmFim').value,
+    horIni: document.getElementById('fHorIni').value, horFim: document.getElementById('fHorFim').value, horTot: calcHor(),
+    abast: document.getElementById('fAbast').value.trim(),
+    linhas: getLinhas(), minTrab: calcTrab(),
+    gestor: document.getElementById('fGestor').value.trim(),
+    sigOp: imgAssinatura(sigs.op.c), sigGe: imgAssinatura(sigs.ge.c),
+    assinadoEm: agora.toLocaleString('pt-BR'), local: await localizacao()
+  };
+  try {
+    ultimoPdf = gerarPdf(reg);
+    const [a,m,d] = data.split('-');
+    ultimoNome = `${d}.${m}.pdf`;
+    ultimoPdf.save(ultimoNome);
+    ls.set('pd_seq_' + o.maquina, numero);
+    env[data] = String(numero).padStart(6,'0'); ls.set('pd_env_' + o.maquina, env);
+    document.getElementById('okTitulo').textContent = `Parte diária Nº ${String(numero).padStart(6,'0')} enviada`;
+    document.getElementById('okTexto').innerHTML = `${o.nome} · ${brData(data)}<br>O PDF <b>${ultimoNome}</b> foi gerado.<br><small>Toque em <b>Enviar PDF no WhatsApp</b> e mande no grupo da operação.</small>`;
+    mostrar('telaOk');
+  } catch(e) {
+    err.textContent = 'Erro ao gerar o PDF: ' + e.message; err.classList.remove('hide');
+  } finally { btn.disabled = false; btn.textContent = 'Enviar parte diária'; }
+}
+function baixarDeNovo(){ if (ultimoPdf) ultimoPdf.save(ultimoNome); }
+// No teste, o operador manda o PDF pelo WhatsApp (grupo da operação). Na versão final, ele vai direto para a nuvem do OPER.
+async function compartilhar(){
+  if (!ultimoPdf) return;
+  const arq = new File([ultimoPdf.output('blob')], ultimoNome, { type:'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files:[arq] })) {
+    try { await navigator.share({ files:[arq], title:'Parte Diária Digital', text:document.getElementById('okTitulo').textContent }); }
+    catch(e) { /* operador cancelou */ }
+  } else {
+    alert('Este aparelho não permite enviar direto. O PDF foi baixado: abra o WhatsApp e anexe o arquivo ' + ultimoNome + '.');
+    baixarDeNovo();
+  }
+}
+function novaParte(){ abrirForm(); }
+
+/* ================= PDF NO LAYOUT DO RDO KWAY R2 ================= */
+function gerarPdf(r){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const X = 14, W = 182, R = X + W;
+  const cinza = [217,217,217], azulClaro = [221,235,247];
+  doc.setDrawColor(0); doc.setLineWidth(0.3);
+  const txt = (t, x, y, o={}) => { doc.setFont('helvetica', o.b ? 'bold' : 'normal'); doc.setFontSize(o.s || 8.5); doc.text(String(t ?? ''), x, y, o.a ? { align:o.a } : undefined); };
+  const barra = (y, h, t, cor=cinza, bold=true) => { doc.setFillColor(...cor); doc.rect(X, y, W, h, 'FD'); txt(t, X + W/2, y + h - 1.4, { b:bold, a:'center', s:8.5 }); };
+  const campo = (y, h, rot, val, x=X, w=W) => { doc.rect(x, y, w, h); txt(rot, x + 1, y + h - 1.4, { b:true }); const rw = doc.getTextWidth(rot); txt(val, x + 2 + rw, y + h - 1.4); };
+
+  // Cabeçalho
+  let y = 14;
+  doc.setLineWidth(0.6); doc.rect(X, y, W, 26); doc.setLineWidth(0.3);
+  doc.line(X+62, y, X+62, y+26); doc.line(X+130, y, X+130, y+26); doc.line(X+130, y+17, R, y+17);
+  try { doc.addImage(LOGO, 'JPEG', X+4, y+6, 54, 14); } catch(e) {}
+  txt('KWAY LTDA', X+96, y+9, { b:true, a:'center', s:11 });
+  doc.setTextColor(30,80,160); txt('comercial@kway.com.br', X+96, y+14, { a:'center', s:8 }); doc.setTextColor(0);
+  txt('Barra da Tijuca – Rio de Janeiro, RJ.', X+96, y+19, { a:'center', s:8 });
+  txt('RDO', X+156, y+6.5, { b:true, a:'center', s:12 });
+  txt('RELATÓRIO DIÁRIO DE OBRA', X+156, y+12, { b:true, a:'center', s:7.5 });
+  txt('N°', X+131, y+21, { b:true }); txt(String(r.numero).padStart(6,'0'), X+156, y+23.5, { b:true, a:'center', s:12 });
+  y += 26;
+
+  // Locação de equipamento
+  const h = 5.2;
+  barra(y, h, 'LOCAÇÃO DE EQUIPAMENTO'); y += h;
+  campo(y, h, 'Cliente:', r.cliente); y += h;
+  campo(y, h, 'Unidade:', r.unidade); y += h;
+  campo(y, h, 'Equipamento:', r.equipamento, X, 100); campo(y, h, 'TAG:', r.tag || '—', X+100, 40); campo(y, h, 'Data:', brData(r.data), X+140, 42); y += h;
+  campo(y, h, 'Operador:', r.operador, X, 120); campo(y, h, 'Contrato:', r.contrato, X+120, 62); y += h;
+
+  // Condições
+  barra(y, h, 'Condições climáticas', azulClaro); y += h;
+  const mk = (op, val) => op.map(o => `(${o === val ? 'X' : '  '}) ${o}`).join('   ');
+  const L = 105;
+  campo(y, h, 'MANHÃ:', mk(CLIMAS, r.manha), X, L); campo(y, h, 'Início do almoço:', r.almIni + '      Fim do almoço: ' + r.almFim, X+L, W-L); y += h;
+  campo(y, h, 'TARDE:', mk(CLIMAS, r.tarde), X, L); campo(y, h, 'Horímetro inicial:', r.horIni, X+L, W-L); y += h;
+  campo(y, h, '', mk(SITUACOES, r.situacao), X, L); campo(y, h, 'Horímetro final:', r.horFim + (r.horTot != null ? `   (total ${r.horTot.toLocaleString('pt-BR')} h)` : ''), X+L, W-L); y += h;
+  campo(y, h, 'Abastecimento (Litros ou cilindro GLP):', r.abast); y += h;
+
+  // Período de trabalho
+  barra(y, h, 'PERÍODO DE TRABALHO', cinza, false); y += h;
+  const c1 = 33, c2 = 33;
+  doc.rect(X, y, c1, h); doc.rect(X+c1, y, c2, h); doc.rect(X+c1+c2, y, W-c1-c2, h);
+  txt('Início', X+c1/2, y+h-1.4, { a:'center' }); txt('Término', X+c1+c2/2, y+h-1.4, { a:'center' }); txt('Serviços/Observações', X+c1+c2+(W-c1-c2)/2, y+h-1.4, { a:'center' }); y += h;
+  const nLin = Math.max(12, r.linhas.length);
+  for (let i = 0; i < nLin; i++) {
+    const l = r.linhas[i] || {};
+    doc.rect(X, y, c1, h); doc.rect(X+c1, y, c2, h); doc.rect(X+c1+c2, y, W-c1-c2, h);
+    txt(l.ini || '', X+c1/2, y+h-1.4, { a:'center' }); txt(l.fim || '', X+c1+c2/2, y+h-1.4, { a:'center' }); txt(l.desc || '', X+c1+c2+2, y+h-1.4);
+    y += h;
+  }
+  if (r.minTrab) { doc.rect(X, y, W, h); txt(`Total trabalhado (sem almoço): ${Math.floor(r.minTrab/60)}h${String(r.minTrab%60).padStart(2,'0')}`, X+2, y+h-1.4, { b:true }); y += h; }
+
+  // Assinaturas
+  barra(y, h, 'ASSINATURAS/VISTOS'); y += h;
+  const hs = 34, meio = X + W*0.47;
+  doc.rect(X, y, meio-X, hs); doc.rect(meio, y, R-meio, hs);
+  doc.addImage(r.sigOp, 'JPEG', X+6, y+2, meio-X-12, hs-10);
+  doc.addImage(r.sigGe, 'JPEG', meio+6, y+2, R-meio-12, hs-10);
+  txt(r.operador, X+(meio-X)/2, y+hs-2, { a:'center', s:8 });
+  txt(r.gestor || '', meio+(R-meio)/2, y+hs-2, { a:'center', s:8 });
+  y += hs;
+  doc.setFillColor(...cinza); doc.rect(X, y, meio-X, 6.5, 'FD'); doc.rect(meio, y, R-meio, 6.5, 'FD');
+  txt('OPERADOR', X+(meio-X)/2, y+4.8, { b:true, a:'center', s:10 }); txt('GESTOR DE CONTRATO', meio+(R-meio)/2, y+4.8, { b:true, a:'center', s:10 });
+  doc.setLineWidth(0.6); doc.rect(X, 14, W, y + 6.5 - 14); doc.setLineWidth(0.3);
+  y += 12;
+
+  // Rodapé de evidência
+  doc.setTextColor(90);
+  txt(`Documento assinado eletronicamente na tela do aparelho em ${r.assinadoEm}` + (r.local ? ` · Local: ${r.local}` : ' · Local: não informado'), X, y, { s:7 });
+  txt(`Parte diária Nº ${String(r.numero).padStart(6,'0')} · ${r.operador} · ${r.unidade}`, X, y+4, { s:7 });
+  doc.setTextColor(0);
+  return doc;
+}
+
+/* Continua logado neste aparelho (roda por último, quando tudo já foi carregado) */
+const salvo = ls.get('pd_user', null);
+if (salvo && OPERADORES[salvo]) { user = salvo; abrirForm(); }
+</script>
+</body>
+</html>
